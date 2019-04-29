@@ -72,14 +72,18 @@ public class GenerateModelMojo extends AbstractKieMojo {
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/submarine")
     private File generatedSources;
 
-    @Parameter(property = "generateModel", defaultValue = "no")
-    private String generateModel;
-
-    @Parameter(property = "generateProcessModel", defaultValue = "yes")
-    private String generateProcessModel;
-
-    @Parameter(property = "dependencyInjection", defaultValue = "true")
+    @Parameter(property = "submarine.codegen.di", defaultValue = "true")
     private boolean dependencyInjection;
+
+    @Parameter(property = "submarine.codegen.rules", defaultValue = "false")
+    private boolean generateRuleUnits;
+
+    @Parameter(property = "submarine.codegen.process", defaultValue = "true")
+    private boolean generateProcesses;
+
+    @Parameter(property = "submarine.codegen.bundle.all", defaultValue = "false")
+    private boolean bundleResources;
+
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -91,12 +95,6 @@ public class GenerateModelMojo extends AbstractKieMojo {
     }
 
     private void generateModel() throws MojoExecutionException, IOException {
-        // these should be probably substituted by boolean params
-        boolean generateRuleUnits =
-                ExecModelMode.shouldGenerateModel(generateModel);
-        boolean generateProcesses =
-                BPMNModelMode.shouldGenerateBPMNModel(generateProcessModel);
-
         project.addCompileSourceRoot(generatedSources.getPath());
 
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -114,7 +112,7 @@ public class GenerateModelMojo extends AbstractKieMojo {
                 writeGeneratedFile(generatedFile);
             }
 
-            if (ExecModelMode.shouldDeleteFile(generateModel)) {
+            if (!bundleResources) {
                 deleteDrlFiles();
             }
         } finally {
@@ -161,7 +159,6 @@ public class GenerateModelMojo extends AbstractKieMojo {
                            processEventListenerClass.replace('.', '/') + ".java");
         return Files.exists(p) ? processEventListenerClass : null;
     }
-
 
     private void writeAll(List<GeneratedFile> generatedFiles) throws IOException {
         for (GeneratedFile f : generatedFiles) {
