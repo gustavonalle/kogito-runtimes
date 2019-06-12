@@ -72,13 +72,16 @@ public class GenerateModelMojo extends AbstractKieMojo {
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/kogito")
     private File generatedSources;
 
-    @Parameter(property = "generateModel", defaultValue = "no")
-    private String generateModel;
+    @Parameter(property = "kogito.compile.rules", defaultValue = "true")
+    private boolean generateRules;
 
-    @Parameter(property = "generateProcessModel", defaultValue = "yes")
-    private String generateProcessModel;
+    @Parameter(property = "kogito.compile.processes", defaultValue = "true")
+    private boolean generateProcesses;
 
-    @Parameter(property = "dependencyInjection", defaultValue = "true")
+    @Parameter(property = "kogito.sources.keep", defaultValue = "false")
+    private boolean keepSources;
+
+    @Parameter(property = "kogito.di.enabled", defaultValue = "true")
     private boolean dependencyInjection;
 
     @Override
@@ -91,12 +94,6 @@ public class GenerateModelMojo extends AbstractKieMojo {
     }
 
     private void generateModel() throws MojoExecutionException, IOException {
-        // these should be probably substituted by boolean params
-        boolean generateRuleUnits =
-                ExecModelMode.shouldGenerateModel(generateModel);
-        boolean generateProcesses =
-                BPMNModelMode.shouldGenerateBPMNModel(generateProcessModel);
-
         project.addCompileSourceRoot(generatedSources.getPath());
 
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -108,13 +105,13 @@ public class GenerateModelMojo extends AbstractKieMojo {
             Thread.currentThread().setContextClassLoader(projectClassLoader);
 
             ApplicationGenerator appGen = createApplicationGenerator(
-                    generateRuleUnits, generateProcesses);
+                    generateRules, generateProcesses);
 
             for (GeneratedFile generatedFile : appGen.generate()) {
                 writeGeneratedFile(generatedFile);
             }
 
-            if (ExecModelMode.shouldDeleteFile(generateModel)) {
+            if (!keepSources) {
                 deleteDrlFiles();
             }
         } finally {
