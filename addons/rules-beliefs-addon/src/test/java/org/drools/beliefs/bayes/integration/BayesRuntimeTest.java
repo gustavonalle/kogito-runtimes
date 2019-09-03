@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -11,47 +11,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.drools.beliefs.bayes.integration;
 
-import org.drools.beliefs.bayes.BayesInstance;
-import org.drools.beliefs.bayes.runtime.BayesRuntime;
-import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
-import org.drools.core.impl.InternalKnowledgeBase;
-import org.drools.core.impl.KnowledgeBaseFactory;
-import org.drools.core.impl.StatefulKnowledgeSessionImpl;
-import org.junit.jupiter.api.Test;
-import org.kie.api.KieBaseConfiguration;
-import org.kie.api.io.ResourceType;
-import org.kie.internal.io.ResourceFactory;
+import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.drools.beliefs.bayes.BayesInstance;
+import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
+import org.junit.jupiter.api.Test;
 
 public class BayesRuntimeTest {
 
-
     @Test
     public void testBayesRuntimeManager() throws Exception {
-        KnowledgeBuilderImpl kbuilder = new KnowledgeBuilderImpl();
-        kbuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
-
-
-        InternalKnowledgeBase kbase = getKnowledgeBase();
-        kbase.addPackages( kbuilder.getKnowledgePackages() );
-
-        StatefulKnowledgeSessionImpl ksession = (StatefulKnowledgeSessionImpl) kbase.newKieSession();
-
-        BayesRuntime bayesRuntime = ksession.getKieRuntime(BayesRuntime.class);
-        BayesInstance<Garden> instance = bayesRuntime.createInstance(Garden.class);
-        assertNotNull(  instance );
-    }
-
-    protected InternalKnowledgeBase getKnowledgeBase() {
-        return KnowledgeBaseFactory.newKnowledgeBase();
-    }
-
-    protected InternalKnowledgeBase getKnowledgeBase(KieBaseConfiguration kBaseConfig) {
-        return KnowledgeBaseFactory.newKnowledgeBase(kBaseConfig);
+        Garden garden = new Garden();
+        String gardenPath = "/org/drools/beliefs/bayes/integration/Garden.xmlbif";
+        InputStream is = this.getClass().getResourceAsStream(gardenPath);
+        BayesRuntimeImpl<Garden> bayes = BayesRuntimeImpl.of(is);
+        BayesInstance<Garden> gardenInstance = bayes.createInstance(garden);
     }
 }

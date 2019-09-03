@@ -15,12 +15,15 @@
 
 package org.drools.beliefs.bayes.integration;
 
+import java.io.InputStream;
+
 import org.drools.beliefs.bayes.BayesModeFactory;
 import org.drools.beliefs.bayes.BayesModeFactoryImpl;
 import org.drools.beliefs.bayes.BayesBeliefSystem;
 import org.drools.beliefs.bayes.BayesInstance;
 import org.drools.beliefs.bayes.PropertyReference;
 import org.drools.beliefs.bayes.runtime.BayesRuntime;
+import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
 import org.drools.core.BeliefSystemType;
 import org.drools.core.SessionConfiguration;
 import org.drools.core.common.NamedEntryPoint;
@@ -96,8 +99,9 @@ public class BayesBeliefSystemTest {
 
         ksession.setGlobal( "bsFactory", bayesModeFactory);
 
-        BayesRuntime bayesRuntime = ksession.getKieRuntime(BayesRuntime.class);
-        BayesInstance<Garden> instance = bayesRuntime.createInstance(Garden.class);
+        InputStream is = this.getClass().getResourceAsStream("/org/drools/beliefs/bayes/integration/Garden.xmlbif");
+        BayesRuntime<Garden> bayesRuntime = BayesRuntimeImpl.of(is);
+        BayesInstance<Garden> instance = bayesRuntime.createInstance(new Garden());
         assertNotNull(  instance );
 
         assertTrue(instance.isDecided());
@@ -165,7 +169,7 @@ public class BayesBeliefSystemTest {
         kBuilder.add( ResourceFactory.newByteArrayResource(drlString.getBytes()),
                       ResourceType.DRL );
 
-        kBuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
+//        kBuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
 
         if ( kBuilder.hasErrors() ) {
             System.err.println( kBuilder.getErrors() );

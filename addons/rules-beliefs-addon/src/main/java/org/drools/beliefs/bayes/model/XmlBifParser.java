@@ -41,6 +41,14 @@ import static org.drools.core.util.XStreamUtils.createTrustingXStream;
 
 public class XmlBifParser {
 
+    public static Bif loadBif(InputStream is) {
+        XStream xstream = createTrustingXStream();
+        initXStream(xstream);
+        Bif bif = (Bif) xstream.fromXML(is);
+        return bif;
+    }
+
+
     public static Bif loadBif(Resource resource, ArrayList<KnowledgeBuilderError> errors) {
         InputStream is = null;
         try {

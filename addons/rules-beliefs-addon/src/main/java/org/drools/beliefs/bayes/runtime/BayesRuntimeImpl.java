@@ -15,28 +15,44 @@
 
 package org.drools.beliefs.bayes.runtime;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import org.drools.beliefs.bayes.BayesInstance;
+import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.JunctionTree;
-import org.drools.beliefs.bayes.assembler.BayesPackage;
-import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.definitions.ResourceTypePackageRegistry;
-import org.kie.api.KieBase;
-import org.kie.api.io.ResourceType;
+import org.drools.beliefs.bayes.JunctionTreeBuilder;
+import org.drools.beliefs.bayes.assembler.JunctionTreeProcessor;
+import org.drools.beliefs.bayes.model.Bif;
+import org.drools.beliefs.bayes.model.XmlBifParser;
+import org.kie.internal.builder.KnowledgeBuilderError;
 
-public class BayesRuntimeImpl implements BayesRuntime {
+public class BayesRuntimeImpl<T> implements BayesRuntime<T> {
 
-    private KieBase kieBase;
+    private final JunctionTree junctionTree;
 
-    public BayesRuntimeImpl(KieBase kieBase) {
-        this.kieBase = kieBase;
+    public static <T> BayesRuntimeImpl<T> of(InputStream is) {
+        BayesNetwork network;
+        JunctionTreeBuilder builder;
+        ArrayList<KnowledgeBuilderError> errors = new ArrayList<>();
+
+        Bif bif = XmlBifParser.loadBif(is);
+        network = XmlBifParser.buildBayesNetwork(bif);
+
+        builder = new JunctionTreeBuilder(network);
+
+        JunctionTree jtree = builder.build(null,
+                                           network.getPackageName(),
+                                           network.getName());
+
+        return new BayesRuntimeImpl<T>(jtree);
     }
 
-    public BayesInstance createInstance(Class cls) {
-        InternalKnowledgePackage kpkg = (InternalKnowledgePackage) kieBase.getKiePackage(cls.getPackage().getName());
-        ResourceTypePackageRegistry map = kpkg.getResourceTypePackages();
-        BayesPackage bayesPkg = (BayesPackage) map.get(ResourceType.BAYES);
-        JunctionTree jtree = bayesPkg.getJunctionTree(cls.getSimpleName());
+    public BayesRuntimeImpl(JunctionTree junctionTree) {
+        this.junctionTree = junctionTree;
+    }
 
-        return new BayesInstance(jtree, cls);
+    public BayesInstance<T> createInstance(T data) {
+        return new BayesInstance<>(junctionTree, (Class<T>) data.getClass());
     }
 }
