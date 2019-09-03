@@ -18,7 +18,7 @@ package org.drools.beliefs.bayes;
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 import org.drools.core.util.bitmask.OpenBitSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,9 +36,9 @@ import static org.drools.beliefs.bayes.GraphTest.assertLinkedVertex;
 import static org.drools.beliefs.bayes.GraphTest.bitSet;
 import static org.drools.beliefs.bayes.GraphTest.connectChildToParents;
 import static org.drools.beliefs.bayes.GraphTest.connectParentToChildren;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JunctionTreeBuilderTest {
     @Test

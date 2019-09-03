@@ -17,7 +17,7 @@ package org.drools.beliefs.bayes;
 
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 

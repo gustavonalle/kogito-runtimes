@@ -17,7 +17,6 @@ package org.drools.beliefs.bayes.example;
 
 import org.drools.beliefs.bayes.BayesInstance;
 import org.drools.beliefs.bayes.BayesVariable;
-import org.drools.beliefs.bayes.BayesLikelyhood;
 import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.BayesVariableState;
 import org.drools.beliefs.bayes.JunctionTree;
@@ -25,8 +24,8 @@ import org.drools.beliefs.bayes.JunctionTreeBuilder;
 import org.drools.beliefs.bayes.JunctionTreeClique;
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.drools.beliefs.bayes.JunctionTreeTest.assertArray;
 import static org.drools.beliefs.bayes.JunctionTreeTest.scaleDouble;
@@ -61,7 +60,7 @@ public class EarthQuakeTest {
 
     BayesInstance bayesInstance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         connectParentToChildren(burglaryNode, alarmNode);
         connectParentToChildren(earthquakeNode, alarmNode);

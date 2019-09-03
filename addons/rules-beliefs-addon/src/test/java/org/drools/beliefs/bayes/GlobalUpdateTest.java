@@ -17,15 +17,15 @@ package org.drools.beliefs.bayes;
 
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.drools.beliefs.bayes.GraphTest.addNode;
 import static org.drools.beliefs.bayes.GraphTest.bitSet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This class tests that the iteration order for collect and distribute evidence is correct.
@@ -59,7 +59,7 @@ public class GlobalUpdateTest {
     final List<String> messageResults      = new ArrayList<String>();
     final List<String> globalUpdateResults = new ArrayList<String>();
 
-    @Before
+    @BeforeEach
     public void startUp() {
         int i = 0;
         List<JunctionTreeSeparator> list = new ArrayList<JunctionTreeSeparator>();

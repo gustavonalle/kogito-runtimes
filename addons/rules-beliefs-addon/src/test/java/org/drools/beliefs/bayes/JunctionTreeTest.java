@@ -15,12 +15,11 @@
 
 package org.drools.beliefs.bayes;
 
-import junit.framework.AssertionFailedError;
-
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 import org.drools.core.util.bitmask.OpenBitSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -30,7 +29,7 @@ import static org.drools.beliefs.bayes.GraphTest.bitSet;
 import static org.drools.beliefs.bayes.GraphTest.connectParentToChildren;
 import static org.drools.beliefs.bayes.PotentialMultiplier.indexToKey;
 import static org.drools.beliefs.bayes.PotentialMultiplier.keyToIndex;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JunctionTreeTest {
 

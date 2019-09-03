@@ -21,12 +21,12 @@ import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.drools.core.impl.StatefulKnowledgeSessionImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.io.ResourceFactory;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BayesRuntimeTest {
 

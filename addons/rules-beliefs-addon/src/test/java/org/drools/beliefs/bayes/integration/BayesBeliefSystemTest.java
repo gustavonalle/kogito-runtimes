@@ -28,7 +28,7 @@ import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.drools.core.impl.StatefulKnowledgeSessionImpl;
 import org.drools.core.rule.EntryPointId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
@@ -36,14 +36,11 @@ import org.kie.api.runtime.rule.FactHandle;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
-import org.kie.internal.runtime.StatefulKnowledgeSession;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.drools.beliefs.bayes.JunctionTreeTest.scaleDouble;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class BayesBeliefSystemTest {
 

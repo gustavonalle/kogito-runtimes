@@ -27,8 +27,8 @@ import org.drools.beliefs.bayes.Marginalizer;
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 import org.drools.beliefs.graph.impl.EdgeImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.drools.beliefs.bayes.JunctionTreeTest.assertArray;
 import static org.drools.beliefs.bayes.JunctionTreeTest.scaleDouble;
@@ -48,7 +48,7 @@ public class SprinkerTest {
 
     JunctionTree jTree;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         connectParentToChildren( cloudyNode, sprinklerNode, rainNode);
         connectParentToChildren( sprinklerNode, wetGrassNode);

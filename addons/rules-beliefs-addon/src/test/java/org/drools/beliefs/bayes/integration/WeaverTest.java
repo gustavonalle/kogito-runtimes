@@ -22,15 +22,12 @@ import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.ResourceTypePackageRegistry;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.io.ResourceFactory;
-import org.kie.api.internal.io.ResourceTypePackage;
 
-import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class WeaverTest {
 

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GraphTest {
 
@@ -56,9 +56,9 @@ public class GraphTest {
         Collection<Integer> adjVert = JunctionTreeBuilder.getAdjacentVertices(adjMatrix, id);
         assertEquals( ints.length-1, adjVert.size() );
         for ( int i = 1; i < ints.length; i++ ) {
-            assertTrue( "link was not true " + id + ", " + i, adjMatrix[id][ints[i]] );
-            assertTrue( "link was not true " + i + ", " + id, adjMatrix[ints[i]][id] );
-            assertTrue( "does not contain " + ints[i], adjVert.contains(ints[i]) );
+            assertTrue( adjMatrix[id][ints[i]], "link was not true " + id + ", " + i );
+            assertTrue( adjMatrix[ints[i]][id], "link was not true " + i + ", " + id );
+            assertTrue( adjVert.contains(ints[i]), "does not contain " + ints[i] );
         }
 
         return   false;

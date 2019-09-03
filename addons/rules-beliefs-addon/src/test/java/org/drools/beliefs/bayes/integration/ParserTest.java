@@ -23,17 +23,16 @@ import org.drools.beliefs.bayes.model.Network;
 import org.drools.beliefs.bayes.model.Variable;
 import org.drools.beliefs.bayes.model.XmlBifParser;
 import org.drools.beliefs.graph.GraphNode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ParserTest {
 
