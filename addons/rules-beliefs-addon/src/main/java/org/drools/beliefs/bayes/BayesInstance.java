@@ -47,10 +47,12 @@ public class BayesInstance<T> {
 
     private int[]          targetParameterMap;
     private Class<T>       targetClass;
+    private Class<T>       evidenceClass;
     private Constructor<T> targetConstructor;
 
-    public BayesInstance(JunctionTree tree, Class<T> targetClass) {
+    public BayesInstance(JunctionTree tree, Class<T> evidenceClass, Class<T> targetClass) {
         this(tree);
+        this.evidenceClass = evidenceClass;
         this.targetClass = targetClass;
         buildParameterMapping(targetClass);
         buildFieldMappings( targetClass );

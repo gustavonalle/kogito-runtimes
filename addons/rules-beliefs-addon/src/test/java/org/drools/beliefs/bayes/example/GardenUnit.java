@@ -2,7 +2,7 @@ package org.drools.beliefs.bayes.example;
 
 import org.drools.beliefs.bayes.VarName;
 
-public class Sprinkler {
+public class GardenUnit {
 
     @VarName("WetGrass")
     private double[] wetGrassEvidence;

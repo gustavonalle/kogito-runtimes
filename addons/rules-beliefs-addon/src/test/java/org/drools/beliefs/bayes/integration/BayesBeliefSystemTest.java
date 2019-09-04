@@ -18,11 +18,11 @@ package org.drools.beliefs.bayes.integration;
 import org.drools.beliefs.bayes.BayesInstance;
 import org.drools.beliefs.bayes.runtime.BayesRuntime;
 import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
-import org.drools.core.ruleunit.impl.ReflectiveRuleUnit;
 import org.junit.jupiter.api.Test;
 import org.kie.kogito.rules.DataHandle;
 import org.kie.kogito.rules.RuleUnit;
 import org.kie.kogito.rules.RuleUnitInstance;
+import org.kie.kogito.rules.tests.ReflectiveRuleUnit;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
