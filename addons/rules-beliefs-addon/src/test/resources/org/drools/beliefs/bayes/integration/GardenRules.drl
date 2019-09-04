@@ -1,0 +1,37 @@
+package org.drools.beliefs.bayes.integration;
+unit GardenRules;
+
+import org.drools.beliefs.bayes.integration.Garden;
+import org.drools.beliefs.bayes.PropertyReference;
+
+rule rule1 when
+    /strings[ this == 'rule1']
+    g: /gardens
+then
+    System.out.println("rule 1");
+    insertLogical( new PropertyReference(g, 'cloudy'), bsFactory.create( 1.0, 0.0 ) );
+ end
+
+ rule rule2 when
+    /strings[ this == 'rule2' ]
+    g : /gardens
+then
+    System.out.println("rule2");
+    insertLogical( new PropertyReference(g, 'sprinkler'), bsFactory.create( 1.0, 0.0 ) );
+ end
+
+ rule rule3 when
+    /strings[  this == 'rule3' ]
+    g : /gardens
+then
+    System.out.println("rule3");
+    insertLogical( new PropertyReference(g, 'sprinkler'), bsFactory.create( 1.0, 0.0 ) );
+end
+
+rule rule4 when
+    /strings[  this == 'rule4' ]
+    g : /gardens
+then
+    System.out.println("rule4");
+    insertLogical( new PropertyReference(g, 'sprinkler'), bsFactory.create( 0.0, 1.0 ) );
+end

@@ -22,7 +22,6 @@ import org.drools.beliefs.bayes.BayesInstance;
 import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.JunctionTree;
 import org.drools.beliefs.bayes.JunctionTreeBuilder;
-import org.drools.beliefs.bayes.assembler.JunctionTreeProcessor;
 import org.drools.beliefs.bayes.model.Bif;
 import org.drools.beliefs.bayes.model.XmlBifParser;
 import org.kie.internal.builder.KnowledgeBuilderError;
@@ -30,6 +29,14 @@ import org.kie.internal.builder.KnowledgeBuilderError;
 public class BayesRuntimeImpl<T> implements BayesRuntime<T> {
 
     private final JunctionTree junctionTree;
+
+    public static <T> BayesRuntimeImpl<T> of(Class<T> type) {
+        // transform foo.bar.Baz to /foo/bar/Baz.xmlbif
+        // this currently only works for single files
+        InputStream resourceAsStream = type.getResourceAsStream(
+                String.format("/%s.xmlbif", type.getCanonicalName().replace('.', '/')));
+        return of(resourceAsStream);
+    }
 
     public static <T> BayesRuntimeImpl<T> of(InputStream is) {
         BayesNetwork network;

@@ -31,15 +31,7 @@ import org.drools.core.spi.PropagationContext;
 import org.kie.api.runtime.rule.FactHandle;
 
 public class BayesBeliefSystem<M extends BayesHardEvidence<M>> implements BeliefSystem<M> {
-    private NamedEntryPoint        ep;
-    private TruthMaintenanceSystem tms;
 
-    public BayesBeliefSystem(NamedEntryPoint ep,
-                             TruthMaintenanceSystem tms) {
-        super();
-        this.ep = ep;
-        this.tms = tms;
-    }
 
     @Override
     public BeliefSet<M> insert(LogicalDependency<M> node, BeliefSet<M> beliefSet, PropagationContext context, ObjectTypeConf typeConf) {

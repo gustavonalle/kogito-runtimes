@@ -24,13 +24,17 @@ public class BayesModeFactoryImpl implements BayesModeFactory<BayesHardEvidence>
         this.beliefSystem = beliefSystem;
     }
 
+    public BayesModeFactoryImpl() {
+        this(new BayesBeliefSystem());
+    }
+
     @Override
-    public BayesHardEvidence create(double[] distribution) {
+    public BayesHardEvidence create(double... distribution) {
         return new BayesHardEvidence(beliefSystem, distribution);
     }
 
     @Override
-    public BayesHardEvidence create(double[] distribution, Mode mode) {
+    public BayesHardEvidence create(Mode mode, double... distribution) {
         return new BayesHardEvidence(beliefSystem, distribution, mode);
     }
 
