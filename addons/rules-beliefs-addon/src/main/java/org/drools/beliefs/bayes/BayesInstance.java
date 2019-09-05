@@ -34,7 +34,9 @@ import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 import org.drools.core.util.BitMaskUtil;
 
-public class BayesInstance<T, R> {
+import static org.drools.core.util.StringUtils.capitalize;
+
+public class BayesInstance<T> {
     private Graph<BayesVariable>       graph;
     private JunctionTree               tree;
     private Map<String, BayesVariable> variables;
@@ -52,13 +54,13 @@ public class BayesInstance<T, R> {
 
     private int[]          targetParameterMap;
     private T              unit;
-    private Class<R>       targetClass;
-    private Constructor<R> targetConstructor;
+    private Class<?>       targetClass;
+    private Constructor<?> targetConstructor;
+    private Method resultWriter;
 
-    public BayesInstance(JunctionTree tree, T unit, Class<R> targetClass) {
+    public BayesInstance(JunctionTree tree, T unit) {
         this(tree);
         this.unit = unit;
-        this.targetClass = targetClass;
         applyParams(unit);
         buildParameterMapping(targetClass);
         buildFieldMappings( targetClass );
@@ -66,17 +68,25 @@ public class BayesInstance<T, R> {
 
     private void applyParams(T unit) {
         try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(unit.getClass());
-            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-            for (PropertyDescriptor p : propertyDescriptors) {
-                VarName annotation = p.getPropertyType().getAnnotation(VarName.class);
-                if (annotation != null) {
-                    String varName = annotation.value();
-                    Method readMethod = p.getReadMethod();
-                    setLikelyhood(varName, (double[]) readMethod.invoke(unit));
+            Class<?> aClass = unit.getClass();
+            for (Field f : aClass.getDeclaredFields()) {
+                String name = f.getName();
+                String capitalizedName = capitalize(name);
+                VarName v = f.getAnnotation(VarName.class);
+                if (v != null) {
+                    String varName = v.value();
+                    Method getter = aClass.getMethod("get" + capitalizedName);
+                    setLikelyhood(varName, (double[]) getter.invoke(unit));
+                }
+                Result r = f.getAnnotation(Result.class);
+                if (r != null) {
+                    Method setter = aClass.getMethod("set" + capitalizedName, f.getType());
+
+                    this.resultWriter = setter;
+                    this.targetClass = f.getType();
                 }
             }
-        } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e ) {
             throw new IllegalStateException("Cannot extract parameters from input data.", e);
         }
 
@@ -123,13 +133,13 @@ public class BayesInstance<T, R> {
         }
     }
 
-    public void setTargetClass(Class<R> targetClass) {
+    public void setTargetClass(Class<?> targetClass) {
         this.targetClass = targetClass;
         buildParameterMapping( targetClass );
         buildFieldMappings( targetClass );
     }
 
-    public void buildFieldMappings(Class<R> target) {
+    public void buildFieldMappings(Class<?> target) {
         for ( Field field : target.getDeclaredFields() ) {
             Annotation[] anns = field.getDeclaredAnnotations();
             for ( Annotation ann : anns ) {
@@ -142,7 +152,7 @@ public class BayesInstance<T, R> {
         }
     }
 
-    public  void buildParameterMapping(Class<R> target) {
+    public  void buildParameterMapping(Class<?> target) {
         Constructor[] cons = target.getConstructors();
         if ( cons != null ) {
             for ( Constructor con : cons ) {
@@ -449,7 +459,7 @@ public class BayesInstance<T, R> {
         return varState;
     }
 
-    public R marginalize() {
+    public void marginalize() {
         Object[] args = new Object[targetParameterMap.length];
         args[0] = this;
         for ( int i = 1; i < targetParameterMap.length; i++) {
@@ -484,7 +494,8 @@ public class BayesInstance<T, R> {
             args[i] = varState.getOutcomes()[highestIndex];
         }
         try {
-            return targetConstructor.newInstance( args );
+            Object r = targetConstructor.newInstance(args);
+            resultWriter.invoke(unit, r);
         } catch (Exception e) {
            throw new RuntimeException( "Unable to instantiate " + targetClass.getSimpleName() + " " + Arrays.asList( args ), e );
         }

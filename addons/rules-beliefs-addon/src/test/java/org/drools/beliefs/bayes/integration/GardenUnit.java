@@ -17,6 +17,14 @@ public class GardenUnit implements BayesModel {
     @Result
     private Garden garden;
 
+    public Garden getGarden() {
+        return garden;
+    }
+
+    public void setGarden(Garden garden) {
+        this.garden = garden;
+    }
+
     public double[] getWetGrassEvidence() {
         return wetGrassEvidence;
     }

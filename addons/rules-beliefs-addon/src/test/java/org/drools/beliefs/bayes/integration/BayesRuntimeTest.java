@@ -26,9 +26,10 @@ public class BayesRuntimeTest {
     @Test
     public void testBayesRuntimeManager() throws Exception {
         GardenUnit garden = new GardenUnit();
-        BayesRuntimeImpl<GardenUnit, Garden> bayes = BayesRuntimeImpl.of(GardenUnit.class, Garden.class);
-        BayesInstance<GardenUnit, Garden> gardenInstance = bayes.createInstance(garden);
-        Garden result = gardenInstance.marginalize();
+        BayesRuntimeImpl<GardenUnit> bayes = BayesRuntimeImpl.of(GardenUnit.class);
+        BayesInstance<GardenUnit> gardenInstance = bayes.createInstance(garden);
+        gardenInstance.marginalize();
+        Garden result = garden.getGarden();
         System.out.println(result);
         assertNotNull(result);
     }

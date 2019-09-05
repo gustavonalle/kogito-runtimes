@@ -26,20 +26,19 @@ import org.drools.beliefs.bayes.model.Bif;
 import org.drools.beliefs.bayes.model.XmlBifParser;
 import org.kie.internal.builder.KnowledgeBuilderError;
 
-public class BayesRuntimeImpl<T, R> implements BayesRuntime<T, R> {
+public class BayesRuntimeImpl<T> implements BayesRuntime<T> {
 
     private final JunctionTree junctionTree;
-    private final Class<R> returnType;
 
-    public static <T,R> BayesRuntimeImpl<T, R> of(Class<T> type, Class<R> returnType) {
+    public static <T> BayesRuntimeImpl<T> of(Class<T> type) {
         // transform foo.bar.Baz to /foo/bar/Baz.xmlbif
         // this currently only works for single files
         InputStream resourceAsStream = type.getResourceAsStream(
                 String.format("/%s.xmlbif", type.getCanonicalName().replace('.', '/')));
-        return of(resourceAsStream, returnType);
+        return of(resourceAsStream);
     }
 
-    public static <T, R> BayesRuntimeImpl<T, R> of(InputStream is, Class<R> returnType) {
+    public static <T> BayesRuntimeImpl<T> of(InputStream is) {
         BayesNetwork network;
         JunctionTreeBuilder builder;
         ArrayList<KnowledgeBuilderError> errors = new ArrayList<>();
@@ -54,15 +53,14 @@ public class BayesRuntimeImpl<T, R> implements BayesRuntime<T, R> {
                                            network.getName());
 
 
-        return new BayesRuntimeImpl<T, R>(jtree, returnType);
+        return new BayesRuntimeImpl<T>(jtree);
     }
 
-    public BayesRuntimeImpl(JunctionTree junctionTree, Class<R> returnType) {
+    public BayesRuntimeImpl(JunctionTree junctionTree) {
         this.junctionTree = junctionTree;
-        this.returnType = returnType;
     }
 
-    public BayesInstance<T, R> createInstance(T data) {
-        return new BayesInstance<T, R>(junctionTree, data, returnType);
+    public BayesInstance<T> createInstance(T data) {
+        return new BayesInstance<T>(junctionTree, data);
     }
 }
