@@ -29,6 +29,8 @@ public class BayesRuntimeTest {
         BayesRuntimeImpl<GardenUnit> bayes = BayesRuntimeImpl.of(GardenUnit.class);
         BayesInstance<GardenUnit> gardenInstance = bayes.createInstance(garden);
         gardenInstance.marginalize();
+        garden.setSprinklerEvidence(1.0, 0.0);
+        garden.setCloudyEvidence(1.0, 0.0);
         Garden result = garden.getGarden();
         System.out.println(result);
         assertNotNull(result);
