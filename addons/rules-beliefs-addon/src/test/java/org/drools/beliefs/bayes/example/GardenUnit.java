@@ -17,7 +17,7 @@ public class GardenUnit {
         return wetGrassEvidence;
     }
 
-    public void setWetGrassEvidence(double[] wetGrassEvidence) {
+    public void setWetGrassEvidence(double... wetGrassEvidence) {
         this.wetGrassEvidence = wetGrassEvidence;
     }
 
@@ -25,7 +25,7 @@ public class GardenUnit {
         return cloudyEvidence;
     }
 
-    public void setCloudyEvidence(double[] cloudyEvidence) {
+    public void setCloudyEvidence(double... cloudyEvidence) {
         this.cloudyEvidence = cloudyEvidence;
     }
 
@@ -33,7 +33,7 @@ public class GardenUnit {
         return sprinklerEvidence;
     }
 
-    public void setSprinklerEvidence(double[] sprinklerEvidence) {
+    public void setSprinklerEvidence(double... sprinklerEvidence) {
         this.sprinklerEvidence = sprinklerEvidence;
     }
 
@@ -41,7 +41,7 @@ public class GardenUnit {
         return rainEvidence;
     }
 
-    public void setRainEvidence(double[] rainEvidence) {
+    public void setRainEvidence(double... rainEvidence) {
         this.rainEvidence = rainEvidence;
     }
 }

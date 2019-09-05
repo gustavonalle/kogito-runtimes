@@ -16,13 +16,14 @@
 package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.BayesInstance;
+import org.drools.beliefs.bayes.example.GardenUnit;
 import org.drools.beliefs.bayes.runtime.BayesRuntime;
 import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
 import org.junit.jupiter.api.Test;
 import org.kie.kogito.rules.DataHandle;
+import org.kie.kogito.rules.InterpretedRuleUnit;
 import org.kie.kogito.rules.RuleUnit;
 import org.kie.kogito.rules.RuleUnitInstance;
-import org.kie.kogito.rules.tests.ReflectiveRuleUnit;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,12 +34,12 @@ public class BayesBeliefSystemTest {
 
     @Test
     public void testBayes() {
-        BayesRuntime<Garden> bayesRuntime = BayesRuntimeImpl.of(Garden.class);
-        BayesInstance<Garden> instance = bayesRuntime.createInstance(new Garden());
+        BayesRuntime<GardenUnit, Garden> bayesRuntime = BayesRuntimeImpl.of(GardenUnit.class, Garden.class);
+        BayesInstance<GardenUnit, Garden> instance = bayesRuntime.createInstance(new GardenUnit());
         assertNotNull(  instance );
 
         GardenRules instanceMemory = new GardenRules();
-        RuleUnit<GardenRules> ru = ReflectiveRuleUnit.of(GardenRules.class);
+        RuleUnit<GardenRules> ru = InterpretedRuleUnit.of(GardenRules.class);
         RuleUnitInstance<GardenRules> rui = ru.createInstance(instanceMemory);
 
         assertTrue(instance.isDecided());

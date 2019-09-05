@@ -18,18 +18,25 @@ package org.drools.beliefs.bayes;
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 import org.drools.core.util.BitMaskUtil;
-import org.kie.api.runtime.rule.FactHandle;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class BayesInstance<T> {
+import static org.drools.core.util.StringUtils.capitalize;
+
+public class BayesInstance<T, R> {
     private Graph<BayesVariable>       graph;
     private JunctionTree               tree;
     private Map<String, BayesVariable> variables;
@@ -46,16 +53,34 @@ public class BayesInstance<T> {
     private PassMessageListener  passMessageListener;
 
     private int[]          targetParameterMap;
-    private Class<T>       targetClass;
-    private Class<T>       evidenceClass;
-    private Constructor<T> targetConstructor;
+    private T              unit;
+    private Class<R>       targetClass;
+    private Constructor<R> targetConstructor;
 
-    public BayesInstance(JunctionTree tree, Class<T> evidenceClass, Class<T> targetClass) {
+    public BayesInstance(JunctionTree tree, T unit, Class<R> targetClass) {
         this(tree);
-        this.evidenceClass = evidenceClass;
+        this.unit = unit;
         this.targetClass = targetClass;
+        applyParams(unit);
         buildParameterMapping(targetClass);
         buildFieldMappings( targetClass );
+    }
+
+    private void applyParams(T unit) {
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(unit.getClass());
+            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+            for (PropertyDescriptor p : propertyDescriptors) {
+                String capitalizedName = capitalize(p.getName());
+                if (this.getVariables().containsKey(capitalizedName)) {
+                    Method readMethod = p.getReadMethod();
+                    setLikelyhood(capitalizedName, (double[]) readMethod.invoke(unit));
+                }
+            }
+        } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Cannot extract parameters from input data.", e);
+        }
+
     }
 
     public BayesInstance(JunctionTree tree) {
@@ -99,13 +124,13 @@ public class BayesInstance<T> {
         }
     }
 
-    public void setTargetClass(Class<T> targetClass) {
+    public void setTargetClass(Class<R> targetClass) {
         this.targetClass = targetClass;
         buildParameterMapping( targetClass );
         buildFieldMappings( targetClass );
     }
 
-    public void buildFieldMappings(Class<T> target) {
+    public void buildFieldMappings(Class<R> target) {
         for ( Field field : target.getDeclaredFields() ) {
             Annotation[] anns = field.getDeclaredAnnotations();
             for ( Annotation ann : anns ) {
@@ -118,7 +143,7 @@ public class BayesInstance<T> {
         }
     }
 
-    public  void buildParameterMapping(Class<T> target) {
+    public  void buildParameterMapping(Class<R> target) {
         Constructor[] cons = target.getConstructors();
         if ( cons != null ) {
             for ( Constructor con : cons ) {
@@ -425,7 +450,7 @@ public class BayesInstance<T> {
         return varState;
     }
 
-    public T marginalize() {
+    public R marginalize() {
         Object[] args = new Object[targetParameterMap.length];
         args[0] = this;
         for ( int i = 1; i < targetParameterMap.length; i++) {

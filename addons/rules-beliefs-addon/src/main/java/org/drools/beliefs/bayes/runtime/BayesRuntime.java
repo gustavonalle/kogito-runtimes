@@ -17,6 +17,6 @@ package org.drools.beliefs.bayes.runtime;
 
 import org.drools.beliefs.bayes.BayesInstance;
 
-public interface BayesRuntime<T> {
-    BayesInstance<T> createInstance(T data);
+public interface BayesRuntime<T, R> {
+    BayesInstance<T, R> createInstance(T data);
 }
