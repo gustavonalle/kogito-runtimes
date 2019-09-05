@@ -15,10 +15,6 @@
 
 package org.drools.beliefs.bayes;
 
-import org.drools.beliefs.graph.Graph;
-import org.drools.beliefs.graph.GraphNode;
-import org.drools.core.util.BitMaskUtil;
-
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -34,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.drools.core.util.StringUtils.capitalize;
+import org.drools.beliefs.graph.Graph;
+import org.drools.beliefs.graph.GraphNode;
+import org.drools.core.util.BitMaskUtil;
 
 public class BayesInstance<T, R> {
     private Graph<BayesVariable>       graph;
@@ -71,10 +69,11 @@ public class BayesInstance<T, R> {
             BeanInfo beanInfo = Introspector.getBeanInfo(unit.getClass());
             PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
             for (PropertyDescriptor p : propertyDescriptors) {
-                String capitalizedName = capitalize(p.getName());
-                if (this.getVariables().containsKey(capitalizedName)) {
+                VarName annotation = p.getPropertyType().getAnnotation(VarName.class);
+                if (annotation != null) {
+                    String varName = annotation.value();
                     Method readMethod = p.getReadMethod();
-                    setLikelyhood(capitalizedName, (double[]) readMethod.invoke(unit));
+                    setLikelyhood(varName, (double[]) readMethod.invoke(unit));
                 }
             }
         } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {

@@ -1,8 +1,10 @@
 package org.drools.beliefs.bayes.integration;
 
+import org.drools.beliefs.bayes.BayesModel;
+import org.drools.beliefs.bayes.Result;
 import org.drools.beliefs.bayes.VarName;
 
-public class GardenUnit {
+public class GardenUnit implements BayesModel {
 
     @VarName("WetGrass")
     private double[] wetGrassEvidence;
@@ -12,6 +14,8 @@ public class GardenUnit {
     private double[] sprinklerEvidence;
     @VarName("Rain")
     private double[] rainEvidence;
+    @Result
+    private Garden garden;
 
     public double[] getWetGrassEvidence() {
         return wetGrassEvidence;
