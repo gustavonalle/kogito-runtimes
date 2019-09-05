@@ -15,10 +15,7 @@
 
 package org.drools.beliefs.bayes.integration;
 
-import java.io.InputStream;
-
 import org.drools.beliefs.bayes.BayesInstance;
-import org.drools.beliefs.bayes.example.GardenUnit;
 import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
 import org.junit.jupiter.api.Test;
 
@@ -29,9 +26,7 @@ public class BayesRuntimeTest {
     @Test
     public void testBayesRuntimeManager() throws Exception {
         GardenUnit garden = new GardenUnit();
-        String gardenPath = "/org/drools/beliefs/bayes/integration/Garden.xmlbif";
-        InputStream is = this.getClass().getResourceAsStream(gardenPath);
-        BayesRuntimeImpl<GardenUnit, Garden> bayes = BayesRuntimeImpl.of(is, Garden.class);
+        BayesRuntimeImpl<GardenUnit, Garden> bayes = BayesRuntimeImpl.of(GardenUnit.class, Garden.class);
         BayesInstance<GardenUnit, Garden> gardenInstance = bayes.createInstance(garden);
         Garden result = gardenInstance.marginalize();
         System.out.println(result);

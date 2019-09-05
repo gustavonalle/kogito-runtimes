@@ -16,7 +16,6 @@
 package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.BayesInstance;
-import org.drools.beliefs.bayes.example.GardenUnit;
 import org.drools.beliefs.bayes.runtime.BayesRuntime;
 import org.drools.beliefs.bayes.runtime.BayesRuntimeImpl;
 import org.junit.jupiter.api.Test;

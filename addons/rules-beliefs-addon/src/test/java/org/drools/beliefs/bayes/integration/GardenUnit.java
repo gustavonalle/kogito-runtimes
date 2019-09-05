@@ -1,4 +1,4 @@
-package org.drools.beliefs.bayes.example;
+package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.VarName;
 
