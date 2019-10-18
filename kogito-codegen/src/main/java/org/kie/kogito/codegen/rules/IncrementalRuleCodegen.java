@@ -65,7 +65,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 
     private String packageName;
 
-    public static IncrementalRuleCodegen ofPath( Path basePath) {
+    public static IncrementalRuleCodegen ofPath(Path basePath) {
         try {
             Stream<File> files = Files.walk(basePath).map(Path::toFile);
             Set<Resource> resources = toResources(files);
@@ -101,7 +101,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         return files.filter(f -> resourceType.matchesExtension(f.getName())).map(FileSystemResource::new).peek(r -> r.setResourceType(resourceType)).collect(Collectors.toSet());
     }
 
-    private static Set<Resource> toResources(Stream<File> files) {
+    public static Set<Resource> toResources(Stream<File> files) {
         return files.map(FileSystemResource::new).peek(r -> r.setResourceType(typeOf(r))).filter(r -> r.getResourceType() != null).collect(Collectors.toSet());
     }
 

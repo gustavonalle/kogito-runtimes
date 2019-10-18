@@ -12,6 +12,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,8 +35,11 @@ import org.kie.kogito.codegen.ApplicationGenerator;
 import org.kie.kogito.codegen.GeneratedFile;
 import org.kie.kogito.codegen.decision.DecisionCodegen;
 import org.kie.kogito.codegen.process.ProcessCodegen;
+import org.kie.kogito.codegen.rules.AnnotatedClassPostProcessor;
 import org.kie.kogito.codegen.rules.IncrementalRuleCodegen;
 import org.kie.kogito.maven.plugin.util.MojoUtil;
+
+import static org.kie.kogito.codegen.rules.IncrementalRuleCodegen.toResources;
 
 @Mojo(name = "generateModel",
         requiresDependencyResolution = ResolutionScope.NONE,
@@ -120,8 +124,6 @@ public class GenerateModelMojo extends AbstractKieMojo {
         boolean genProcesses = generateProcesses == null ? processesExist() : Boolean.parseBoolean(generateProcesses);
         boolean genDecisions = generateDecisions == null ? decisionsExist() : Boolean.parseBoolean(generateDecisions);
 
-        project.addCompileSourceRoot(generatedSources.getPath());
-
         setSystemProperties(properties);
 
         ApplicationGenerator appGen = createApplicationGenerator(genRules, genProcesses, genDecisions);
@@ -140,6 +142,8 @@ public class GenerateModelMojo extends AbstractKieMojo {
         if (!keepSources) {
             deleteDrlFiles();
         }
+
+        project.addCompileSourceRoot(generatedSources.getPath());
     }
 
     private boolean decisionsExist() throws IOException {
@@ -187,7 +191,7 @@ public class GenerateModelMojo extends AbstractKieMojo {
                                                                            outputDirectory,
                                                                            null);
         if (generateRuleUnits) {
-            appGen.withGenerator(IncrementalRuleCodegen.ofPath(kieSourcesDirectory.toPath()))
+            appGen.withGenerator(IncrementalRuleCodegen.ofResources(findAllRules(project.getCompileSourceRoots(), kieSourcesDirectory)))
                     .withKModule(getKModuleModel())
                     .withClassLoader(projectClassLoader);
         }
@@ -204,6 +208,20 @@ public class GenerateModelMojo extends AbstractKieMojo {
         }
 
         return appGen;
+    }
+
+    private Collection<org.kie.api.io.Resource> findAllRules(List<String> compileSourceRoots, File kieSourcesDirectory) throws IOException {
+        List<org.kie.api.io.Resource> resources = new ArrayList<>();
+        for (String compileSourceRoot : compileSourceRoots) {
+            Stream<Path> paths = Files.walk(Paths.get(compileSourceRoot));
+            AnnotatedClassPostProcessor processor = AnnotatedClassPostProcessor.scan(paths);
+            List<org.kie.api.io.Resource> rs = processor.generate();
+            resources.addAll(rs);
+        }
+        Stream<Path> kieSourcePaths = Files.walk(kieSourcesDirectory.toPath());
+        Set<org.kie.api.io.Resource> files = toResources(kieSourcePaths.map(Path::toFile));
+        resources.addAll(files);
+        return resources;
     }
 
     private KieModuleModel getKModuleModel() throws IOException {

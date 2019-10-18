@@ -25,7 +25,7 @@
     <version>8.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>kogito-codegen</artifactId>
-  
+
   <properties>
     <version.org.infinispan.protostream>4.3.0.Alpha8</version.org.infinispan.protostream>
   </properties>
@@ -61,7 +61,7 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    
+
     <!-- marshallers -->
     <dependency>
       <groupId>org.infinispan.protostream</groupId>
