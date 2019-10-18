@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,23 +19,27 @@ import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import org.drools.core.io.impl.ByteArrayResource;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
-import org.kie.kogito.codegen.GeneratedFile;
-import org.kie.kogito.rules.annotations.When;
+
+import static java.util.stream.Collectors.joining;
 
 public class AnnotatedClassPostProcessor {
 
     private final List<CompilationUnit> annotatedUnits;
 
+    public static AnnotatedClassPostProcessor of(Collection<Path> files) {
+        return scan(files.stream());
+    }
+
     public static AnnotatedClassPostProcessor scan(Stream<Path> files) {
         List<CompilationUnit> annotatedUnits = files
                 .peek(System.out::println)
                 .map(p -> {
-            try {
-                return StaticJavaParser.parse(p);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }).filter(cu -> cu.findFirst(AnnotationExpr.class, ann -> ann.getNameAsString().endsWith("When")).isPresent())
+                    try {
+                        return StaticJavaParser.parse(p);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }).filter(cu -> cu.findFirst(AnnotationExpr.class, ann -> ann.getNameAsString().endsWith("When")).isPresent())
                 .collect(Collectors.toList());
 
         return new AnnotatedClassPostProcessor(annotatedUnits);
@@ -53,8 +58,6 @@ public class AnnotatedClassPostProcessor {
         }).collect(Collectors.toList());
     }
 
-
-
     static class UnitGenerator {
 
         private final CompilationUnit unitClass;
@@ -72,30 +75,38 @@ public class AnnotatedClassPostProcessor {
         }
 
         String generate() {
-            return String.format(
+            String imports = unitClass.getImports().stream()
+                    .map(i -> String.format(
+                            "import %s %s;",
+                            (i.isStatic() ? "static" : ""),
+                            i.getName()))
+                    .collect(joining("\n"));
+            String rules = unitClass.getPrimaryType().get().getMethods().stream()
+                    .filter(m -> m.getParameters().stream().flatMap(p -> p.getAnnotations().stream()).anyMatch(a -> a.getNameAsString().endsWith("When")))
+                    .map(this::generateRule).collect(joining());
+            String drl = String.format(
 
                     "package %s;\n" +
                             "unit %s;\n" +
+                            "%s\n" +
                             "%s\n",
 
                     packageName(), // package
                     unitClass.getPrimaryTypeName().get(),
-                    unitClass.getPrimaryType().get().getMethods().stream()
-                            .filter(m -> m.getParameters().stream().flatMap(p -> p.getAnnotations().stream()).anyMatch(a -> a.getNameAsString().endsWith("When")))
-                            .map(this::generateRule).collect(Collectors.joining()));
-
+                    imports,
+                    rules);
+            return drl;
         }
 
         String generateRule(MethodDeclaration method) {
             String methodName = method.getName().asString();
             String patterns = method.getParameters().stream()
                     .map(this::formatPattern)
-                    .collect(Collectors.joining());
+                    .collect(joining());
 
             String methodArgs = method.getParameters().stream()
                     .map(NodeWithSimpleName::getNameAsString)
-                    .collect(Collectors.joining(", "));
-
+                    .collect(joining(", "));
 
             return String.format(
                     "rule %s when\n" +
@@ -117,5 +128,4 @@ public class AnnotatedClassPostProcessor {
                     when.asSingleMemberAnnotationExpr().getMemberValue().asStringLiteralExpr().getValue());
         }
     }
-
 }

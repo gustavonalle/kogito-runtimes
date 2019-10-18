@@ -16,12 +16,14 @@
 package org.kie.kogito.codegen.rules;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.kogito.codegen.GeneratedFile;
 
@@ -113,5 +115,18 @@ public class IncrementalRuleCodegenTest {
         assertEquals(expectedRules +
                              expectedPackages * 2, /* package descriptor for rules + package metadata */
                              actualGeneratedFiles);
+    }
+
+    @Test
+    public void generateFromAnnotatedJava() {
+        List<Resource> resources = AnnotatedClassPostProcessor.of(
+                Collections.singleton(
+                        Paths.get("src/test/java/org/kie/kogito/codegen/rules/myunit/AnnotatedUnit.java"))).generate();
+        IncrementalRuleCodegen incrementalRuleCodegen =
+                IncrementalRuleCodegen.ofResources(resources);
+        incrementalRuleCodegen.setPackageName("com.acme");
+
+        List<GeneratedFile> generatedFiles = incrementalRuleCodegen.withHotReloadMode().generate();
+        assertRules(1, 1, 1, generatedFiles.size());
     }
 }
