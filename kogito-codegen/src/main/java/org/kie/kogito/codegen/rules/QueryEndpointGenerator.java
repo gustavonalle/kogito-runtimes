@@ -38,6 +38,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.Type;
+import org.drools.core.ruleunit.RuleUnitDescription;
 import org.drools.modelcompiler.builder.QueryModel;
 import org.drools.modelcompiler.builder.BodyDeclarationComparator;
 import org.kie.kogito.codegen.FileGenerator;
@@ -51,7 +52,7 @@ import static org.drools.modelcompiler.util.ClassUtil.toNonPrimitiveType;
 
 public class QueryEndpointGenerator implements FileGenerator {
 
-    private final Class<?> ruleUnit;
+    private final RuleUnitDescription ruleUnit;
     private final QueryModel query;
     private final DependencyInjectionAnnotator annotator;
 
@@ -60,14 +61,14 @@ public class QueryEndpointGenerator implements FileGenerator {
     private final String targetCanonicalName;
     private final String generatedFilePath;
 
-    public QueryEndpointGenerator(Class<?> ruleUnit, QueryModel query, DependencyInjectionAnnotator annotator ) {
+    public QueryEndpointGenerator(RuleUnitDescription ruleUnit, QueryModel query, DependencyInjectionAnnotator annotator ) {
         this.ruleUnit = ruleUnit;
         this.query = query;
         this.name = toCamelCase(query.getName());
         this.endpointName = toKebabCase(name);
         this.annotator = annotator;
 
-        this.targetCanonicalName = ruleUnit.getSimpleName() + "Query" + name + "Endpoint";
+        this.targetCanonicalName = ruleUnit.getRuleUnitName() + "Query" + name + "Endpoint";
         this.generatedFilePath = (query.getNamespace() + "." + targetCanonicalName).replace('.', '/') + ".java";
     }
 
@@ -115,7 +116,7 @@ public class QueryEndpointGenerator implements FileGenerator {
 
     private void generateQueryMethod( ClassOrInterfaceDeclaration clazz, String returnType ) {
         MethodDeclaration queryMethod = clazz.getMethodsByName( "executeQuery" ).get(0);
-        queryMethod.getParameter( 0 ).setType(ruleUnit.getCanonicalName() + "DTO");
+        queryMethod.getParameter( 0 ).setType(ruleUnit.getRuleUnitName() + "DTO");
 
         setGeneric(queryMethod.getType(), returnType);
 
@@ -175,7 +176,7 @@ public class QueryEndpointGenerator implements FileGenerator {
     }
 
     private void setUnitGeneric(Type type) {
-        setGeneric(type, ruleUnit);
+        setGeneric(type, ruleUnit.getRuleUnitName());
     }
 
     private void setGeneric(Type type, Class<?> typeArgument) {

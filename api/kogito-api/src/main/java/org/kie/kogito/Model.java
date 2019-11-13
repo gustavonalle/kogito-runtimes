@@ -21,7 +21,7 @@ import java.util.Map;
  * Represents data model type of objects that are usually descriptor of data holders.
  *
  */
-public interface Model {
+public interface Model extends DataContext {
 
     /**
      * Returns model representation as map of members of this model type

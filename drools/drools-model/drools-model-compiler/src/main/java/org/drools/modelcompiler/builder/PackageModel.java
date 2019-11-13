@@ -52,6 +52,7 @@ import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.compiler.DialectCompiletimeRegistry;
 import org.drools.compiler.lang.descr.EntryPointDeclarationDescr;
 import org.drools.core.definitions.InternalKnowledgePackage;
+import org.drools.core.ruleunit.RuleUnitDescription;
 import org.drools.model.DomainClassMetadata;
 import org.drools.model.Global;
 import org.drools.model.Model;
@@ -132,7 +133,7 @@ public class PackageModel {
     private InternalKnowledgePackage pkg;
 
     private final String pkgUUID;
-    private Set<Class<?>> ruleUnits = new HashSet<>();
+    private Set<RuleUnitDescription> ruleUnits = new HashSet<>();
 
     public PackageModel(String name, KnowledgeBuilderConfigurationImpl configuration, boolean isPattern, DialectCompiletimeRegistry dialectCompiletimeRegistry, DRLIdGenerator exprIdGenerator) {
         this("", name, configuration, isPattern, dialectCompiletimeRegistry, exprIdGenerator);
@@ -337,21 +338,21 @@ public class PackageModel {
         return dialectCompiletimeRegistry;
     }
 
-    public void addRuleUnit(Class<?> ruleUnitType) {
+    public void addRuleUnit(RuleUnitDescription ruleUnitType) {
         this.ruleUnits.add(ruleUnitType);
     }
 
-    public Collection<Class<?>> getRuleUnits() {
+    public Collection<RuleUnitDescription> getRuleUnits() {
         return ruleUnits;
     }
 
-    public void addQueryInRuleUnit(Class<?> ruleUnitType, QueryModel query) {
+    public void addQueryInRuleUnit(RuleUnitDescription ruleUnitType, QueryModel query) {
         addRuleUnit(ruleUnitType);
-        queriesByRuleUnit.computeIfAbsent( ruleUnitType.getSimpleName(), k -> new HashSet<>() ).add(query);
+        queriesByRuleUnit.computeIfAbsent( ruleUnitType.getRuleUnitName(), k -> new HashSet<>() ).add(query);
     }
 
-    public Collection<QueryModel> getQueriesInRuleUnit(Class<?> ruleUnitType) {
-        return queriesByRuleUnit.getOrDefault( ruleUnitType.getSimpleName(), Collections.emptySet() );
+    public Collection<QueryModel> getQueriesInRuleUnit(RuleUnitDescription ruleUnitType) {
+        return queriesByRuleUnit.getOrDefault( ruleUnitType.getRuleUnitName(), Collections.emptySet() );
     }
 
     public static class RuleSourceResult {

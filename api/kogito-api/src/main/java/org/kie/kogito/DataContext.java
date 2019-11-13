@@ -1,5 +1,5 @@
-package org.kie;
+package org.kie.kogito;
 
-public class DataContext {
+public interface DataContext {
 
 }

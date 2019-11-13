@@ -17,7 +17,9 @@ package org.kie.kogito.rules;
 
 import java.util.UUID;
 
-public interface RuleUnit<T extends RuleUnitData> {
+import org.kie.kogito.DataContext;
+
+public interface RuleUnit<T extends DataContext> {
 
     default RuleUnitInstance<T> createInstance(T data) {
         return createInstance( data, UUID.randomUUID().toString() );

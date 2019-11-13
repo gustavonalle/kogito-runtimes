@@ -564,7 +564,12 @@ public class DrlxParseUtil {
     }
 
     public static Type classToReferenceType(Class<?> declClass) {
-        Type parsedType = parseType(declClass.getCanonicalName());
+        String canonicalName = declClass.getCanonicalName();
+        return classToReferenceType(canonicalName);
+    }
+
+    public static Type classToReferenceType(String canonicalName) {
+        Type parsedType = parseType(canonicalName);
         return parsedType instanceof PrimitiveType ?
                 ((PrimitiveType) parsedType).toBoxedType() :
                 parsedType;

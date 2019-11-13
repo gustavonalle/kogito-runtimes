@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.rule.impl.RuleImpl;
+import org.kie.kogito.rules.DataStore;
 import org.kie.kogito.rules.RuleUnitData;
 
 public class RuleUnitDescriptionLoader {
@@ -62,10 +63,21 @@ public class RuleUnitDescriptionLoader {
             return null;
         }
         try {
-            return new RuleUnitDescription(pkg, (Class<? extends RuleUnitData>) pkg.getTypeResolver().resolveType(ruleUnit));
+            ReflectiveRuleUnitDescription reflectiveRuleUnitDescription =
+                    new ReflectiveRuleUnitDescription(pkg, (Class<? extends RuleUnitData>) pkg.getTypeResolver().resolveType(ruleUnit));
+            for (RuleUnitVariable unitVarDeclaration : reflectiveRuleUnitDescription.getUnitVarDeclarations()) {
+                pkg.addGlobal(unitVarDeclaration.getName(), unitVarDeclaration.getBoxedVarType());
+            }
+            return reflectiveRuleUnitDescription;
         } catch (final ClassNotFoundException e) {
             nonExistingUnits.add(ruleUnit);
-            return null;
+
+            SimpleRuleUnitDescription simpleRuleUnitDescription = new SimpleRuleUnitDescription(ruleUnit, pkg.getTypeResolver());
+
+            simpleRuleUnitDescription.putDatasourceVar(
+                    "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+
+            return simpleRuleUnitDescription;
         }
     }
 }

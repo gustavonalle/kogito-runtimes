@@ -1,25 +1,27 @@
 package org.drools.core.ruleunit;
 
+import static org.drools.reflective.util.ClassUtils.convertFromPrimitiveType;
+
 public final class RuleUnitVariable {
 
     private final String name;
     private final Class<?> type;
-    private final Class<?> dataSourceType;
+    private final Class<?> dataSourceParameterType;
+    private final Class<?> boxedVarType;
 
-    public RuleUnitVariable(String name, Class<?> type) {
+    public RuleUnitVariable(String name, Class<?> type, Class<?> dataSourceParameterType) {
         this.name = name;
         this.type = type;
-        this.dataSourceType = null;
+        this.dataSourceParameterType = dataSourceParameterType;
+        this.boxedVarType = convertFromPrimitiveType(type);
     }
 
-    public RuleUnitVariable(String name, Class<?> type, Class<?> dataSourceType) {
-        this.name = name;
-        this.type = type;
-        this.dataSourceType = dataSourceType;
+    public RuleUnitVariable(String name, Class<?> type) {
+        this(name, type, null);
     }
 
     public boolean isDataSource() {
-        return dataSourceType != null;
+        return dataSourceParameterType != null;
     }
 
     public String getName() {
@@ -30,7 +32,11 @@ public final class RuleUnitVariable {
         return type;
     }
 
-    public Class<?> getDataSourceType() {
-        return dataSourceType;
+    public Class<?> getDataSourceParameterType() {
+        return dataSourceParameterType;
+    }
+
+    public Class<?> getBoxedVarType() {
+        return boxedVarType;
     }
 }

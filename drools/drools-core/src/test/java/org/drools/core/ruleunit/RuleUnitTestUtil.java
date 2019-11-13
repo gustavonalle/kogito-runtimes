@@ -27,8 +27,8 @@ public final class RuleUnitTestUtil {
 
     public static TypeResolver createTypeResolver() {
         return new ClassTypeResolver(Collections.emptySet(),
-                RuleUnitDescription.class.getClassLoader(),
-                RuleUnitDescription.class.getPackage().getName());
+                ReflectiveRuleUnitDescription.class.getClassLoader(),
+                ReflectiveRuleUnitDescription.class.getPackage().getName());
     }
 
     public static InternalKnowledgePackage createPackage(String name) {

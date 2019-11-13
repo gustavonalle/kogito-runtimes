@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.drools.core.ruleunit.RuleUnitDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +42,11 @@ public class PackageSources {
 
     private Map<String, String> modelsByUnit = new HashMap<>();
 
-    private Collection<Class<?>> ruleUnits;
+    private Collection<RuleUnitDescription> ruleUnits;
 
     private String rulesFileName;
 
-    private Map<Class<?>, Collection<QueryModel>> queries;
+    private Map<String, Collection<QueryModel>> queries;
 
     public static PackageSources dumpSources(PackageModel pkgModel, boolean oneClassPerRule) {
         PackageSources sources = new PackageSources();
@@ -81,8 +82,8 @@ public class PackageSources {
         sources.ruleUnits = pkgModel.getRuleUnits();
         if (!sources.ruleUnits.isEmpty()) {
             sources.queries = new HashMap<>();
-            for (Class<?> ruleUnit : sources.ruleUnits) {
-                sources.queries.put( ruleUnit, pkgModel.getQueriesInRuleUnit( ruleUnit ) );
+            for (RuleUnitDescription ruleUnit : sources.ruleUnits) {
+                sources.queries.put( ruleUnit.getRuleUnitName(), pkgModel.getQueriesInRuleUnit( ruleUnit ) );
             }
         }
 
@@ -122,7 +123,7 @@ public class PackageSources {
         return domainClassSource;
     }
 
-    public Collection<Class<?>> getRuleUnits() {
+    public Collection<RuleUnitDescription> getRuleUnits() {
         return ruleUnits;
     }
 
@@ -130,7 +131,7 @@ public class PackageSources {
         return rulesFileName;
     }
 
-    public Collection<QueryModel> getQueriesInRuleUnit( Class<?> ruleUnit ) {
+    public Collection<QueryModel> getQueriesInRuleUnit( String ruleUnit ) {
         return queries.get( ruleUnit );
     }
 

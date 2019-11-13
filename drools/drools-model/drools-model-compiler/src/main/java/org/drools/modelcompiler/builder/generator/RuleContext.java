@@ -31,6 +31,7 @@ import org.drools.compiler.lang.descr.RuleDescr;
 import org.drools.core.addon.TypeResolver;
 import org.drools.core.ruleunit.RuleUnitDescription;
 import org.drools.core.ruleunit.RuleUnitDescriptionLoader;
+import org.drools.core.ruleunit.RuleUnitVariable;
 import org.drools.core.util.Bag;
 import org.drools.modelcompiler.builder.PackageModel;
 import org.drools.modelcompiler.builder.errors.UnknownRuleUnitError;
@@ -136,9 +137,9 @@ public class RuleContext {
     private void processUnitData() {
         findUnitDescr();
         if (ruleUnitDescr != null) {
-            for (Map.Entry<String, Method> unitVar : ruleUnitDescr.getUnitVarAccessors().entrySet()) {
-                String unitVarName = unitVar.getKey();
-                java.lang.reflect.Type type = unitVar.getValue().getGenericReturnType();
+            for (RuleUnitVariable unitVar : ruleUnitDescr.getUnitVarDeclarations()) {
+                String unitVarName = unitVar.getName();
+                java.lang.reflect.Type type = unitVar.getDataSourceParameterType();
                 Class<?> rawClass = toRawClass( type );
                 Class<?> resolvedType = ruleUnitDescr.getDatasourceType( unitVarName ).orElse( rawClass );
 
@@ -216,7 +217,7 @@ public class RuleContext {
     }
 
     public Class<?> getRuleUnitVarType(String name) {
-        return ruleUnitVars.get( name );
+        return ruleUnitVars.getOrDefault( name, Object.class );
     }
 
     public DeclarationSpec addDeclaration(String bindingId, Class<?> declarationClass) {

@@ -16,118 +16,72 @@
 
 package org.drools.core.ruleunit;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
-import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.rule.EntryPointId;
+import org.drools.core.addon.TypeResolver;
 import org.kie.kogito.rules.DataSource;
-import org.kie.kogito.rules.RuleUnit;
 import org.kie.kogito.rules.RuleUnitData;
 
-import static org.drools.reflective.util.ClassUtils.convertFromPrimitiveType;
-import static org.drools.reflective.util.ClassUtils.getter2property;
+public class SimpleRuleUnitDescription extends AbstractRuleUnitDescription {
 
-public class SimpleRuleUnitDescription implements RuleUnitDescription {
-    private final Class<? extends RuleUnitData> ruleUnitClass;
+    private final TypeResolver typeResolver;
+    private final String name;
+    private final String packageName;
+    private final String simpleName;
 
-    private final Map<String, String> datasources = new HashMap<>();
-    private final Map<String, Class<?>> datasourceTypes = new HashMap<>();
-
-    private final Map<String, Method> varAccessors = new HashMap<>();
-    private final Map<String, Class<?>> globals = new HashMap<>();
-
-    public SimpleRuleUnitDescription(InternalKnowledgePackage pkg, Class<? extends RuleUnitData> ruleUnitClass ) {
-        this.ruleUnitClass = ruleUnitClass;
-        indexUnitVars();
-    }
-
-    public Map<String, Class<?>> getGlobals() {
-        return globals;
+    public SimpleRuleUnitDescription(String name, TypeResolver typeResolver) {
+        this.typeResolver = typeResolver;
+        this.name = name;
+        this.simpleName = name.substring(name.lastIndexOf('.') + 1);
+        this.packageName = name.substring(0, name.lastIndexOf('.'));
     }
 
     @Override
-    public Class<? extends RuleUnitData> getRuleUnitClass() {
-        return ruleUnitClass;
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    @Override
+    public String getPackageName() {
+        return packageName;
     }
 
     @Override
     public String getRuleUnitName() {
-        return ruleUnitClass.getName();
+        return name;
     }
 
-    @Override
-    public Optional<EntryPointId> getEntryPointId(String name) {
-        return Optional.ofNullable( datasources.get( name ) ).map( ds -> new EntryPointId( name ) );
+    public void putSimpleVar(String name, String varTypeFQCN) {
+        Class<?> varType = uncheckedLoadClass(varTypeFQCN);
+        putSimpleVar(name, varType);
     }
 
-    @Override
-    public Optional<Class<?>> getDatasourceType(String name) {
-        return Optional.ofNullable( datasourceTypes.get( name ) );
+    public void putDatasourceVar(String name, String datasourceTypeFQCN, String datasourceParameterTypeFQCN) {
+        putDatasourceVar(
+                name,
+                uncheckedLoadClass(datasourceTypeFQCN),
+                uncheckedLoadClass(datasourceParameterTypeFQCN));
     }
 
-    @Override
-    public Optional<Class<?>> getVarType(String name) {
-        return Optional.ofNullable( varAccessors.get( name ) ).map( Method::getReturnType );
+    public void putSimpleVar(String name, Class<?> varType) {
+        putRuleUnitVariable(new RuleUnitVariable(name, varType));
     }
 
-    @Override
-    public boolean hasVar(String name) {
-        return varAccessors.containsKey( name );
+    public void putDatasourceVar(String name, Class<?> datasourceType, Class<?> datasourceParameterType) {
+        putRuleUnitVariable(new RuleUnitVariable(name, datasourceType, datasourceParameterType));
     }
 
-    @Override
-    public Collection<String> getUnitVars() {
-        return varAccessors.keySet();
-    }
-
-    @Override
-    public Map<String, Method> getUnitVarAccessors() {
-        return varAccessors;
-    }
-
-    @Override
-    public boolean hasDataSource(String name) {
-        return datasources.containsKey( name );
-    }
-
-    @Override
-    public Object getValue(RuleUnitData ruleUnit, String identifier) {
-        Method m = varAccessors.get(identifier);
-        if (m != null) {
-            try {
-                return m.invoke( ruleUnit );
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException( e );
-            }
+    private Class<?> uncheckedLoadClass(String fqcn) {
+        try {
+            return typeResolver.resolveType(fqcn);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
         }
-        return null;
-    }
-
-    private void indexUnitVars() {
-        for (Method m : ruleUnitClass.getMethods()) {
-            if ( m.getDeclaringClass() != RuleUnit.class && m.getParameterCount() == 0 ) {
-                String id = getter2property(m.getName());
-                if (id != null && !id.equals( "class" )) {
-                    indexUnitAccessor( m, id );
-                }
-            }
-        }
-    }
-
-    private void indexUnitAccessor( Method m, String id ) {
-        datasources.put( id, m.getName() );
-        varAccessors.put( id, m );
-
-        Class<?> unitVarType = getUnitVarType(m);
-        datasourceTypes.put( id, unitVarType );
-        globals.put( id, convertFromPrimitiveType( m.getReturnType() ) );
     }
 
     private Class<?> getUnitVarType(Method m) {
@@ -135,10 +89,10 @@ public class SimpleRuleUnitDescription implements RuleUnitDescription {
         if (returnClass.isArray()) {
             return returnClass.getComponentType();
         }
-        if (DataSource.class.isAssignableFrom( returnClass )) {
+        if (DataSource.class.isAssignableFrom(returnClass)) {
             return getParametricType(m);
         }
-        if (Iterable.class.isAssignableFrom( returnClass )) {
+        if (Iterable.class.isAssignableFrom(returnClass)) {
             return getParametricType(m);
         }
         return returnClass;
@@ -146,8 +100,8 @@ public class SimpleRuleUnitDescription implements RuleUnitDescription {
 
     private Class<?> getParametricType(Method m) {
         Type returnType = m.getGenericReturnType();
-        return  returnType instanceof ParameterizedType ?
-                (Class<?>) ( (ParameterizedType) returnType ).getActualTypeArguments()[0] :
+        return returnType instanceof ParameterizedType ?
+                (Class<?>) ((ParameterizedType) returnType).getActualTypeArguments()[0] :
                 Object.class;
     }
 }

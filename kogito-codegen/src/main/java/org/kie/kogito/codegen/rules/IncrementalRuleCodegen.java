@@ -39,6 +39,7 @@ import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.compiler.kproject.models.KieModuleModelImpl;
 import org.drools.core.io.impl.FileSystemResource;
+import org.drools.core.ruleunit.RuleUnitDescription;
 import org.drools.modelcompiler.builder.KieModuleModelMethod;
 import org.drools.modelcompiler.builder.ModelBuilderImpl;
 import org.drools.modelcompiler.builder.ModelSourceClass;
@@ -204,16 +205,16 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
                 addGeneratedFile( generatedFiles, pkgSources.getReflectConfigSource(), "../../classes/" );
             }
 
-            Collection<Class<?>> ruleUnits = pkgSources.getRuleUnits();
+            Collection<RuleUnitDescription> ruleUnits = pkgSources.getRuleUnits();
             if (!ruleUnits.isEmpty()) {
                 hasRuleUnits = true;
-                for (Class<?> ruleUnit : ruleUnits) {
+                for (RuleUnitDescription ruleUnit : ruleUnits) {
                     RuleUnitGenerator ruSource = new RuleUnitGenerator(ruleUnit, pkgSources.getRulesFileName())
                             .withDependencyInjection(annotator)
-                            .withQueries( pkgSources.getQueriesInRuleUnit( ruleUnit ) );
+                            .withQueries( pkgSources.getQueriesInRuleUnit( ruleUnit.getRuleUnitName() ) );
                     moduleGenerator.addRuleUnit(ruSource);
-                    unitsMap.put(ruleUnit, ruSource.targetCanonicalName());
-                    addUnitConfToKieModule(ruleUnit);
+//                    unitsMap.put(ruleUnit, ruSource.targetCanonicalName());
+//                    addUnitConfToKieModule(ruleUnit);
                 }
             }
         }
@@ -230,13 +231,13 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
                 RuleUnitInstanceGenerator ruleUnitInstance = ruleUnit.instance(contextClassLoader);
                 generatedFiles.add( ruleUnitInstance.generateFile(GeneratedFile.Type.RULE) );
 
-                List<QueryEndpointGenerator> queries = ruleUnit.queries();
-                if (!queries.isEmpty()) {
-                    generatedFiles.add( new RuleUnitDTOSourceClass( ruleUnit.getRuleUnitClass() ).generateFile(GeneratedFile.Type.RULE) );
-                    for (QueryEndpointGenerator query : queries) {
-                        generatedFiles.add( query.generateFile( GeneratedFile.Type.QUERY ) );
-                    }
-                }
+//                List<QueryEndpointGenerator> queries = ruleUnit.queries();
+//                if (!queries.isEmpty()) {
+//                    generatedFiles.add( new RuleUnitDTOSourceClass( ruleUnit.getRuleUnitClass() ).generateFile(GeneratedFile.Type.RULE) );
+//                    for (QueryEndpointGenerator query : queries) {
+//                        generatedFiles.add( query.generateFile( GeneratedFile.Type.QUERY ) );
+//                    }
+//                }
             }
         } else if (annotator != null && !hotReloadMode) {
             for (KieBaseModel kBaseModel : kieModuleModel.getKieBaseModels().values()) {

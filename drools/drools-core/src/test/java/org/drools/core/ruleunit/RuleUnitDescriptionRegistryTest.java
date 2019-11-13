@@ -46,7 +46,7 @@ public class RuleUnitDescriptionRegistryTest {
         loadDescriptionIntoRegistry(testRuleUnit.getClass());
         final RuleUnitDescription description = registry.getDescription(testRuleUnit);
         assertThat(description).isNotNull();
-        assertThat(description.getRuleUnitClass()).isEqualTo(testRuleUnit.getClass());
+        assertThat(description.getRuleUnitName()).isEqualTo(testRuleUnit.getClass().getCanonicalName());
     }
 
     @Test
@@ -57,7 +57,7 @@ public class RuleUnitDescriptionRegistryTest {
         loadDescriptionIntoRegistry(TestRuleUnit.class);
         description = registry.getDescription(TestRuleUnit.class.getName());
         assertThat(description).isPresent();
-        assertThat(description.get().getRuleUnitClass()).isEqualTo(TestRuleUnit.class);
+        assertThat(description.get().getRuleUnitName()).isEqualTo(TestRuleUnit.class.getCanonicalName());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class RuleUnitDescriptionRegistryTest {
         loadDescriptionIntoRegistry(TestRuleUnit.class);
         description = registry.getDescription(ruleImpl);
         assertThat(description).isPresent();
-        assertThat(description.get().getRuleUnitClass()).isEqualTo(TestRuleUnit.class);
+        assertThat(description.get().getRuleUnitName()).isEqualTo(TestRuleUnit.class.getCanonicalName());
     }
 
     @Test
@@ -104,6 +104,6 @@ public class RuleUnitDescriptionRegistryTest {
     private void assertDescriptionIsLoaded(final Class<? extends RuleUnitData> ruleUnitClass) {
         final Optional<RuleUnitDescription> description = registry.getDescription(ruleUnitClass.getName());
         assertThat(description).isPresent();
-        assertThat(description.get().getRuleUnitClass()).isEqualTo(ruleUnitClass);
+        assertThat(description.get().getRuleUnitName()).isEqualTo(ruleUnitClass.getCanonicalName());
     }
 }

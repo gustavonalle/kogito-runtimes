@@ -74,7 +74,7 @@ public class RuleUnitDescriptionLoaderTest {
         final Optional<RuleUnitDescription> description2 = loader.getDescription(ruleImpl);
         assertThat(description).isPresent();
         assertThat(description.get()).isSameAs(description2.get());
-        assertThat(description.get().getRuleUnitClass()).isEqualTo(TestRuleUnit.class);
+        assertThat(description.get().getRuleUnitName()).isEqualTo(TestRuleUnit.class.getCanonicalName());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class RuleUnitDescriptionLoaderTest {
         final RuleUnitDescription description = assertDescriptionIsLoaded();
         final RuleUnitDescription description2 = assertDescriptionIsLoaded();
         assertThat(description).isSameAs(description2);
-        assertThat(description.getRuleUnitClass()).isEqualTo(TestRuleUnit.class);
+        assertThat(description.getRuleUnitName()).isEqualTo(TestRuleUnit.class.getCanonicalName());
     }
 
     private RuleUnitDescription assertDescriptionIsLoaded() {
