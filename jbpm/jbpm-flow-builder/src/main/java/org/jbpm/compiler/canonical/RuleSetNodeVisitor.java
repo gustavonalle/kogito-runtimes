@@ -233,7 +233,7 @@ public class RuleSetNodeVisitor extends AbstractVisitor {
                 actionBody.addStatement(
                         injectData(isCollectionType(v),
                                    new MethodCallExpr(new NameExpr("model"), "get" + StringUtils.capitalize(v.getName())),
-                                   "append",
+                                   "add",
                                    new NameExpr(v.getName())));
             }
         }
@@ -422,7 +422,7 @@ public class RuleSetNodeVisitor extends AbstractVisitor {
 
     private VariableDeclarationExpr declareErasedDataSource(Expression fieldAccessor) {
         return new VariableDeclarationExpr(new VariableDeclarator()
-                                                   .setType(DataStream.class.getCanonicalName())
+                                                   .setType(DataStore.class.getCanonicalName())
                                                    .setName("ds")
                                                    .setInitializer(fieldAccessor));
     }

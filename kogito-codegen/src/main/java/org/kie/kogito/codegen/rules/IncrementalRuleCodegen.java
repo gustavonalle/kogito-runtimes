@@ -186,6 +186,8 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         GeneratedRuleUnitDescription simpleRuleUnitDescription =
                 new GeneratedRuleUnitDescription("ruletask.Example", pkg.getTypeResolver());
         simpleRuleUnitDescription.putDatasourceVar(
+                "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+        simpleRuleUnitDescription.putDatasourceVar(
                 "manyPersons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
         simpleRuleUnitDescription.putDatasourceVar(
                 "singlePerson", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
@@ -208,8 +210,8 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 //        Map<Class<?>, String> unitsMap = new HashMap<>();
 
         ArrayList<GeneratedFile> generatedFiles = new ArrayList<>();
-        GeneratedRuleUnitTypeWriter ruleUnitTypeWriter = new GeneratedRuleUnitTypeWriter(simpleRuleUnitDescription);
-        generatedFiles.add(new GeneratedFile(GeneratedFile.Type.RULE, ruleUnitTypeWriter.getName(), ruleUnitTypeWriter.getSource()));
+//        GeneratedRuleUnitTypeWriter ruleUnitTypeWriter = new GeneratedRuleUnitTypeWriter(simpleRuleUnitDescription);
+//        generatedFiles.add(new GeneratedFile(GeneratedFile.Type.RULE, ruleUnitTypeWriter.getName(), ruleUnitTypeWriter.getSource()));
 
         Map<String, String> modelsByUnit = new HashMap<>();
 
