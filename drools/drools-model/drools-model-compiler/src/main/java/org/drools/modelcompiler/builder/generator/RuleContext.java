@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.type.Type;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.compiler.BaseKnowledgeBuilderResultImpl;
 import org.drools.compiler.lang.descr.AnnotationDescr;
@@ -44,10 +43,7 @@ import org.kie.kogito.rules.DataSource;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-
-import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.classToReferenceType;
 import static org.drools.modelcompiler.builder.generator.QueryGenerator.toQueryArg;
-import static org.drools.modelcompiler.util.ClassUtil.toRawClass;
 
 public class RuleContext {
 
@@ -140,13 +136,12 @@ public class RuleContext {
             for (RuleUnitVariable unitVar : ruleUnitDescr.getUnitVarDeclarations()) {
                 String unitVarName = unitVar.getName();
                 Class<?> resolvedType = unitVar.isDataSource() ? unitVar.getDataSourceParameterType() : unitVar.getType();
-                Class<?> rawClass = null == unitVar.getDataSourceParameterType() ? Object.class : unitVar.getDataSourceParameterType();
+//                Class<?> rawClass = null == unitVar.getDataSourceParameterType() ? Object.class : unitVar.getDataSourceParameterType();
 
-                Type declType = classToReferenceType( rawClass );
                 addRuleUnitVar( unitVarName, resolvedType );
 
-                getPackageModel().addGlobal( unitVarName, rawClass );
-                if ( DataSource.class.isAssignableFrom( rawClass ) ) {
+                getPackageModel().addGlobal( unitVarName, unitVar.getType() );
+                if ( DataSource.class.isAssignableFrom( unitVar.getType() ) ) {
                     getPackageModel().addEntryPoint( unitVarName );
                 }
             }

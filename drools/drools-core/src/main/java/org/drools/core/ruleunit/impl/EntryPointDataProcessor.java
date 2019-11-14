@@ -18,6 +18,7 @@ package org.drools.core.ruleunit.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.common.InternalFactHandle;
@@ -36,6 +37,7 @@ public class EntryPointDataProcessor implements DataProcessor {
     private final Map<DataHandle, InternalFactHandle> handles = new HashMap<>();
 
     public EntryPointDataProcessor( EntryPoint entryPoint ) {
+        Objects.requireNonNull(entryPoint, "Must give a non-null EntryPoint");
         this.entryPoint = entryPoint;
     }
 

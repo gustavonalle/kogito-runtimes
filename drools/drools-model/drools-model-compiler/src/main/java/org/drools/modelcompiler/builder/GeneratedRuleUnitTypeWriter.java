@@ -17,15 +17,13 @@
 
 package org.drools.modelcompiler.builder;
 
+import java.util.Collections;
+
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.Type;
 import org.drools.core.ruleunit.GeneratedRuleUnitDescription;
 import org.drools.core.ruleunit.RuleUnitVariable;
 import org.kie.kogito.rules.RuleUnitData;
@@ -33,18 +31,16 @@ import org.kie.kogito.rules.RuleUnitData;
 public class GeneratedRuleUnitTypeWriter {
 
     private final GeneratedRuleUnitDescription ruleUnitDescription;
-    protected final PackageModel pkgModel;
 
-    public GeneratedRuleUnitTypeWriter(GeneratedRuleUnitDescription ruleUnitDescription, PackageModel pkgModel) {
+    public GeneratedRuleUnitTypeWriter(GeneratedRuleUnitDescription ruleUnitDescription) {
         this.ruleUnitDescription = ruleUnitDescription;
-        this.pkgModel = pkgModel;
     }
 
     public String getSource() {
         return JavaParserCompiler.toPojoSource(
-                pkgModel.getName(),
-                pkgModel.getImports(),
-                pkgModel.getStaticImports(),
+                ruleUnitDescription.getPackageName(),
+                Collections.emptyList(),
+                Collections.emptyList(),
                 classOrInterfaceDeclaration());
     }
 
@@ -76,7 +72,7 @@ public class GeneratedRuleUnitTypeWriter {
     }
 
     public String getName() {
-        return pkgModel.getPathName() + "/" + ruleUnitDescription.getSimpleName() + ".java";
+        return ruleUnitDescription.getPackageName().replace('.', '/') + "/" + ruleUnitDescription.getSimpleName() + ".java";
     }
 
     public String getClassName() {

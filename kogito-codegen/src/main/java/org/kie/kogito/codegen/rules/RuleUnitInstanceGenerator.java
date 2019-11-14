@@ -113,7 +113,7 @@ public class RuleUnitInstanceGenerator implements FileGenerator {
                             .addArgument(new ObjectCreationExpr(null, StaticJavaParser.parseClassOrInterfaceType( EntryPointDataProcessor.class.getName() ), NodeList.nodeList(
                                     new MethodCallExpr(
                                     new NameExpr("runtime"), "getEntryPoint",
-                                    NodeList.nodeList(new StringLiteralExpr( getEntryPointName( m.getDataSourceParameterType(), propertyName ) ))))));
+                                    NodeList.nodeList(new StringLiteralExpr( propertyName /* fixme: lookup entry point config */ ))))));
 //                            new MethodReferenceExpr().setScope(new NameExpr("runtime")).setIdentifier("insert"));
 
                     methodBlock.addStatement(drainInto);
@@ -132,6 +132,7 @@ public class RuleUnitInstanceGenerator implements FileGenerator {
         return methodDeclaration;
     }
 
+    // TODO move this to RuleUnit class data model
     private String getEntryPointName( Class<?> typeClass, String propertyName ) {
         try {
             Field dataSourceField = typeClass.getDeclaredField( propertyName );

@@ -51,6 +51,10 @@ public class RuleUnitDescriptionLoader {
         return getDescription(rule.getRuleUnitClassName());
     }
 
+    public void registerRuleUnitDescription(GeneratedRuleUnitDescription generatedRuleUnitDescription) {
+        ruleUnitDescriptionsCache.put(generatedRuleUnitDescription.getRuleUnitName(), generatedRuleUnitDescription);
+    }
+
     public Optional<RuleUnitDescription> getDescription(String unitClassName) {
         final Optional<RuleUnitDescription> result = Optional.ofNullable(unitClassName)
                 .map(name -> ruleUnitDescriptionsCache.computeIfAbsent(name, this::findDescription));
@@ -63,21 +67,10 @@ public class RuleUnitDescriptionLoader {
             return null;
         }
         try {
-            ReflectiveRuleUnitDescription reflectiveRuleUnitDescription =
-                    new ReflectiveRuleUnitDescription(pkg, (Class<? extends RuleUnitData>) pkg.getTypeResolver().resolveType(ruleUnit));
-            for (RuleUnitVariable unitVarDeclaration : reflectiveRuleUnitDescription.getUnitVarDeclarations()) {
-                pkg.addGlobal(unitVarDeclaration.getName(), unitVarDeclaration.getBoxedVarType());
-            }
-            return reflectiveRuleUnitDescription;
+            return new ReflectiveRuleUnitDescription(pkg, (Class<? extends RuleUnitData>) pkg.getTypeResolver().resolveType(ruleUnit));
         } catch (final ClassNotFoundException e) {
             nonExistingUnits.add(ruleUnit);
-
-            GeneratedRuleUnitDescription simpleRuleUnitDescription = new GeneratedRuleUnitDescription(ruleUnit, pkg.getTypeResolver());
-
-            simpleRuleUnitDescription.putDatasourceVar(
-                    "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
-
-            return simpleRuleUnitDescription;
+            return null;
         }
     }
 }

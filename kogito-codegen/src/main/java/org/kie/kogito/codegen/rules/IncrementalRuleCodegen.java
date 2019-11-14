@@ -36,10 +36,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
+import org.drools.compiler.compiler.PackageRegistry;
 import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.compiler.kproject.models.KieModuleModelImpl;
+import org.drools.compiler.lang.descr.PackageDescr;
 import org.drools.core.io.impl.FileSystemResource;
+import org.drools.core.ruleunit.GeneratedRuleUnitDescription;
 import org.drools.core.ruleunit.RuleUnitDescription;
+import org.drools.modelcompiler.builder.GeneratedRuleUnitTypeWriter;
 import org.drools.modelcompiler.builder.KieModuleModelMethod;
 import org.drools.modelcompiler.builder.ModelBuilderImpl;
 import org.drools.modelcompiler.builder.ModelSourceClass;
@@ -64,6 +68,7 @@ import org.kie.kogito.codegen.rules.config.RuleConfigGenerator;
 import org.kie.kogito.conf.Clock;
 import org.kie.kogito.conf.EventProcessing;
 import org.kie.kogito.conf.SessionsPool;
+import org.kie.kogito.rules.DataStore;
 
 import static com.github.javaparser.StaticJavaParser.parse;
 import static org.drools.compiler.kie.builder.impl.KieBuilderImpl.setDefaultsforEmptyKieModule;
@@ -177,19 +182,35 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 
         ModelBuilderImpl modelBuilder = new ModelBuilderImpl( configuration, dummyReleaseId, true, hotReloadMode );
 
+        PackageRegistry pkg = modelBuilder.getOrCreatePackageRegistry(new PackageDescr("ruletask"));
+        GeneratedRuleUnitDescription simpleRuleUnitDescription =
+                new GeneratedRuleUnitDescription("ruletask.Example", pkg.getTypeResolver());
+        simpleRuleUnitDescription.putDatasourceVar(
+                "manyPersons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+        simpleRuleUnitDescription.putDatasourceVar(
+                "singlePerson", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+        simpleRuleUnitDescription.putDatasourceVar(
+                "singleString", DataStore.class.getCanonicalName(), "java.lang.String");
+
+        pkg.getPackage().getRuleUnitDescriptionLoader().registerRuleUnitDescription(simpleRuleUnitDescription);
+
+
         CompositeKnowledgeBuilder batch = modelBuilder.batch();
         resources.forEach(f -> batch.add(f, f.getResourceType()));
         batch.build();
 
         if (modelBuilder.hasErrors()) {
             ApplicationGenerator.logger.error( modelBuilder.getErrors().toString() );
-            return Collections.emptyList();
+            throw new Error("Compilation failed");
         }
 
         boolean hasRuleUnits = false;
-        Map<Class<?>, String> unitsMap = new HashMap<>();
+//        Map<Class<?>, String> unitsMap = new HashMap<>();
 
         ArrayList<GeneratedFile> generatedFiles = new ArrayList<>();
+        GeneratedRuleUnitTypeWriter ruleUnitTypeWriter = new GeneratedRuleUnitTypeWriter(simpleRuleUnitDescription);
+        generatedFiles.add(new GeneratedFile(GeneratedFile.Type.RULE, ruleUnitTypeWriter.getName(), ruleUnitTypeWriter.getSource()));
+
         Map<String, String> modelsByUnit = new HashMap<>();
 
         for (PackageSources pkgSources : modelBuilder.getPackageSources()) {
@@ -215,7 +236,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
                             .withQueries( pkgSources.getQueriesInRuleUnit( ruleUnit.getRuleUnitName() ) );
                     moduleGenerator.addRuleUnit(ruSource);
 //                    unitsMap.put(ruleUnit, ruSource.targetCanonicalName());
-//                    addUnitConfToKieModule(ruleUnit);
+                    addUnitConfToKieModule(ruleUnit);
                 }
             }
         }
@@ -282,26 +303,26 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         return generatedFiles;
     }
 
-    private void addUnitConfToKieModule( Class<?> ruleUnit ) {
-        KieBaseModel unitKieBaseModel = kieModuleModel.newKieBaseModel( ruleUnit2KieBaseName(ruleUnit.getName()) );
+    private void addUnitConfToKieModule( RuleUnitDescription ruleUnit ) {
+        KieBaseModel unitKieBaseModel = kieModuleModel.newKieBaseModel( ruleUnit2KieBaseName(ruleUnit.getRuleUnitName()) );
         unitKieBaseModel.setEventProcessingMode(org.kie.api.conf.EventProcessingOption.CLOUD);
-        unitKieBaseModel.addPackage(ruleUnit.getPackage().getName());
+        unitKieBaseModel.addPackage(ruleUnit.getPackageName());
 
-        SessionsPool sessionsPoolAnn = ruleUnit.getAnnotation( SessionsPool.class );
-        if (sessionsPoolAnn != null && sessionsPoolAnn.value() > 0) {
-            unitKieBaseModel.setSessionsPool( SessionsPoolOption.get( sessionsPoolAnn.value() ) );
-        }
-        EventProcessing eventAnn = ruleUnit.getAnnotation( EventProcessing.class );
-        if (eventAnn != null && eventAnn.value() == EventProcessing.Type.STREAM) {
-            unitKieBaseModel.setEventProcessingMode( EventProcessingOption.STREAM );
-        }
+//        SessionsPool sessionsPoolAnn = ruleUnit.getAnnotation( SessionsPool.class );
+//        if (sessionsPoolAnn != null && sessionsPoolAnn.value() > 0) {
+//            unitKieBaseModel.setSessionsPool( SessionsPoolOption.get( sessionsPoolAnn.value() ) );
+//        }
+//        EventProcessing eventAnn = ruleUnit.getAnnotation( EventProcessing.class );
+//        if (eventAnn != null && eventAnn.value() == EventProcessing.Type.STREAM) {
+//            unitKieBaseModel.setEventProcessingMode( EventProcessingOption.STREAM );
+//        }
 
-        KieSessionModel unitKieSessionModel = unitKieBaseModel.newKieSessionModel( ruleUnit2KieSessionName(ruleUnit.getName()) );
+        KieSessionModel unitKieSessionModel = unitKieBaseModel.newKieSessionModel( ruleUnit2KieSessionName(ruleUnit.getRuleUnitName()) );
         unitKieSessionModel.setType( KieSessionModel.KieSessionType.STATEFUL );
-        Clock clockAnn = ruleUnit.getAnnotation( Clock.class );
-        if (clockAnn != null && clockAnn.value() == Clock.Type.PSEUDO) {
-            unitKieSessionModel.setClockType( ClockTypeOption.PSEUDO );
-        }
+//        Clock clockAnn = ruleUnit.getAnnotation( Clock.class );
+//        if (clockAnn != null && clockAnn.value() == Clock.Type.PSEUDO) {
+//            unitKieSessionModel.setClockType( ClockTypeOption.PSEUDO );
+//        }
     }
 
     private String ruleUnit2KieBaseName(String ruleUnit) {
