@@ -22,19 +22,20 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.drools.core.addon.TypeResolver;
 import org.kie.kogito.rules.DataSource;
 import org.kie.kogito.rules.RuleUnitData;
 
-public class SimpleRuleUnitDescription extends AbstractRuleUnitDescription {
+public class GeneratedRuleUnitDescription extends AbstractRuleUnitDescription {
 
     private final TypeResolver typeResolver;
     private final String name;
     private final String packageName;
     private final String simpleName;
 
-    public SimpleRuleUnitDescription(String name, TypeResolver typeResolver) {
+    public GeneratedRuleUnitDescription(String name, TypeResolver typeResolver) {
         this.typeResolver = typeResolver;
         this.name = name;
         this.simpleName = name.substring(name.lastIndexOf('.') + 1);
@@ -49,6 +50,11 @@ public class SimpleRuleUnitDescription extends AbstractRuleUnitDescription {
     @Override
     public String getPackageName() {
         return packageName;
+    }
+
+    @Override
+    public Optional<GeneratedRuleUnitDescription> asGeneratedRuleUnitDescription() {
+        return Optional.of(this);
     }
 
     @Override

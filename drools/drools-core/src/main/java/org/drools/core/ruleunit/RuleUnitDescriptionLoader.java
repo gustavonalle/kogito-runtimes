@@ -72,7 +72,7 @@ public class RuleUnitDescriptionLoader {
         } catch (final ClassNotFoundException e) {
             nonExistingUnits.add(ruleUnit);
 
-            SimpleRuleUnitDescription simpleRuleUnitDescription = new SimpleRuleUnitDescription(ruleUnit, pkg.getTypeResolver());
+            GeneratedRuleUnitDescription simpleRuleUnitDescription = new GeneratedRuleUnitDescription(ruleUnit, pkg.getTypeResolver());
 
             simpleRuleUnitDescription.putDatasourceVar(
                     "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");

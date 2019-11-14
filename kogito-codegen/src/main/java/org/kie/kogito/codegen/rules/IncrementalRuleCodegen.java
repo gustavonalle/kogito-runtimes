@@ -196,6 +196,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
             pkgSources.getModelsByUnit().forEach( (unit, model) -> modelsByUnit.put( ruleUnit2KieBaseName( unit ), model ) );
 
             addGeneratedFiles( generatedFiles, pkgSources.getPojoSources() );
+            addGeneratedFiles( generatedFiles, pkgSources.getGeneratedRuleUnits() );
             addGeneratedFiles( generatedFiles, pkgSources.getAccumulateSources() );
             addGeneratedFile( generatedFiles, pkgSources.getMainSource() );
             addGeneratedFiles( generatedFiles, pkgSources.getRuleSources() );
@@ -228,7 +229,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 
                 generatedFiles.add( ruleUnit.generateFile(GeneratedFile.Type.RULE) );
 
-                RuleUnitInstanceGenerator ruleUnitInstance = ruleUnit.instance(contextClassLoader);
+                RuleUnitInstanceGenerator ruleUnitInstance = ruleUnit.instance();
                 generatedFiles.add( ruleUnitInstance.generateFile(GeneratedFile.Type.RULE) );
 
 //                List<QueryEndpointGenerator> queries = ruleUnit.queries();

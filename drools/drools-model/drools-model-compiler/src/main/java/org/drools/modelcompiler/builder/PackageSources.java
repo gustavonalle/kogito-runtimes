@@ -34,6 +34,7 @@ public class PackageSources {
     private List<GeneratedFile> pojoSources = new ArrayList<>();
     private List<GeneratedFile> accumulateSources = new ArrayList<>();
     private List<GeneratedFile> ruleSources = new ArrayList<>();
+    private List<GeneratedFile> generatedRuleUnits = new ArrayList<>();
 
     private GeneratedFile mainSource;
     private GeneratedFile domainClassSource;
@@ -60,6 +61,10 @@ public class PackageSources {
 
         if (!pojoClasses.isEmpty()) {
             sources.reflectConfigSource = new GeneratedFile("META-INF/native-image/" + pkgModel.getPathName() + "/reflect-config.json", reflectConfigSource(pojoClasses));
+        }
+
+        for (GeneratedRuleUnitTypeWriter ruleUnitTypeWriter : packageModelWriter.getGeneratedRuleUnits()) {
+            sources.generatedRuleUnits.add(new GeneratedFile(ruleUnitTypeWriter.getName(), logSource( ruleUnitTypeWriter.getSource() )));
         }
 
         for (AccumulateClassWriter accumulateClassWriter : packageModelWriter.getAccumulateClasses()) {
@@ -101,6 +106,10 @@ public class PackageSources {
 
     public List<GeneratedFile> getPojoSources() {
         return pojoSources;
+    }
+
+    public List<GeneratedFile> getGeneratedRuleUnits() {
+        return generatedRuleUnits;
     }
 
     public List<GeneratedFile> getAccumulateSources() {

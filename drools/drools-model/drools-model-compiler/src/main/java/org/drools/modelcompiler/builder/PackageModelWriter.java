@@ -18,7 +18,12 @@
 package org.drools.modelcompiler.builder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.drools.core.ruleunit.GeneratedRuleUnitDescription;
+import org.drools.core.ruleunit.RuleUnitDescription;
 
 import static org.drools.modelcompiler.builder.PackageModel.DOMAIN_CLASSESS_METADATA_FILE_NAME;
 
@@ -27,12 +32,14 @@ public class PackageModelWriter {
     private final PackageModel packageModel;
     private final List<DeclaredTypeWriter> declaredTypes;
     private final List<AccumulateClassWriter> accumulateClasses;
+    private final List<GeneratedRuleUnitTypeWriter> generatedRuleUnits;
     private final RuleWriter ruleWriter;
     private final DomainClassesMetadata domainClassesMetadata;
 
     public PackageModelWriter(PackageModel packageModel, boolean oneClassPerRule) {
         this.packageModel = packageModel;
         this.declaredTypes = toDeclaredTypeWriters(packageModel);
+        this.generatedRuleUnits = toGenerateRuleUnitTypeWriters(packageModel);
         this.accumulateClasses = toAccumulateClassWriters(packageModel);
         this.ruleWriter = new RuleWriter(packageModel.getRulesFileName(), packageModel.getRulesSource(oneClassPerRule), packageModel);
         this.domainClassesMetadata = new DomainClassesMetadata(packageModel);
@@ -40,6 +47,10 @@ public class PackageModelWriter {
 
     public List<DeclaredTypeWriter> getDeclaredTypes() {
         return declaredTypes;
+    }
+
+    public List<GeneratedRuleUnitTypeWriter> getGeneratedRuleUnits() {
+        return generatedRuleUnits;
     }
 
     public List<AccumulateClassWriter> getAccumulateClasses() {
@@ -60,6 +71,16 @@ public class PackageModelWriter {
 
     private static List<DeclaredTypeWriter> toDeclaredTypeWriters(PackageModel packageModel) {
         return packageModel.getGeneratedPOJOsSource().stream().map(pojo -> new DeclaredTypeWriter(pojo, packageModel)).collect(Collectors.toList());
+    }
+
+    private static List<GeneratedRuleUnitTypeWriter> toGenerateRuleUnitTypeWriters(PackageModel packageModel) {
+        return packageModel.getRuleUnits().stream()
+                .flatMap(d -> asStream(d.asGeneratedRuleUnitDescription()))
+                .map(pojo -> new GeneratedRuleUnitTypeWriter(pojo, packageModel)).collect(Collectors.toList());
+    }
+
+    private static Stream<GeneratedRuleUnitDescription> asStream(Optional<GeneratedRuleUnitDescription> d) {
+        return d.map(Stream::of).orElseGet(Stream::empty);
     }
 
     static class DomainClassesMetadata {

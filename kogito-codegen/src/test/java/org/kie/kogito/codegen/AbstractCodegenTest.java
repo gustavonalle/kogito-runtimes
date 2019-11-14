@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -103,7 +104,11 @@ public class AbstractCodegenTest {
             for (GeneratedFile entry : generatedFiles) {
                 Path fpath = temp.resolve(entry.relativePath());
                 fpath.getParent().toFile().mkdirs();
-                Files.write(fpath, entry.contents());
+                try {
+                    Files.write(fpath, entry.contents());
+                } catch (NoSuchFileException ex) {
+//                    ex.printStackTrace();
+                }
             }
         }
 

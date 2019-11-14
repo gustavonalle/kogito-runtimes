@@ -28,4 +28,6 @@ public interface RuleUnitDescription {
     Collection<RuleUnitVariable> getUnitVarDeclarations();
 
     boolean hasDataSource(String name);
+
+    Optional<GeneratedRuleUnitDescription> asGeneratedRuleUnitDescription();
 }

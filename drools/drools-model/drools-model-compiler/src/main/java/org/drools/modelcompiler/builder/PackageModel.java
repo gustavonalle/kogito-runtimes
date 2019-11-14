@@ -348,11 +348,11 @@ public class PackageModel {
 
     public void addQueryInRuleUnit(RuleUnitDescription ruleUnitType, QueryModel query) {
         addRuleUnit(ruleUnitType);
-        queriesByRuleUnit.computeIfAbsent( ruleUnitType.getRuleUnitName(), k -> new HashSet<>() ).add(query);
+        queriesByRuleUnit.computeIfAbsent( ruleUnitType.getSimpleName(), k -> new HashSet<>() ).add(query);
     }
 
     public Collection<QueryModel> getQueriesInRuleUnit(RuleUnitDescription ruleUnitType) {
-        return queriesByRuleUnit.getOrDefault( ruleUnitType.getRuleUnitName(), Collections.emptySet() );
+        return queriesByRuleUnit.getOrDefault( ruleUnitType.getSimpleName(), Collections.emptySet() );
     }
 
     public static class RuleSourceResult {

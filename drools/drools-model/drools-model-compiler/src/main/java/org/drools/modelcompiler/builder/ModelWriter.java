@@ -34,6 +34,7 @@ public class ModelWriter {
 
         for (PackageSources pkgSources : packageSources) {
             generatedFiles.addAll( pkgSources.getPojoSources() );
+            generatedFiles.addAll( pkgSources.getGeneratedRuleUnits() );
             generatedFiles.addAll( pkgSources.getAccumulateSources() );
             generatedFiles.add( pkgSources.getMainSource() );
             generatedFiles.addAll( pkgSources.getRuleSources() );

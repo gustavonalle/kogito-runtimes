@@ -139,9 +139,8 @@ public class RuleContext {
         if (ruleUnitDescr != null) {
             for (RuleUnitVariable unitVar : ruleUnitDescr.getUnitVarDeclarations()) {
                 String unitVarName = unitVar.getName();
-                java.lang.reflect.Type type = unitVar.getDataSourceParameterType();
-                Class<?> rawClass = toRawClass( type );
-                Class<?> resolvedType = ruleUnitDescr.getDatasourceType( unitVarName ).orElse( rawClass );
+                Class<?> resolvedType = unitVar.isDataSource() ? unitVar.getDataSourceParameterType() : unitVar.getType();
+                Class<?> rawClass = null == unitVar.getDataSourceParameterType() ? Object.class : unitVar.getDataSourceParameterType();
 
                 Type declType = classToReferenceType( rawClass );
                 addRuleUnitVar( unitVarName, resolvedType );

@@ -52,6 +52,11 @@ public class ReflectiveRuleUnitDescription extends AbstractRuleUnitDescription {
     }
 
     @Override
+    public Optional<GeneratedRuleUnitDescription> asGeneratedRuleUnitDescription() {
+        return Optional.empty();
+    }
+
+    @Override
     public String getRuleUnitName() {
         return ruleUnitClass.getName();
     }
@@ -61,9 +66,9 @@ public class ReflectiveRuleUnitDescription extends AbstractRuleUnitDescription {
             if (m.getDeclaringClass() != RuleUnit.class && m.getParameterCount() == 0) {
                 String id = getter2property(m.getName());
                 if (id != null && !id.equals("class")) {
-                    Class<?> unitVarType = getUnitVarType(m);
+                    Class<?> parametricType = getUnitVarType(m);
                     putRuleUnitVariable(
-                            new RuleUnitVariable(id, m.getReturnType(), unitVarType));
+                            new RuleUnitVariable(id, m.getReturnType(), parametricType));
                 }
             }
         }
@@ -80,7 +85,7 @@ public class ReflectiveRuleUnitDescription extends AbstractRuleUnitDescription {
         if (Iterable.class.isAssignableFrom(returnClass)) {
             return getParametricType(m);
         }
-        return returnClass;
+        return null;
     }
 
     private Class<?> getParametricType(Method m) {
