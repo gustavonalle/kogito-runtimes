@@ -51,10 +51,10 @@
 
   <modules>
     <module>api</module>
-    <module>drools</module>
+<!--    <module>drools</module>-->
     <module>jbpm</module>
-    <module>addons</module>
-    <module>kogito-maven-plugin</module>
+<!--    <module>addons</module>-->
+<!--    <module>kogito-maven-plugin</module>-->
     <module>kogito-codegen</module>
     <module>archetypes</module>
     <module>data-index</module>
@@ -76,13 +76,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-bom</artifactId>
-        <version>${version.io.quarkus}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>io.quarkus</groupId>-->
+<!--        <artifactId>quarkus-bom</artifactId>-->
+<!--        <version>${version.io.quarkus}</version>-->
+<!--        <type>pom</type>-->
+<!--        <scope>import</scope>-->
+<!--      </dependency>-->
     </dependencies>
   </dependencyManagement>
 

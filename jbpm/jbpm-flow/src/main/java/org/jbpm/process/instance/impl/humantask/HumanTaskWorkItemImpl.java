@@ -18,7 +18,7 @@ package org.jbpm.process.instance.impl.humantask;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.drools.core.process.instance.impl.WorkItemImpl;
+import org.jbpm.process.instance.workitems.impl.WorkItemImpl;
 import org.kie.api.runtime.process.HumanTaskWorkItem;
 import org.kie.kogito.auth.IdentityProvider;
 import org.kie.kogito.auth.SecurityPolicy;

@@ -22,14 +22,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.drools.core.command.impl.CommandBasedStatefulKnowledgeSession;
-import org.drools.core.event.ProcessEventSupport;
 import org.drools.core.impl.StatefulKnowledgeSessionImpl;
-import org.drools.core.process.instance.WorkItemManager;
-import org.drools.core.process.instance.impl.WorkItemImpl;
 import org.drools.core.util.MVELSafeHelper;
+import org.jbpm.process.core.event.ProcessEventSupport;
 import org.jbpm.process.instance.InternalProcessRuntime;
 import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.impl.ProcessInstanceImpl;
+import org.jbpm.process.instance.workitems.WorkItemManager;
+import org.jbpm.process.instance.workitems.impl.WorkItemImpl;
 import org.jbpm.util.PatternConstants;
 import org.jbpm.workflow.instance.WorkflowProcessInstance;
 import org.jbpm.workflow.instance.impl.NodeInstanceImpl;
@@ -165,8 +165,9 @@ public class DynamicUtils {
     private static void executeWorkItem(StatefulKnowledgeSessionImpl ksession,
                                         WorkItemImpl workItem,
                                         WorkItemNodeInstance workItemNodeInstance) {
-        ProcessEventSupport eventSupport = ((InternalProcessRuntime)
-                ksession.getProcessRuntime()).getProcessEventSupport();
+        InternalProcessRuntime rt = (InternalProcessRuntime)
+                ksession.getProcessRuntime();
+        ProcessEventSupport eventSupport = rt.getProcessEventSupport();
         eventSupport.fireBeforeNodeTriggered(workItemNodeInstance,
                                              ksession);
         ((WorkItemManager) ksession.getWorkItemManager()).internalExecuteWorkItem(workItem);

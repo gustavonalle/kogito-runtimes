@@ -27,13 +27,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.core.WorkItemHandlerNotFoundException;
-import org.drools.core.event.ProcessEventSupport;
-import org.drools.core.process.instance.WorkItem;
-import org.drools.core.process.instance.WorkItemManager;
-import org.drools.core.process.instance.impl.WorkItemImpl;
+import org.jbpm.process.core.event.ProcessEventSupport;
 import org.jbpm.process.instance.impl.workitem.Abort;
 import org.jbpm.process.instance.impl.workitem.Active;
 import org.jbpm.process.instance.impl.workitem.Complete;
+import org.jbpm.process.instance.workitems.WorkItem;
+import org.jbpm.process.instance.workitems.WorkItemManager;
+import org.jbpm.process.instance.workitems.impl.WorkItemImpl;
 import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.runtime.process.WorkItemHandler;
 import org.kie.api.runtime.process.WorkItemNotFoundException;

@@ -26,9 +26,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.drools.core.WorkItemHandlerNotFoundException;
-import org.drools.core.process.instance.WorkItem;
-import org.drools.core.process.instance.WorkItemManager;
-import org.drools.core.process.instance.impl.WorkItemImpl;
 import org.drools.core.spi.ProcessContext;
 import org.drools.core.util.MVELSafeHelper;
 import org.jbpm.process.core.Context;
@@ -48,6 +45,9 @@ import org.jbpm.process.instance.impl.AssignmentAction;
 import org.jbpm.process.instance.impl.ContextInstanceFactory;
 import org.jbpm.process.instance.impl.ContextInstanceFactoryRegistry;
 import org.jbpm.process.instance.impl.ProcessInstanceImpl;
+import org.jbpm.process.instance.workitems.WorkItem;
+import org.jbpm.process.instance.workitems.WorkItemManager;
+import org.jbpm.process.instance.workitems.impl.WorkItemImpl;
 import org.jbpm.util.PatternConstants;
 import org.jbpm.workflow.core.node.Assignment;
 import org.jbpm.workflow.core.node.DataAssociation;
@@ -150,8 +150,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         } else {
             try {
                 ((WorkItemManager) ((ProcessInstance) getProcessInstance())
-                                                                           .getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(
-                                                                                                                                                (org.drools.core.process.instance.WorkItem) workItem);
+                                                                           .getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(workItem);
             } catch (WorkItemHandlerNotFoundException wihnfe) {
                 getProcessInstance().setState(ProcessInstance.STATE_ABORTED);
                 throw wihnfe;

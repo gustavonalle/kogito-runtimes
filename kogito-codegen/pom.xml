@@ -40,17 +40,17 @@
       <artifactId>jbpm-flow-builder</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.kie.kogito</groupId>
+      <groupId>org.drools</groupId>
       <artifactId>drools-model-compiler</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kie.kogito</groupId>
       <artifactId>jbpm-bpmn2</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-dmn</artifactId> <!-- depend on the utility wrapper module to avoid repeating dependency exclusions -->
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.kie.kogito</groupId>-->
+<!--      <artifactId>kogito-dmn</artifactId> &lt;!&ndash; depend on the utility wrapper module to avoid repeating dependency exclusions &ndash;&gt;-->
+<!--    </dependency>-->
 
     <!-- image metadata handling -->
     <dependency>
@@ -91,17 +91,17 @@
     </dependency>
 
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>drools-core-static</artifactId>
+      <groupId>org.drools</groupId>
+      <artifactId>drools-core-dynamic</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.kie.kogito</groupId>
+      <groupId>org.drools</groupId>
       <artifactId>drools-canonical-model</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.kie.kogito</groupId>
+      <groupId>org.drools</groupId>
       <artifactId>drools-decisiontables</artifactId>
       <scope>test</scope>
     </dependency>

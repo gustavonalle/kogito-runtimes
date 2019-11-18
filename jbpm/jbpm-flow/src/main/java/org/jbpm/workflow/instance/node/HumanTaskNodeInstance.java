@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.drools.core.process.instance.WorkItem;
 import org.jbpm.process.core.context.swimlane.SwimlaneContext;
 import org.jbpm.process.instance.context.swimlane.SwimlaneContextInstance;
 import org.jbpm.process.instance.impl.humantask.HumanTaskWorkItemImpl;
+import org.jbpm.process.instance.workitems.WorkItem;
 import org.jbpm.workflow.core.node.HumanTaskNode;
 import org.jbpm.workflow.core.node.WorkItemNode;
 import org.kie.api.runtime.process.HumanTaskWorkItem;

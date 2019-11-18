@@ -192,7 +192,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         Map<String, String> modelsByUnit = new HashMap<>();
 
         for (PackageSources pkgSources : modelBuilder.getPackageSources()) {
-            pkgSources.getModelsByUnit().forEach( (unit, model) -> modelsByUnit.put( ruleUnit2KieBaseName( unit ), model ) );
+//     fixme       pkgSources.getModelsByUnit().forEach( (unit, model) -> modelsByUnit.put( ruleUnit2KieBaseName( unit ), model ) );
 
             addGeneratedFiles( generatedFiles, pkgSources.getPojoSources() );
             addGeneratedFiles( generatedFiles, pkgSources.getAccumulateSources() );
@@ -259,7 +259,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 
         if (!hotReloadMode) {
             KieModuleModelMethod modelMethod = new KieModuleModelMethod( kieModuleModel.getKieBaseModels() );
-            ModelSourceClass modelSourceClass = new ModelSourceClass( dummyReleaseId, modelMethod, modelsByUnit );
+            ModelSourceClass modelSourceClass = new ModelSourceClass( dummyReleaseId, modelMethod, null);// modelsByUnit );
 
             generatedFiles.add(new GeneratedFile(
                     GeneratedFile.Type.RULE,

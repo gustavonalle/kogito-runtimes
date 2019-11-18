@@ -17,7 +17,7 @@ package org.jbpm.process.instance;
 
 import java.util.Optional;
 
-import org.drools.core.event.ProcessEventSupport;
+import org.jbpm.process.core.event.ProcessEventSupport;
 import org.jbpm.process.instance.impl.DefaultProcessInstanceManager;
 import org.kie.api.event.process.ProcessEventListener;
 import org.kie.api.runtime.process.WorkItemManager;
