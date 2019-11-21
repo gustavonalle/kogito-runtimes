@@ -16,7 +16,9 @@
 package org.drools.compiler.kie.builder.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -25,8 +27,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.builder.model.KieModuleModel;
@@ -37,6 +41,7 @@ public class ZipKieModule extends AbstractKieModule implements InternalKieModule
     private File file;
     private Map<String, byte[]> zipEntries;
     private List<String> fileNames;
+    
 
     public ZipKieModule() { }
 
@@ -82,32 +87,13 @@ public class ZipKieModule extends AbstractKieModule implements InternalKieModule
     }
 
     private void indexZipFile(java.io.File jarFile) {
-        Map<String, List<String>> folders = new HashMap<>();
+        Map<String, List<String>> folders;
         zipEntries = new HashMap<>();
         fileNames = new ArrayList<>();
 
-        try (ZipFile zipFile = new ZipFile( jarFile )) {
-            Enumeration< ? extends ZipEntry> entries = zipFile.entries();
-            while ( entries.hasMoreElements() ) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".dex")) {
-                    continue; //avoid out of memory error, it is useless anyway
-                }
-                String entryName = entry.getName();
-                if (entry.isDirectory()) {
-                    if (entryName.endsWith( "/" )) {
-                        entryName = entryName.substring( 0, entryName.length()-1 );
-                    }
-                } else {
-                    byte[] bytes = readBytesFromInputStream( zipFile.getInputStream( entry ) );
-                    zipEntries.put( entryName, bytes );
-                    fileNames.add( entryName );
-                }
-                int lastSlashPos = entryName.lastIndexOf( '/' );
-                String folderName = lastSlashPos < 0 ? "" : entryName.substring( 0, lastSlashPos );
-                List<String> folder = folders.computeIfAbsent(folderName, k -> new ArrayList<>());
-                folder.add(lastSlashPos < 0 ? entryName : entryName.substring( lastSlashPos+1 ));
-            }
+        
+        try {
+            folders = processZipEntries(jarFile);
         } catch ( IOException e ) {
             throw new RuntimeException( "Unable to get all ZipFile entries: " + jarFile, e );
         }
@@ -120,4 +106,71 @@ public class ZipKieModule extends AbstractKieModule implements InternalKieModule
             zipEntries.put( folder.getKey(), sb.toString().getBytes( StandardCharsets.UTF_8 ) );
         }
     }
+    
+    protected Map<String, List<String>> processZipEntries(File jarFile) throws IOException {
+        Map<String, List<String>> folders = new HashMap<>();
+        String urlPath = jarFile.getAbsolutePath();
+        if (jarFile.exists()) {
+
+            try (final ZipFile zipFile = new ZipFile( jarFile )) {
+                Enumeration< ? extends ZipEntry> entries = zipFile.entries();
+                while ( entries.hasMoreElements() ) {
+                    ZipEntry entry = entries.nextElement();
+
+                    processEntry(entry, folders, true, () -> {
+                        try {
+                            return zipFile.getInputStream( entry );
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+            }
+        } else if (urlPath.indexOf( '!' ) > 0) {
+            urlPath = urlPath.substring( urlPath.lastIndexOf( '!' ) + 1 ).replace("\\", "/");
+            ArrayList<ZipEntry> entries = new ArrayList<>();
+            // read jar file from uber-jar
+            InputStream in = this.getClass().getResourceAsStream(urlPath);
+            ZipInputStream zipIn = new ZipInputStream(in);
+            try {
+                ZipEntry entry = zipIn.getNextEntry();
+                while (entry != null) {
+                    // process each entry
+                    processEntry(entry, folders, false, () -> zipIn);            
+                    zipIn.closeEntry();
+                    
+                    entries.add(entry);
+                    // get next entry
+                    entry = zipIn.getNextEntry();
+                }
+            } finally {
+                zipIn.close();
+            }            
+        } else {
+            throw new FileNotFoundException(urlPath);
+        }
+        
+        return folders;
+    }
+    
+    protected void processEntry(ZipEntry entry, Map<String, List<String>> folders, boolean closeEntryStream, Supplier<InputStream> stream) throws IOException {
+        if (entry.getName().endsWith(".dex")) {
+            return; //avoid out of memory error, it is useless anyway
+        }
+        String entryName = entry.getName();
+        if (entry.isDirectory()) {
+            if (entryName.endsWith( "/" )) {
+                entryName = entryName.substring( 0, entryName.length()-1 );
+            }
+        } else {
+            byte[] bytes = readBytesFromInputStream( stream.get(), closeEntryStream );
+            zipEntries.put( entryName, bytes );
+            fileNames.add( entryName );
+        }
+        int lastSlashPos = entryName.lastIndexOf( '/' );
+        String folderName = lastSlashPos < 0 ? "" : entryName.substring( 0, lastSlashPos );
+        List<String> folder = folders.computeIfAbsent(folderName, k -> new ArrayList<>());
+        folder.add(lastSlashPos < 0 ? entryName : entryName.substring( lastSlashPos+1 ));
+    }
+    
 }

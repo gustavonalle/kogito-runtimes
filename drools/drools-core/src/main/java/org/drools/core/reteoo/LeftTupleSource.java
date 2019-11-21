@@ -34,7 +34,7 @@ import org.drools.core.util.bitmask.AllSetBitMask;
 import org.drools.core.util.bitmask.BitMask;
 import org.drools.core.util.bitmask.EmptyBitMask;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.isPropertyReactive;
+import static org.drools.core.reteoo.PropertySpecificUtil.*;
 
 /**
  * A source of <code>ReteTuple</code> s for a <code>TupleSink</code>.
@@ -250,14 +250,20 @@ public abstract class LeftTupleSource extends BaseNode
         Class objectClass = ((ClassWireable) objectType).getClassType();
         // if pattern is null (e.g. for eval or query nodes) we cannot calculate the mask, so we set it all
         if ( pattern != null && isPropertyReactive(context, objectClass) ) {
-            List<String> accessibleProperties = pattern.getAccessibleProperties( context.getKnowledgeBase() );
-            leftDeclaredMask = pattern.getPositiveWatchMask(accessibleProperties);
-            leftNegativeMask = pattern.getNegativeWatchMask(accessibleProperties);
-            setLeftListenedProperties(pattern.getListenedProperties());
+            Collection<String> leftListenedProperties = pattern.getListenedProperties();
+            List<String> accessibleProperties = getAccessibleProperties( context.getKnowledgeBase(), objectClass );
+            leftDeclaredMask = calculatePositiveMask( objectClass, leftListenedProperties, accessibleProperties );
+            leftDeclaredMask = setNodeConstraintsPropertyReactiveMask(leftDeclaredMask, objectClass, accessibleProperties);
+            leftNegativeMask = calculateNegativeMask( objectClass, leftListenedProperties, accessibleProperties );
+            setLeftListenedProperties(leftListenedProperties);
         } else {
             // if property specific is not on, then accept all modification propagations
             leftDeclaredMask = AllSetBitMask.get();
         }
+    }
+
+    protected BitMask setNodeConstraintsPropertyReactiveMask(BitMask mask, Class objectClass, List<String> accessibleProperties) {
+        return mask;
     }
 
     protected Pattern getLeftInputPattern( BuildContext context ) {

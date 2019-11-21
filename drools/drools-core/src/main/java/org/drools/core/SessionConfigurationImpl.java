@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.drools.core.process.instance.WorkItemManagerFactory;
-import org.kie.services.time.TimerService;
+import org.drools.core.time.TimerService;
 import org.drools.core.util.ConfFileUtils;
 import org.drools.core.util.MVELSafeHelper;
-import org.drools.reflective.ComponentsFactory;
 import org.drools.reflective.classloader.ProjectClassLoader;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.Environment;
@@ -406,11 +405,35 @@ public class SessionConfigurationImpl extends SessionConfiguration {
 
     public TimerService newTimerService() {
         String className = this.chainedProperties.getProperty( "drools.timerService",
-                                                               "org.kie.services.time.impl.JDKTimerService" );
+                                                               "org.drools.core.time.impl.JDKTimerService" );
         if ( className == null ) {
             return null;
         }
-        return (TimerService) ComponentsFactory.createTimerService( className );
+
+        Class<TimerService> clazz = null;
+        try {
+            clazz = (Class<TimerService>) this.classLoader.loadClass( className );
+        } catch ( ClassNotFoundException e ) {
+        }
+
+        if ( clazz != null ) {
+            try {
+                return clazz.newInstance();
+            } catch ( Exception e ) {
+                
+                throw new IllegalArgumentException(
+                                                    "Unable to instantiate timer service '" + className
+                                                            + "'",
+                                                    e );
+            }
+        } else {
+            try {
+                return (TimerService) MVELSafeHelper.getEvaluator().eval(className);
+            } catch (Exception e) {
+                throw new IllegalArgumentException( "Timer service '" + className
+                                                + "' not found", e );
+            }
+        }
     }
 
     public QueryListenerOption getQueryListenerOption() {

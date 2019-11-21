@@ -16,13 +16,12 @@
 
 package org.drools.core.reteoo;
 
-import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,14 +53,16 @@ import org.drools.core.reteoo.compiled.CompiledNetwork;
 import org.drools.core.rule.EntryPointId;
 import org.drools.core.spi.ObjectType;
 import org.drools.core.spi.PropagationContext;
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.impl.DefaultJobHandle;
+import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.util.bitmask.BitMask;
 import org.drools.core.util.bitmask.EmptyBitMask;
+
+import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
 
 /**
  * <code>ObjectTypeNodes<code> are responsible for filtering and propagating the matching
@@ -668,37 +669,43 @@ public class ObjectTypeNode extends ObjectSource
     public static class ExpireJobContextTimerOutputMarshaller
             implements
             TimersOutputMarshaller {
+
         public void write(JobContext jobCtx,
                           MarshallerWriteContext outputCtx) throws IOException {
-            outputCtx.writeShort( PersisterEnums.EXPIRE_TIMER );
-
             // ExpireJob, no state
             ExpireJobContext ejobCtx = (ExpireJobContext) jobCtx;
-            WorkingMemoryReteExpireAction expireAction = ejobCtx.getExpireAction();
-            outputCtx.writeLong( expireAction.getFactHandle().getId() );
-
             DefaultJobHandle jobHandle = (DefaultJobHandle) ejobCtx.getJobHandle();
             PointInTimeTrigger trigger = (PointInTimeTrigger) jobHandle.getTimerJobInstance().getTrigger();
-            outputCtx.writeLong( trigger.hasNextFireTime().getTime() );
-
+            // There is no reason to serialize a timer when it has no future execution time.
+            Date nextFireTime = trigger.hasNextFireTime();
+            if (nextFireTime != null) {
+                outputCtx.writeShort(PersisterEnums.EXPIRE_TIMER);
+                outputCtx.writeLong(ejobCtx.getExpireAction().getFactHandle().getId());
+                outputCtx.writeLong(nextFireTime.getTime());
+            }
         }
 
         @Override
         public ProtobufMessages.Timers.Timer serialize(JobContext jobCtx,
                                                        MarshallerWriteContext outputCtx) {
             // ExpireJob, no state
-            ExpireJobContext ejobCtx = ( ExpireJobContext ) jobCtx;
+            ExpireJobContext ejobCtx = (ExpireJobContext) jobCtx;
             WorkingMemoryReteExpireAction expireAction = ejobCtx.getExpireAction();
-            DefaultJobHandle jobHandle = ( DefaultJobHandle ) ejobCtx.getJobHandle();
-            PointInTimeTrigger trigger = ( PointInTimeTrigger ) jobHandle.getTimerJobInstance().getTrigger();
-
-            return ProtobufMessages.Timers.Timer.newBuilder()
-                                                .setType( ProtobufMessages.Timers.TimerType.EXPIRE )
-                                                .setExpire( ProtobufMessages.Timers.ExpireTimer.newBuilder()
-                                                                                               .setHandleId( expireAction.getFactHandle().getId() )
-                                                                                               .setNextFireTimestamp( trigger.hasNextFireTime().getTime() )
-                                                                                               .build() )
-                                                .build();
+            DefaultJobHandle jobHandle = (DefaultJobHandle) ejobCtx.getJobHandle();
+            PointInTimeTrigger trigger = (PointInTimeTrigger) jobHandle.getTimerJobInstance().getTrigger();
+            Date nextFireTime = trigger.hasNextFireTime();
+            if (nextFireTime != null) {
+                return ProtobufMessages.Timers.Timer.newBuilder()
+                        .setType(ProtobufMessages.Timers.TimerType.EXPIRE)
+                        .setExpire(ProtobufMessages.Timers.ExpireTimer.newBuilder()
+                                           .setHandleId(expireAction.getFactHandle().getId())
+                                           .setNextFireTimestamp(nextFireTime.getTime())
+                                           .build())
+                        .build();
+            } else {
+                // There is no reason to serialize a timer when it has no future execution time.
+                return null;
+            }
         }
     }
 
@@ -718,9 +725,7 @@ public class ObjectTypeNode extends ObjectSource
                                                       inCtx.wm );
             JobHandle handle = clock.scheduleJob( job,
                                                   jobctx,
-                                                  new PointInTimeTrigger( nextTimeStamp,
-                                                                          null,
-                                                                          null ) );
+                                                  PointInTimeTrigger.createPointInTimeTrigger( nextTimeStamp, null ) );
             jobctx.setJobHandle( handle );
 
         }
@@ -737,7 +742,7 @@ public class ObjectTypeNode extends ObjectSource
                                                       inCtx.wm );
             JobHandle jobHandle = clock.scheduleJob( job,
                                                      jobctx,
-                                                     new PointInTimeTrigger( expire.getNextFireTimestamp(), null, null ) );
+                                                     PointInTimeTrigger.createPointInTimeTrigger( expire.getNextFireTimestamp(), null ) );
             jobctx.setJobHandle( jobHandle );
             ((EventFactHandle) factHandle).addJob(jobHandle);
         }

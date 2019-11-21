@@ -46,6 +46,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.drools.core.phreak.AddRemoveRule.flushLeftTupleIfNecessary;
+import static org.drools.core.reteoo.PropertySpecificUtil.calculatePositiveMask;
+import static org.drools.core.reteoo.PropertySpecificUtil.getAccessibleProperties;
 import static org.drools.core.reteoo.PropertySpecificUtil.isPropertyReactive;
 
 /**
@@ -114,7 +116,8 @@ public class LeftInputAdapterNode extends LeftTupleSource
 
         Class objectClass = ((ClassWireable) objectType).getClassType();
         return isPropertyReactive( context, objectClass ) ?
-               pattern.getPositiveWatchMask( pattern.getAccessibleProperties( context.getKnowledgeBase() ) ) :
+               calculatePositiveMask( objectClass, pattern.getListenedProperties(),
+                                      getAccessibleProperties( context.getKnowledgeBase(), objectClass ) ) :
                AllSetBitMask.get();
     }
 

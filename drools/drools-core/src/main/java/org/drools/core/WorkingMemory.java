@@ -16,10 +16,6 @@
 
 package org.drools.core;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.spi.AsyncExceptionHandler;
@@ -32,6 +28,10 @@ import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.time.SessionClock;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A knowledge session for a <code>RuleBase</code>.
@@ -252,9 +252,9 @@ public interface WorkingMemory extends WorkingMemoryEventManager, WorkingMemoryE
      * Returns the process instance with the given id.
      * @return the process instance with the given id
      */
-    ProcessInstance getProcessInstance(String id);
+    ProcessInstance getProcessInstance(long id);
 
-    ProcessInstance getProcessInstance(String id, boolean readOnly);
+    ProcessInstance getProcessInstance(long id, boolean readOnly);
 
     WorkItemManager getWorkItemManager();
 

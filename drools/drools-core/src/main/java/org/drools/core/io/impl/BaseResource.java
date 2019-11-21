@@ -16,7 +16,11 @@
 
 package org.drools.core.io.impl;
 
-import static org.drools.core.util.IoUtils.readBytesFromInputStream;
+import org.drools.core.builder.conf.impl.ResourceConfigurationImpl;
+import org.drools.core.io.internal.InternalResource;
+import org.kie.api.io.Resource;
+import org.kie.api.io.ResourceConfiguration;
+import org.kie.api.io.ResourceType;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,11 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.drools.core.builder.conf.impl.ResourceConfigurationImpl;
-import org.drools.core.io.internal.InternalResource;
-import org.kie.api.io.Resource;
-import org.kie.api.io.ResourceConfiguration;
-import org.kie.api.io.ResourceType;
+import static org.drools.core.util.IoUtils.readBytesFromInputStream;
 
 public abstract class BaseResource
         implements

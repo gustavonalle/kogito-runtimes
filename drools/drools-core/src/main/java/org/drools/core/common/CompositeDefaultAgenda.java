@@ -41,7 +41,6 @@ import org.drools.core.spi.InternalActivationGroup;
 import org.drools.core.spi.KnowledgeHelper;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.RuleFlowGroup;
-import org.drools.core.spi.Tuple;
 import org.drools.core.util.CompositeIterator;
 import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.internal.concurrent.ExecutorProviderFactory;
@@ -353,7 +352,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void activateRuleFlowGroup( String name, String processInstanceId, String nodeInstanceId ) {
+    public void activateRuleFlowGroup( String name, long processInstanceId, String nodeInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.activateRuleFlowGroup -> TODO" );
     }
 
@@ -428,7 +427,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void cancelActivation( Tuple leftTuple, PropagationContext context, Activation activation, TerminalNode rtn ) {
+    public void cancelActivation( PropagationContext context, Activation activation ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.cancelActivation -> TODO" );
     }
 
@@ -448,7 +447,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public boolean isRuleInstanceAgendaItem( String ruleflowGroupName, String ruleName, String processInstanceId ) {
+    public boolean isRuleInstanceAgendaItem( String ruleflowGroupName, String ruleName, long processInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.isRuleInstanceAgendaItem -> TODO" );
     }
 
@@ -579,7 +578,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public boolean isRuleActiveInRuleFlowGroup( String ruleflowGroupName, String ruleName, String processInstanceId ) {
+    public boolean isRuleActiveInRuleFlowGroup( String ruleflowGroupName, String ruleName, long processInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.isRuleActiveInRuleFlowGroup -> TODO" );
     }
 

@@ -15,9 +15,6 @@
 
 package org.drools.core.rule.constraint;
 
-import static org.drools.reflective.util.ClassUtils.areNullSafeEquals;
-import static org.drools.reflective.util.ClassUtils.convertFromPrimitiveType;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -52,7 +49,9 @@ import org.drools.core.spi.PatternExtractor;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
 import org.drools.core.util.ClassUtils;
-import org.kie.kogito.rules.DataSource;
+
+import static org.drools.core.util.ClassUtils.areNullSafeEquals;
+import static org.drools.core.util.ClassUtils.convertFromPrimitiveType;
 
 public class XpathConstraint extends MutableTypeConstraint {
 
@@ -371,9 +370,6 @@ public class XpathConstraint extends MutableTypeConstraint {
 
         private Class<?> getItemClass(Method accessor) {
             Class<?> lastReturnedClass = accessor.getReturnType();
-            if (DataSource.class.isAssignableFrom(lastReturnedClass)) {
-                return getParametricType(accessor);
-            }
             if (Iterable.class.isAssignableFrom(lastReturnedClass)) {
                 return getParametricType(accessor);
             }

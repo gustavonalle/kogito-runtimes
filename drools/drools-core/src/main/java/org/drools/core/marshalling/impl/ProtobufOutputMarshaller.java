@@ -22,11 +22,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.protobuf.ByteString;
 import org.drools.core.InitialFact;
 import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.beliefsystem.BeliefSet;
@@ -75,23 +77,21 @@ import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.AgendaGroup;
 import org.drools.core.spi.RuleFlowGroup;
-import org.kie.services.time.JobContext;
+import org.drools.core.time.JobContext;
 import org.drools.core.time.SelfRemovalJobContext;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.CompositeMaxDurationTrigger;
-import org.kie.services.time.impl.CronTrigger;
-import org.kie.services.time.impl.IntervalTrigger;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.Trigger;
+import org.drools.core.time.impl.CompositeMaxDurationTrigger;
+import org.drools.core.time.impl.CronTrigger;
+import org.drools.core.time.impl.IntervalTrigger;
+import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.time.impl.PseudoClockScheduler;
-import org.kie.services.time.impl.TimerJobInstance;
+import org.drools.core.time.impl.TimerJobInstance;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.LinkedListEntry;
 import org.drools.core.util.ObjectHashMap;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
 import org.kie.api.runtime.rule.EntryPoint;
-
-import com.google.protobuf.ByteString;
 
 /**
  * An output marshaller that uses ProtoBuf as the marshalling framework
@@ -199,6 +199,7 @@ public class ProtobufOutputMarshaller {
 
                 // this now just assigns the writer, it will not write out any timer information
                 context.parameterObject = _pdata;
+                processMarshaller.writeProcessTimers( context );
 
                 _session.setProcessData( _pdata.build() );
             }
@@ -303,8 +304,8 @@ public class ProtobufOutputMarshaller {
                     .setHasRuleFlowLister( group.isRuleFlowListener() )
                     .setActivatedForRecency( group.getActivatedForRecency() );
 
-            Map<String, String> nodeInstances = group.getNodeInstances();
-            for ( Map.Entry<String, String> entry : nodeInstances.entrySet() ) {
+            Map<Long, String> nodeInstances = group.getNodeInstances();
+            for ( Map.Entry<Long, String> entry : nodeInstances.entrySet() ) {
                 org.drools.core.marshalling.impl.ProtobufMessages.Agenda.AgendaGroup.NodeInstance.Builder _nib = ProtobufMessages.Agenda.AgendaGroup.NodeInstance.newBuilder();
                 _nib.setProcessInstanceId( entry.getKey() );
                 _nib.setNodeInstanceId( entry.getValue() );
@@ -771,9 +772,12 @@ public class ProtobufOutputMarshaller {
 
             ProtobufMessages.Timers.Builder _timers = ProtobufMessages.Timers.newBuilder();
             for ( TimerJobInstance timer : sortedTimers ) {
-                JobContext jctx = ((SelfRemovalJobContext) timer.getJobContext()).getJobContext();
+                JobContext jctx = timer.getJobContext();
+                if ( jctx instanceof SelfRemovalJobContext ) {
+                    jctx = ((SelfRemovalJobContext) jctx).getJobContext();
+                }
                 if (jctx instanceof ObjectTypeNode.ExpireJobContext &&
-                    !((ObjectTypeNode.ExpireJobContext) jctx).getExpireAction().getFactHandle().isValid()) {
+                    !((ObjectTypeNode.ExpireJobContext) jctx).getExpireAction().getFactHandle().isValid()) {                    
                     continue;
                 }
                 TimersOutputMarshaller writer = outCtx.writersByClass.get( jctx.getClass() );
@@ -834,13 +838,19 @@ public class ProtobufOutputMarshaller {
                     .setInterval( _interval.build() )
                     .build();
         } else if ( trigger instanceof PointInTimeTrigger ) {
-            PointInTimeTrigger pinTrigger = (PointInTimeTrigger) trigger;
-            return ProtobufMessages.Trigger.newBuilder()
-                    .setType( ProtobufMessages.Trigger.TriggerType.POINT_IN_TIME )
-                    .setPit( ProtobufMessages.Trigger.PointInTimeTrigger.newBuilder()
-                            .setNextFireTime( pinTrigger.hasNextFireTime().getTime() )
-                            .build() )
-                    .build();
+            PointInTimeTrigger pitTrigger = (PointInTimeTrigger) trigger;
+            Date nextFireTime = pitTrigger.hasNextFireTime();
+            // There is no reason to serialize a timer when it has no future execution time.
+            if (nextFireTime != null) {
+                return ProtobufMessages.Trigger.newBuilder()
+                        .setType( ProtobufMessages.Trigger.TriggerType.POINT_IN_TIME )
+                        .setPit( ProtobufMessages.Trigger.PointInTimeTrigger.newBuilder()
+                                         .setNextFireTime( nextFireTime.getTime() )
+                                         .build() )
+                        .build();
+            } else {
+                return null;
+            }
         } else if ( trigger instanceof CompositeMaxDurationTrigger ) {
             CompositeMaxDurationTrigger cmdTrigger = (CompositeMaxDurationTrigger) trigger;
             ProtobufMessages.Trigger.CompositeMaxDurationTrigger.Builder _cmdt = ProtobufMessages.Trigger.CompositeMaxDurationTrigger.newBuilder();
@@ -851,7 +861,10 @@ public class ProtobufOutputMarshaller {
                 _cmdt.setTimerCurrentDate( cmdTrigger.getTimerCurrentDate().getTime() );
             }
             if ( cmdTrigger.getTimerTrigger() != null ) {
-                _cmdt.setTimerTrigger( writeTrigger(cmdTrigger.getTimerTrigger(), outCtx) );
+                ProtobufMessages.Trigger timerTrigger = writeTrigger(cmdTrigger.getTimerTrigger(), outCtx);
+                if (timerTrigger != null) {
+                    _cmdt.setTimerTrigger(timerTrigger);
+                }
             }
             return ProtobufMessages.Trigger.newBuilder()
                                            .setType( ProtobufMessages.Trigger.TriggerType.COMPOSITE_MAX_DURATION )

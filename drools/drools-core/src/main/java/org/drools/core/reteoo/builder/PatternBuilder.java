@@ -16,10 +16,6 @@
 
 package org.drools.core.reteoo.builder;
 
-import static org.drools.core.reteoo.builder.GroupElementBuilder.AndBuilder.buildJoinNode;
-import static org.drools.core.reteoo.builder.GroupElementBuilder.AndBuilder.buildTupleSource;
-import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -58,6 +54,10 @@ import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.definition.type.Expires.Policy;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
+
+import static org.drools.core.reteoo.builder.GroupElementBuilder.AndBuilder.buildJoinNode;
+import static org.drools.core.reteoo.builder.GroupElementBuilder.AndBuilder.buildTupleSource;
+import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
 
 /**
  * A builder for patterns

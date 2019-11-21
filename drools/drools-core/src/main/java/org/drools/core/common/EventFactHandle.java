@@ -19,9 +19,10 @@ package org.drools.core.common;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.drools.core.WorkingMemoryEntryPoint;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.drools.core.util.AbstractBaseLinkedListNode;
+import org.drools.core.factmodel.traits.TraitTypeEnum;
+import org.drools.core.rule.EntryPointId;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.TimerService;
 import org.drools.core.util.LinkedList;
 
 public class EventFactHandle extends DefaultFactHandle implements Comparable<EventFactHandle> {
@@ -41,7 +42,7 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
 
     private AtomicInteger     notExpiredPartitions;
 
-    private final transient LinkedList<JobHandleNode> jobs = new LinkedList<JobHandleNode>();
+    private final transient LinkedList<JobHandle> jobs = new LinkedList<JobHandle>();
 
     // ----------------------------------------------------------------------
     // Constructors
@@ -89,6 +90,20 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
         if ( wmEntryPoint.getKnowledgeBase() != null && wmEntryPoint.getKnowledgeBase().getConfiguration().isMultithreadEvaluation() ) {
             notExpiredPartitions = new AtomicInteger( RuleBasePartitionId.PARALLEL_PARTITIONS_NUMBER );
         }
+    }
+
+    protected EventFactHandle(long id,
+                              int identityHashCode,
+                              Object object,
+                              long recency,
+                              long timestamp,
+                              long duration,
+                              EntryPointId entryPointId,
+                              TraitTypeEnum traitType ) {
+
+        super( id, identityHashCode, object, recency, entryPointId, traitType );
+        this.startTimestamp = timestamp;
+        this.duration = duration;
     }
 
     protected String getFormatVersion() {
@@ -252,36 +267,39 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
 
     public EventFactHandle clone() {
         EventFactHandle clone = new EventFactHandle( getId(),
+                                                      getIdentityHashCode(),
                                                       getObject(),
                                                       getRecency(),
                                                       getStartTimestamp(),
                                                       getDuration(),
-                                                      getEntryPoint(),
-                                                      isTraitOrTraitable() );
+                                                      getEntryPointId(),
+                                                      getTraitType() );
         clone.setActivationsCount( getActivationsCount() );
         clone.setOtnCount( getOtnCount() );
         clone.setExpired( isExpired() );
-        clone.setEntryPoint( getEntryPoint() );
         clone.setEqualityKey( getEqualityKey() );
         clone.linkedTuples = this.linkedTuples.clone();
         clone.setObjectHashCode(getObjectHashCode());
+        clone.wmEntryPoint = this.wmEntryPoint;
         return clone;
     }
 
     private EventFactHandle cloneWithoutTuples() {
         EventFactHandle clone = new EventFactHandle( getId(),
-                                                     getObject(),
-                                                     getRecency(),
-                                                     getStartTimestamp(),
-                                                     getDuration(),
-                                                     getEntryPoint(),
-                                                     isTraitOrTraitable() );
+                getIdentityHashCode(),
+                getObject(),
+                getRecency(),
+                getStartTimestamp(),
+                getDuration(),
+                getEntryPointId(),
+                getTraitType() );
         clone.setActivationsCount( getActivationsCount() );
         clone.setOtnCount( getOtnCount() );
         clone.setExpired( isExpired() );
-        clone.setEntryPoint( getEntryPoint() );
         clone.setEqualityKey( getEqualityKey() );
+        clone.linkedTuples = this.linkedTuples.newInstance();
         clone.setObjectHashCode(getObjectHashCode());
+        clone.wmEntryPoint = this.wmEntryPoint;
         return clone;
     }
 
@@ -309,7 +327,7 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
 
     public void addJob(JobHandle job) {
         synchronized (jobs) {
-            jobs.add(new JobHandleNode(job));
+            jobs.add(job);
         }
     }
 
@@ -317,8 +335,8 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
         synchronized (jobs) {
             // the job could have been already removed if the event has been just retracted
             // and then the unscheduleAllJobs method has been invoked concurrently
-            if (jobs.contains(new JobHandleNode(job))) {
-                jobs.remove(new JobHandleNode(job));
+            if (jobs.contains(job)) {
+                jobs.remove(job);
             }
         }
     }
@@ -328,28 +346,10 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
             synchronized (jobs) {
                 TimerService clock = workingMemory.getTimerService();
                 while ( !jobs.isEmpty() ) {
-                    JobHandleNode job = jobs.removeFirst();
-                    clock.removeJob(job.jobHandle);
+                    JobHandle job = jobs.removeFirst();
+                    clock.removeJob(job);
                 }
             }
-        }
-    }
-
-    private static class JobHandleNode extends AbstractBaseLinkedListNode<JobHandleNode> {
-        final JobHandle jobHandle;
-
-        JobHandleNode(JobHandle jobHandle) {
-            this.jobHandle = jobHandle;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof JobHandleNode && ((JobHandleNode) obj).jobHandle.equals(jobHandle);
-        }
-
-        @Override
-        public int hashCode() {
-            return jobHandle.hashCode();
         }
     }
 }

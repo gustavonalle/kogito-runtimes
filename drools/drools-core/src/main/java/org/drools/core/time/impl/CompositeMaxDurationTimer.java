@@ -16,6 +16,14 @@
 
 package org.drools.core.time.impl;
 
+import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.rule.ConditionalElement;
+import org.drools.core.rule.Declaration;
+import org.drools.core.spi.Activation;
+import org.drools.core.spi.Tuple;
+import org.drools.core.time.Trigger;
+import org.kie.api.runtime.Calendars;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -23,16 +31,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.ConditionalElement;
-import org.drools.core.rule.Declaration;
-import org.drools.core.spi.Activation;
-import org.drools.core.spi.Tuple;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.CompositeMaxDurationTrigger;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.api.runtime.Calendars;
 
 /**
  * While a rule might have multiple DurationTimers, due to LHS CEP rules, there can only ever
@@ -95,8 +93,8 @@ public class CompositeMaxDurationTimer extends BaseTimer
         
         Date maxDurationDate = new Date( timer != null ? getMaxDuration() + timestamp : timestamp );
         
-        return new CompositeMaxDurationTrigger(maxDurationDate,
-                                               timer != null ? timer.createTrigger( timestamp,
+        return new CompositeMaxDurationTrigger( maxDurationDate,
+                                                timer != null ? timer.createTrigger( timestamp,
                                                                                      calendarNames,
                                                                                      calendars ) : null );
     }

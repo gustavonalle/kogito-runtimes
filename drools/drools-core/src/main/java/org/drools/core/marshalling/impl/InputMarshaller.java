@@ -16,10 +16,6 @@
 
 package org.drools.core.marshalling.impl;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.Date;
-
 import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.common.DefaultFactHandle;
 import org.drools.core.common.EventFactHandle;
@@ -30,14 +26,18 @@ import org.drools.core.process.instance.WorkItem;
 import org.drools.core.process.instance.impl.WorkItemImpl;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.rule.EntryPointId;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.CronTrigger;
-import org.kie.services.time.impl.IntervalTrigger;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.Trigger;
+import org.drools.core.time.impl.CronTrigger;
+import org.drools.core.time.impl.IntervalTrigger;
+import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.util.StringUtils;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.RuleRuntime;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.Date;
 
 public class InputMarshaller {
 
@@ -136,8 +136,8 @@ public class InputMarshaller {
         ObjectInputStream stream = context.stream;
 
         WorkItemImpl workItem = new WorkItemImpl();
-        workItem.setId( stream.readUTF() );
-        workItem.setProcessInstanceId( stream.readUTF() );
+        workItem.setId( stream.readLong() );
+        workItem.setProcessInstanceId( stream.readLong() );
         workItem.setName( stream.readUTF() );
         workItem.setState( stream.readInt() );
 
@@ -241,7 +241,7 @@ public class InputMarshaller {
             case PersisterEnums.POINT_IN_TIME_TRIGGER: {
                 long startTime = inCtx.readLong();
 
-                PointInTimeTrigger trigger = new PointInTimeTrigger( startTime, null, null );
+                PointInTimeTrigger trigger = PointInTimeTrigger.createPointInTimeTrigger( startTime, null );
                 return trigger;
             }
         }

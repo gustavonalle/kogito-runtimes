@@ -26,11 +26,7 @@ import org.drools.core.rule.builder.dialect.asm.ClassLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.mvel2.asm.Opcodes.V1_5;
-import static org.mvel2.asm.Opcodes.V1_6;
-import static org.mvel2.asm.Opcodes.V1_7;
-import static org.mvel2.asm.Opcodes.V1_8;
-import static org.mvel2.asm.Opcodes.V9;
+import static org.mvel2.asm.Opcodes.*;
 
 /**
  * 
@@ -62,7 +58,7 @@ public class JavaDialectConfiguration
     public static final String          JAVA_COMPILER_PROPERTY = "drools.dialect.java.compiler";
 
     public enum CompilerType {
-        ECLIPSE, NATIVE
+        ECLIPSE, JANINO, NATIVE
     }
 
     public static final String[]        LANGUAGE_LEVELS = new String[]{"1.5", "1.6", "1.7", "1.8", "9"};
@@ -120,11 +116,20 @@ public class JavaDialectConfiguration
             } catch ( ClassNotFoundException e ) {
                 throw new RuntimeException( "The Eclipse JDT Core jar is not in the classpath" );
             }
+        } else if ( compiler == CompilerType.JANINO ){
+            try {
+                Class.forName( "org.codehaus.janino.Parser", true, this.conf.getClassLoader() );
+            } catch ( ClassNotFoundException e ) {
+                throw new RuntimeException( "The Janino jar is not in the classpath" );
+            }
         }
         
         switch ( compiler ) {
             case ECLIPSE :
                 this.compiler = CompilerType.ECLIPSE;
+                break;
+            case JANINO :
+                this.compiler = CompilerType.JANINO;
                 break;
             case NATIVE :
                 this.compiler = CompilerType.NATIVE;
@@ -151,6 +156,8 @@ public class JavaDialectConfiguration
                 return CompilerType.NATIVE;
             } else if ( prop.equals( "ECLIPSE" ) ) {
                 return CompilerType.ECLIPSE;
+            } else if ( prop.equals( "JANINO" ) ) {
+                return CompilerType.JANINO;
             } else {
                 logger.error( "Drools config: unable to use the drools.compiler property. Using default. It was set to:" + prop );
                 return CompilerType.ECLIPSE;

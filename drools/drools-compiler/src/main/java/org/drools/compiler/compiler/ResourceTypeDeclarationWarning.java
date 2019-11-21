@@ -15,6 +15,7 @@
 
 package org.drools.compiler.compiler;
 
+import org.drools.core.io.internal.InternalResource;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 

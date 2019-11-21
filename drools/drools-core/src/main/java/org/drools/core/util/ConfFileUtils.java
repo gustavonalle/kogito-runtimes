@@ -20,13 +20,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
-public final class ConfFileUtils {
-
+public class ConfFileUtils {
+   
     /**
      * Return the URL for a given conf file
      * @param confName
@@ -59,10 +58,7 @@ public final class ConfFileUtils {
 
         // check META-INF directories for all known ClassLoaders
         if ( url == null && classLoader != null ) {
-            ClassLoader confClassLoader = classLoader;
-            if ( confClassLoader != null ) {
-                url = confClassLoader.getResource( "META-INF/" + confName );
-            }
+            url = classLoader.getResource( "META-INF/" + confName );
         }
 
         if ( url == null ) {
@@ -131,7 +127,7 @@ public final class ConfFileUtils {
                 builder.append( "\n" );
             }
         } catch ( IOException e ) {
-            throw new UncheckedIOException("Unable to read " + url.toExternalForm(), e);
+            throw new RuntimeException( "Unable to read " + url.toExternalForm() );
         }
         return builder.toString();
     }
@@ -158,8 +154,5 @@ public final class ConfFileUtils {
         
         return properties;
     }
-
-    private ConfFileUtils() {
-        // It is forbidden to create instances of util classes.
-    }
+                   
 }

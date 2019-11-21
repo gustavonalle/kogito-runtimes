@@ -16,10 +16,10 @@
 
 package org.drools.core.common;
 
-import java.util.Map;
-
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.AgendaGroup;
+
+import java.util.Map;
 
 public interface InternalAgendaGroup extends AgendaGroup {
 
@@ -56,13 +56,13 @@ public interface InternalAgendaGroup extends AgendaGroup {
     
     long getClearedForRecency();
 
-    void addNodeInstance(String processInstanceId, String nodeInstanceId);
+    void addNodeInstance(Long processInstanceId, String nodeInstanceId);
 
-    void removeNodeInstance(String processInstanceId, String nodeInstanceId);
+    void removeNodeInstance(Long processInstanceId, String nodeInstanceId);
 
     Activation[] getActivations();
 
-    Map<String, String> getNodeInstances();
+    Map<Long, String> getNodeInstances();
 
     void visited();
 

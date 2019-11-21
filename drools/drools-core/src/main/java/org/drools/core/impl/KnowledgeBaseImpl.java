@@ -111,9 +111,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.drools.core.util.BitMaskUtil.isSet;
+import static org.drools.core.util.ClassUtils.areNullSafeEquals;
+import static org.drools.core.util.ClassUtils.convertClassToResourcePath;
 import static org.drools.reflective.classloader.ProjectClassLoader.createProjectClassLoader;
-import static org.drools.reflective.util.ClassUtils.areNullSafeEquals;
-import static org.drools.reflective.util.ClassUtils.convertClassToResourcePath;
 
 public class KnowledgeBaseImpl
     implements
@@ -166,7 +166,7 @@ public class KnowledgeBaseImpl
     private transient Map<Integer, SegmentMemory.Prototype> segmentProtos = new ConcurrentHashMap<>();
 
     private KieComponentFactory kieComponentFactory;
-    
+
     // This is just a hack, so spring can find the list of generated classes
     public List<List<String>> jaxbClasses;
 
@@ -266,7 +266,7 @@ public class KnowledgeBaseImpl
             kieBaseListeners.remove( listener );
         }
     }
-    
+
     public Collection<KieBaseEventListener> getKieBaseEventListeners() {
         return Collections.unmodifiableCollection( kieBaseListeners );
     }
@@ -320,7 +320,7 @@ public class KnowledgeBaseImpl
         InternalKnowledgePackage p = getPackage(packageName);
         return p == null ? null : p.getRule( ruleName );
     }
-    
+
     public Query getQuery(String packageName,
                           String queryName) {
         return getPackage(packageName).getRule( queryName );
@@ -490,7 +490,7 @@ public class KnowledgeBaseImpl
         this.reteooBuilder = (ReteooBuilder) droolsStream.readObject();
         this.reteooBuilder.setRuleBase(this);
         this.rete = (Rete) droolsStream.readObject();
-        
+
         this.resolvedReleaseId = (ReleaseId) droolsStream.readObject();
 
         ( (DroolsObjectInputStream) droolsStream ).bindAllExtractors(this);
@@ -544,19 +544,18 @@ public class KnowledgeBaseImpl
         boolean isDrools = out instanceof DroolsObjectOutputStream;
         ByteArrayOutputStream bytes;
         out.writeBoolean( isDrools );
-        if (isDrools) {
+        if (out instanceof DroolsObjectOutputStream) {
             droolsStream = out;
             bytes = null;
         } else {
             bytes = new ByteArrayOutputStream();
             droolsStream = new DroolsObjectOutputStream(bytes);
         }
-
         try {
             // must write this option first in order to properly deserialize later
             droolsStream.writeBoolean(this.config.isClassLoaderCacheEnabled());
 
-            droolsStream.writeObject(((ProjectClassLoader) rootClassLoader).getStore());
+            droolsStream.writeObject((( ProjectClassLoader ) rootClassLoader).getStore());
 
             droolsStream.writeObject(this.config);
             droolsStream.writeObject(this.pkgs);
@@ -728,7 +727,7 @@ public class KnowledgeBaseImpl
         clonedPkgs.sort(Comparator.comparing( (InternalKnowledgePackage p) -> p.getRules().size() ).reversed().thenComparing( InternalKnowledgePackage::getName ));
         enqueueModification( () -> internalAddPackages( clonedPkgs ) );
     }
-    
+
     @Override
     public Future<KiePackage> addPackage( final KiePackage newPkg ) {
         InternalKnowledgePackage clonedPkg = ((InternalKnowledgePackage)newPkg).deepCloneIfAlreadyInUse(rootClassLoader);
@@ -972,7 +971,11 @@ public class KnowledgeBaseImpl
                     break;
                 }
             }
-            processTypeDeclaration( newDecl, newPkg );
+            try {
+                processTypeDeclaration( newDecl, newPkg );
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException( "unable to resolve Type Declaration class '" + newDecl.getTypeClassName() + "'", e );
+            }
         }
     }
 
@@ -1038,7 +1041,7 @@ public class KnowledgeBaseImpl
         this.classTypeDeclaration.put( newDecl.getTypeClassName(), newDecl );
     }
 
-    protected void processTypeDeclaration( TypeDeclaration newDecl, InternalKnowledgePackage newPkg ) {
+    protected void processTypeDeclaration( TypeDeclaration newDecl, InternalKnowledgePackage newPkg ) throws ClassNotFoundException {
         JavaDialectRuntimeData runtime = ((JavaDialectRuntimeData) newPkg.getDialectRuntimeRegistry().getDialectData( "java" ));
 
         TypeDeclaration typeDeclaration = this.classTypeDeclaration.get( newDecl.getTypeClassName() );
@@ -1046,18 +1049,16 @@ public class KnowledgeBaseImpl
             String className = newDecl.getTypeClassName();
 
             byte [] def = runtime != null ? runtime.getClassDefinition(convertClassToResourcePath(className)) : null;
-            try {
-                Class<?> definedKlass = registerAndLoadTypeDefinition( className, def );
+            Class<?> definedKlass = registerAndLoadTypeDefinition( className, def );
 
-                if (newDecl.getTypeClassDef() == null) {
-                    newDecl.setTypeClassDef( new ClassDefinition() );
-                }
-                newDecl.setTypeClass( definedKlass );
-            } catch (ClassNotFoundException e) {
-                if (newDecl.isNovel()) {
-                    throw new RuntimeException( "unable to resolve Type Declaration class '" + className + "'", e );
-                }
+            if ( definedKlass == null && newDecl.isNovel() ) {
+                throw new RuntimeException( "Registering null bytes for class " + className );
             }
+
+            if (newDecl.getTypeClassDef() == null) {
+                newDecl.setTypeClassDef( new ClassDefinition() );
+            }
+            newDecl.setTypeClass( definedKlass );
 
             this.classTypeDeclaration.put( className, newDecl );
             typeDeclaration = newDecl;
@@ -1233,27 +1234,38 @@ public class KnowledgeBaseImpl
         // Merge imports
         final Map<String, ImportDeclaration> imports = pkg.getImports();
         imports.putAll(newPkg.getImports());
-        
+
         // Merge static imports
         for (String staticImport : newPkg.getStaticImports()) {
             pkg.addStaticImport(staticImport);
         }
 
-        // merge globals
-        if (newPkg.getGlobals() != null && !newPkg.getGlobals().isEmpty()) {
-            Map<String, Class<?>> pkgGlobals = pkg.getGlobals();
-            // Add globals
-            for (final Map.Entry<String, Class<?>> entry : newPkg.getGlobals().entrySet()) {
-                final String identifier = entry.getKey();
-                final Class<?> type = entry.getValue();
-                if (pkgGlobals.containsKey( identifier ) && !pkgGlobals.get( identifier ).equals( type )) {
-                    throw new RuntimeException(pkg.getName() + " cannot be integrated");
-                } else {
-                    pkg.addGlobal( identifier, type );
-                    // this isn't a package merge, it's adding to the rulebase, but I've put it here for convienience
-                    addGlobal( identifier, type );
+        String lastIdent = null;
+        String lastType = null;
+        try {
+            // merge globals
+            if (newPkg.getGlobals() != null && !newPkg.getGlobals().isEmpty()) {
+                Map<String, Class<?>> pkgGlobals = pkg.getGlobals();
+                // Add globals
+                for (final Map.Entry<String, Class<?>> entry : newPkg.getGlobals().entrySet()) {
+                    final String identifier = entry.getKey();
+                    final String type = entry.getValue().getCanonicalName();
+                    lastIdent = identifier;
+                    lastType = type;
+                    if (pkgGlobals.containsKey( identifier ) && !pkgGlobals.get( identifier ).equals( type )) {
+                        throw new RuntimeException(pkg.getName() + " cannot be integrated");
+                    } else {
+                        pkg.addGlobal( identifier,
+                                       this.rootClassLoader.loadClass( type ) );
+                        // this isn't a package merge, it's adding to the rulebase, but I've put it here for convienience
+                        addGlobal(identifier,
+                                  this.rootClassLoader.loadClass(type));
+                    }
                 }
             }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException( "Unable to resolve class '" + lastType +
+                                        "' for global '" + lastIdent + "'" );
         }
 
         // merge entry point declarations
@@ -1739,9 +1751,9 @@ public class KnowledgeBaseImpl
             }
 
             List<TypeDeclaration> removedTypes = pkg.removeTypesGeneratedFromResource(resource);
-            
+
             boolean resourceTypePackageSomethingRemoved = pkg.removeFromResourceTypePackageGeneratedFromResource( resource );
-            
+
             modified |= !rulesToBeRemoved.isEmpty()
                         || !functionsToBeRemoved.isEmpty()
                         || !processesToBeRemoved.isEmpty()
@@ -1778,6 +1790,10 @@ public class KnowledgeBaseImpl
 
     public InternalKieContainer getKieContainer() {
        return this.kieContainer;
+    }
+
+    public RuleUnitDescriptionRegistry getRuleUnitDescriptionRegistry() {
+        return ruleUnitDescriptionRegistry;
     }
 
     public boolean hasUnits() {

@@ -16,12 +16,6 @@
 
 package org.drools.core.reteoo;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.lang.reflect.Field;
-
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.spi.Tuple;
@@ -34,6 +28,12 @@ import org.drools.core.util.index.TupleIndexHashTable;
 import org.drools.core.util.index.TupleList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.lang.reflect.Field;
 
 public class MemoryVisitor extends ReflectiveVisitor
     implements

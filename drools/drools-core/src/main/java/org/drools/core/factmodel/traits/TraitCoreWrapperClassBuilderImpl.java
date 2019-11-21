@@ -16,7 +16,19 @@
 
 package org.drools.core.factmodel.traits;
 
-import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
+import org.drools.core.factmodel.BuildUtils;
+import org.drools.core.factmodel.ClassDefinition;
+import org.drools.core.factmodel.DefaultBeanClassBuilder;
+import org.drools.core.factmodel.FieldDefinition;
+import org.drools.core.rule.builder.dialect.asm.ClassGenerator;
+import org.kie.api.definition.type.FactField;
+import org.mvel2.asm.AnnotationVisitor;
+import org.mvel2.asm.ClassWriter;
+import org.mvel2.asm.FieldVisitor;
+import org.mvel2.asm.Label;
+import org.mvel2.asm.MethodVisitor;
+import org.mvel2.asm.Opcodes;
+import org.mvel2.asm.Type;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -34,17 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.drools.core.factmodel.BuildUtils;
-import org.drools.core.factmodel.ClassDefinition;
-import org.drools.core.factmodel.FieldDefinition;
-import org.kie.api.definition.type.FactField;
-import org.mvel2.asm.AnnotationVisitor;
-import org.mvel2.asm.ClassWriter;
-import org.mvel2.asm.FieldVisitor;
-import org.mvel2.asm.Label;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Opcodes;
-import org.mvel2.asm.Type;
+import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
 
 public class TraitCoreWrapperClassBuilderImpl implements TraitCoreWrapperClassBuilder, Serializable {
 

@@ -16,8 +16,6 @@
 
 package org.drools.core.rule;
 
-import static org.drools.reflective.util.ClassUtils.findCommonSuperClass;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -30,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.drools.core.definitions.rule.impl.RuleImpl;
+
+import static org.drools.core.util.ClassUtils.findCommonSuperClass;
 
 public class GroupElement extends ConditionalElement
     implements

@@ -17,9 +17,9 @@
 package org.drools.core.common;
 
 
-import java.io.Serializable;
-
 import org.drools.core.impl.InternalKnowledgeBase;
+
+import java.io.Serializable;
 
 public class DefaultAgendaFactory implements AgendaFactory, Serializable {
 

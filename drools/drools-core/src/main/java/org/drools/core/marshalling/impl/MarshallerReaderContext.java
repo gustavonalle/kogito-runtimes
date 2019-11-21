@@ -29,12 +29,12 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.marshalling.impl.ProtobufInputMarshaller.PBActivationsFilter;
 import org.drools.core.marshalling.impl.ProtobufInputMarshaller.TupleKey;
+import org.drools.core.phreak.PhreakTimerNode;
 import org.drools.core.phreak.PhreakTimerNode.Scheduler;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.rule.EntryPointId;
 import org.drools.core.spi.PropagationContext;
-import org.kie.api.definition.process.Process;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
 import org.kie.api.runtime.Environment;
@@ -79,8 +79,6 @@ public class MarshallerReaderContext extends ObjectInputStream {
     public Object                                                                  parameterObject;
     public ClassLoader                                                             classLoader;
     public Map<Integer, Map<TupleKey, Scheduler>>                                  timerNodeSchedulers;
-    
-    public Map<String, Process> processes = new HashMap<>();
 
     public MarshallerReaderContext(InputStream stream,
                                    InternalKnowledgeBase kBase,
@@ -96,23 +94,6 @@ public class MarshallerReaderContext extends ObjectInputStream {
               true,
               true,
               env );
-    }
-    
-    public MarshallerReaderContext(InputStream stream,
-                                   Map<String, Process> processes,
-                                   Map<Integer, BaseNode> sinks,
-                                   ObjectMarshallingStrategyStore resolverStrategyFactory,
-                                   Map<Integer, TimersInputMarshaller> timerReaders,
-                                   Environment env) throws IOException {
-        this( stream,
-              null,
-              sinks,
-              resolverStrategyFactory,
-              timerReaders,
-              true,
-              true,
-              env );
-        this.processes = processes;
     }
 
     public MarshallerReaderContext(InputStream stream,
@@ -139,7 +120,7 @@ public class MarshallerReaderContext extends ObjectInputStream {
         if ( resolverStrategyFactory == null ) {
             ObjectMarshallingStrategy[] strats = (ObjectMarshallingStrategy[]) env.get( EnvironmentName.OBJECT_MARSHALLING_STRATEGIES );
             if ( strats == null ) {
-                strats = new ObjectMarshallingStrategy[]{new SerializablePlaceholderResolverStrategy( ClassObjectMarshallingStrategyAcceptor.DEFAULT  )};
+                strats = new ObjectMarshallingStrategy[]{MarshallerFactory.newSerializeMarshallingStrategy()};
             }
             this.resolverStrategyFactory = new ObjectMarshallingStrategyStoreImpl( strats );
         }
@@ -157,10 +138,6 @@ public class MarshallerReaderContext extends ObjectInputStream {
         this.timerNodeSchedulers = new HashMap<>();
 
         this.parameterObject = null;
-        if (this.kBase != null) {
-            
-            this.kBase.getProcesses().forEach( p -> this.processes.put(p.getId(), p));
-        }
     }
 
     @Override

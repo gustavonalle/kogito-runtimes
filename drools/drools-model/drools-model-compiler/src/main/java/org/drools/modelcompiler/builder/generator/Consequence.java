@@ -56,7 +56,6 @@ import static org.drools.modelcompiler.builder.PackageModel.DOMAIN_CLASS_METADAT
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.addCurlyBracesToBlock;
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.findAllChildrenRecursive;
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.getClassFromType;
-import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.hasScopeWithName;
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.isNameExprWithName;
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.parseBlock;
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.toClassOrInterfaceType;
@@ -65,7 +64,6 @@ import static org.drools.modelcompiler.builder.generator.DslMethodNames.EXECUTE_
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.ON_CALL;
 import static org.drools.modelcompiler.util.ClassUtil.asJavaSourceName;
 import static org.drools.mvel.parser.printer.PrintUtil.printConstraint;
-
 
 public class Consequence {
 
@@ -183,9 +181,11 @@ public class Consequence {
 
         if (context.getRuleDialect() == RuleContext.RuleDialect.MVEL) {
             return existingDecls.stream().filter(d -> containsWord(d, consequenceString)).collect(toSet());
-        } else {
+        } else if (context.getRuleDialect() == RuleContext.RuleDialect.JAVA) {
             Set<String> declUsedInRHS = ruleConsequence.findAll(NameExpr.class).stream().map(NameExpr::getNameAsString).collect(toSet());
             return existingDecls.stream().filter(declUsedInRHS::contains).collect(toSet());
+        } else {
+            throw new IllegalArgumentException("Unknown rule dialect " + context.getRuleDialect() + "!");
         }
     }
 
@@ -354,7 +354,9 @@ public class Consequence {
     }
 
     private static boolean isDroolsMethod(MethodCallExpr mce) {
-        final boolean hasDroolsScope = hasScopeWithName(mce, "drools");
+        final boolean hasDroolsScope = DrlxParseUtil.findRootNodeViaScope(mce)
+                .filter(s -> isNameExprWithName(s, "drools"))
+                .isPresent();
         final boolean isImplicitDroolsMethod = !mce.getScope().isPresent() && implicitDroolsMethods.contains(mce.getNameAsString());
         final boolean hasDroolsAsParameter = findAllChildrenRecursive(mce).stream().anyMatch(a -> isNameExprWithName(a, "drools"));
         return hasDroolsScope || isImplicitDroolsMethod || hasDroolsAsParameter;

@@ -24,6 +24,7 @@ import java.util.concurrent.locks.Lock;
 import org.drools.core.SessionConfiguration;
 import org.drools.core.WorkingMemory;
 import org.drools.core.WorkingMemoryEntryPoint;
+import org.drools.core.base.DefaultKnowledgeHelper;
 import org.drools.core.event.AgendaEventSupport;
 import org.drools.core.event.RuleRuntimeEventSupport;
 import org.drools.core.phreak.PropagationEntry;
@@ -33,7 +34,8 @@ import org.drools.core.rule.EntryPointId;
 import org.drools.core.runtime.process.InternalProcessRuntime;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.FactHandleFactory;
-import org.kie.services.time.TimerService;
+import org.drools.core.spi.KnowledgeHelper;
+import org.drools.core.time.TimerService;
 import org.kie.api.runtime.Calendars;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.rule.EntryPoint;
@@ -207,4 +209,12 @@ public interface InternalWorkingMemory
 
     default void onSuspend() { }
     default void onResume() { }
+
+    default KnowledgeHelper createKnowledgeHelper() {
+        return new DefaultKnowledgeHelper<>( this );
+    }
+
+    default KnowledgeHelper createKnowledgeHelper(Activation activation) {
+        return new DefaultKnowledgeHelper<>( activation, this );
+    }
 }

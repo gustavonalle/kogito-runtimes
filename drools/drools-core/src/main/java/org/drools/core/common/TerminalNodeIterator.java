@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.util.Iterator;
+import org.drools.core.impl.KnowledgeBaseImpl;
 import org.kie.api.KieBase;
 
 public class TerminalNodeIterator

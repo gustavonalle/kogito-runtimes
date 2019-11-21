@@ -29,7 +29,6 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.spi.AcceptsReadAccessor;
-import org.drools.core.spi.CompiledInvoker;
 import org.drools.core.spi.Evaluator;
 import org.drools.core.spi.FieldValue;
 import org.drools.core.spi.InternalReadAccessor;
@@ -142,7 +141,7 @@ public class ReturnValueRestriction
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        if ( this.expression instanceof CompiledInvoker ) {
+        if ( ReturnValueExpression.isCompiledInvoker(this.expression) ) {
             out.writeObject( null );
         } else {
             out.writeObject( this.expression );

@@ -24,6 +24,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
+import org.kie.api.marshalling.ObjectMarshallingStrategy.Context;
 import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
 
 public class IdentityPlaceholderResolverStrategy
@@ -95,8 +96,7 @@ public class IdentityPlaceholderResolverStrategy
         return intToByteArray( id.intValue() );
     }
 
-    public Object unmarshal(String dataType, 
-                            Context context,
+    public Object unmarshal(Context context,
                             ObjectInputStream is,
                             byte[] object, 
                             ClassLoader classloader ) {

@@ -15,11 +15,11 @@
 
 package org.drools.compiler.compiler;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.kie.api.KieBase;
 import org.kie.api.Service;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public interface GuidedScoreCardProvider extends Service {
 

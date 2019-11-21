@@ -31,8 +31,11 @@ import org.drools.compiler.compiler.DroolsWarning;
 import org.drools.compiler.compiler.RuleBuildError;
 import org.drools.compiler.compiler.RuleBuildWarning;
 import org.drools.compiler.lang.DroolsSoftKeywords;
+import org.drools.compiler.lang.descr.AndDescr;
 import org.drools.compiler.lang.descr.AnnotationDescr;
 import org.drools.compiler.lang.descr.AttributeDescr;
+import org.drools.compiler.lang.descr.EntryPointDescr;
+import org.drools.compiler.lang.descr.PatternDescr;
 import org.drools.compiler.lang.descr.QueryDescr;
 import org.drools.compiler.lang.descr.RuleDescr;
 import org.drools.compiler.rule.builder.dialect.mvel.MVELObjectExpressionBuilder;
@@ -46,6 +49,7 @@ import org.drools.core.rule.Pattern;
 import org.drools.core.spi.AgendaGroup;
 import org.drools.core.spi.Salience;
 import org.drools.core.time.TimeUtils;
+import org.drools.core.time.impl.CronExpression;
 import org.drools.core.time.impl.CronTimer;
 import org.drools.core.time.impl.ExpressionIntervalTimer;
 import org.drools.core.time.impl.IntervalTimer;
@@ -58,7 +62,8 @@ import org.kie.api.definition.rule.All;
 import org.kie.api.definition.rule.Direct;
 import org.kie.api.definition.rule.Propagation;
 import org.kie.api.definition.rule.Unit;
-import org.kie.services.time.impl.CronExpression;
+
+import static org.kie.internal.ruleunit.RuleUnitUtil.RULE_UNIT_DECLARATION;
 
 /**
  * This builds the rule structure from an AST.
@@ -100,7 +105,7 @@ public class RuleBuilder {
         if ( builder != null ) {
             Pattern prefixPattern = context.getPrefixPattern(); // this is established during pre-processing, if it's query
             final GroupElement ce = (GroupElement) builder.build( context,
-                                                                  ruleDescr.getLhs(),
+                                                                  getLhsForRuleUnit( context.getRule(), ruleDescr.getLhs() ),
                                                                   prefixPattern );
 
             context.getRule().setLhs( ce );
@@ -124,6 +129,16 @@ public class RuleBuilder {
                 consequenceBuilder.build( context, name );
             }
         }
+    }
+
+    private static AndDescr getLhsForRuleUnit(RuleImpl rule, AndDescr lhs) {
+        if (rule.hasRuleUnit()) {
+            PatternDescr unitPattern = new PatternDescr( rule.getRuleUnitClassName(), RULE_UNIT_DECLARATION );
+            unitPattern.setSource( EntryPointDescr.RULE_UNIT_ENTRY_POINT_DESCR );
+            unitPattern.setResource( rule.getResource() );
+            lhs.getDescrs().add(0, unitPattern);
+        }
+        return lhs;
     }
 
     public static void buildMetaAttributes(final RuleBuildContext context ) {

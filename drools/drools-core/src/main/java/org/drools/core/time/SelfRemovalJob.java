@@ -17,9 +17,6 @@ package org.drools.core.time;
 
 import java.io.Serializable;
 
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-
 public class SelfRemovalJob implements Job, Serializable {
 
     private static final long serialVersionUID = 8876468420174364422L;
@@ -34,9 +31,9 @@ public class SelfRemovalJob implements Job, Serializable {
     }
 
     public void execute(JobContext ctx) {
-        SelfRemovalJobContext srCtx = (SelfRemovalJobContext) ctx;
-        job.execute( srCtx.getJobContext() );
-        srCtx.remove();
+        job.execute(  ((SelfRemovalJobContext)ctx).getJobContext() );
+        ((SelfRemovalJobContext)ctx).remove(); 
+        
     }
 
 }

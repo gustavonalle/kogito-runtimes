@@ -16,11 +16,6 @@
 
 package org.drools.core.factmodel.traits;
 
-import static org.drools.core.factmodel.traits.TraitBuilderUtil.buildMixinMethods;
-import static org.drools.core.factmodel.traits.TraitBuilderUtil.findMixinInfo;
-import static org.drools.core.factmodel.traits.TraitBuilderUtil.getMixinName;
-import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -44,6 +39,11 @@ import org.mvel2.asm.FieldVisitor;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Type;
+
+import static org.drools.core.factmodel.traits.TraitBuilderUtil.buildMixinMethods;
+import static org.drools.core.factmodel.traits.TraitBuilderUtil.findMixinInfo;
+import static org.drools.core.factmodel.traits.TraitBuilderUtil.getMixinName;
+import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
 
 public class TraitMapProxyClassBuilderImpl extends AbstractProxyClassBuilderImpl implements TraitProxyClassBuilder, Serializable {
 

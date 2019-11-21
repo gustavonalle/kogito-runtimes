@@ -15,9 +15,9 @@
 
 package org.drools.core.factmodel.traits;
 
-import java.util.Map;
-
 import org.drools.core.factmodel.MapCore;
+
+import java.util.Map;
 
 @Traitable( logical=true )
 public class LogicalMapCore<K> extends MapCore {

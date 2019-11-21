@@ -15,11 +15,12 @@
 
 package org.drools.compiler.compiler;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.kie.api.KieBase;
 import org.kie.api.internal.utils.ServiceRegistry;
+import org.kie.api.internal.utils.ServiceRegistryImpl;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class GuidedScoreCardFactory {
     private static GuidedScoreCardProvider provider = ServiceRegistry.getInstance().get(GuidedScoreCardProvider.class);

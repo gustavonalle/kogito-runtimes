@@ -16,9 +16,6 @@
 
 package org.drools.core.base;
 
-import static org.drools.core.base.mvel.MVELCompilationUnit.getFactHandle;
-import static org.drools.core.common.InternalFactHandle.dummyFactHandleOf;
-
 import org.drools.core.base.extractors.ConstantValueReader;
 import org.drools.core.base.extractors.SelfReferenceClassFieldReader;
 import org.drools.core.base.field.ObjectFieldImpl;
@@ -30,7 +27,10 @@ import org.drools.core.rule.VariableRestriction.VariableContextEntry;
 import org.drools.core.spi.Evaluator;
 import org.drools.core.spi.FieldValue;
 import org.drools.core.spi.InternalReadAccessor;
-import org.kie.services.time.Interval;
+import org.drools.core.time.Interval;
+
+import static org.drools.core.base.mvel.MVELCompilationUnit.getFactHandle;
+import static org.drools.core.common.InternalFactHandle.dummyFactHandleOf;
 
 /**
  * An EvaluatorWrapper is used when executing MVEL expressions

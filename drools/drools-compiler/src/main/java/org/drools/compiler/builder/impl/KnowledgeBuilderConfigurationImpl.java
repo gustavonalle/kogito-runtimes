@@ -36,7 +36,6 @@ import org.drools.compiler.rule.builder.DroolsCompilerComponentFactory;
 import org.drools.compiler.rule.builder.util.AccumulateUtil;
 import org.drools.core.base.evaluators.EvaluatorDefinition;
 import org.drools.core.base.evaluators.EvaluatorRegistry;
-import org.drools.reflective.classloader.ProjectClassLoader;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.factmodel.ClassBuilderFactory;
 import org.drools.core.util.ClassUtils;
@@ -48,6 +47,7 @@ import org.drools.core.xml.Handler;
 import org.drools.core.xml.SemanticModule;
 import org.drools.core.xml.SemanticModules;
 import org.drools.core.xml.WrapperSemanticModule;
+import org.drools.reflective.classloader.ProjectClassLoader;
 import org.kie.api.runtime.rule.AccumulateFunction;
 import org.kie.internal.builder.KnowledgeBuilderConfiguration;
 import org.kie.internal.builder.ResultSeverity;
@@ -94,23 +94,23 @@ import org.slf4j.LoggerFactory;
  * drools.accumulate.function.min = org.kie.base.accumulators.MinAccumulateFunction
  * drools.accumulate.function.count = org.kie.base.accumulators.CountAccumulateFunction
  * drools.accumulate.function.sum = org.kie.base.accumulators.SumAccumulateFunction
- *
+ * 
  * drools.parser.processStringEscapes = true|false
- *
- *
+ * 
+ * 
  * drools.problem.severity.<ident> = ERROR|WARNING|INFO
- *
+ * 
  */
 public class KnowledgeBuilderConfigurationImpl
         implements
         KnowledgeBuilderConfiguration {
 
     private static final int                  DEFAULT_PARALLEL_RULES_BUILD_THRESHOLD = 10;
-
+    
     private Map<String, DialectConfiguration> dialectConfigurations;
 
     private DefaultDialectOption              defaultDialect;
-
+    
     private ParallelRulesBuildThresholdOption parallelRulesBuildThreshold = ParallelRulesBuildThresholdOption.get(DEFAULT_PARALLEL_RULES_BUILD_THRESHOLD);
 
     private ClassLoader                       classLoader;
@@ -147,7 +147,7 @@ public class KnowledgeBuilderConfigurationImpl
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeBuilderConfigurationImpl.class);
 
-    /**
+     /**
      * Constructor that sets the parent class loader for the package being built/compiled
      * @param classLoaders
      */
@@ -168,7 +168,7 @@ public class KnowledgeBuilderConfigurationImpl
      * Programmatic properties file, added with lease precedence
      */
     public KnowledgeBuilderConfigurationImpl(Properties properties,
-                                             ClassLoader... classLoaders) {
+            ClassLoader... classLoaders) {
         init(properties,
                 classLoaders);
     }
@@ -179,7 +179,7 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     private void init(Properties properties,
-                      ClassLoader... classLoaders) {
+            ClassLoader... classLoaders) {
         if (classLoaders != null && classLoaders.length > 1) {
             throw new RuntimeException("Multiple classloaders are no longer supported");
         }
@@ -197,7 +197,7 @@ public class KnowledgeBuilderConfigurationImpl
             // an osgi environement) so try with the class loader of this class
             this.chainedProperties = ChainedProperties.getChainedProperties( getClass().getClassLoader() );
 
-            if (this.classLoader instanceof ProjectClassLoader) {
+            if (this.classLoader instanceof ProjectClassLoader ) {
                 ((ProjectClassLoader) classLoader).setDroolsClassLoader(getClass().getClassLoader());
             }
         }
@@ -207,29 +207,29 @@ public class KnowledgeBuilderConfigurationImpl
         }
 
         setProperty(ClassLoaderCacheOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(ClassLoaderCacheOption.PROPERTY_NAME,
-                        "true"));
+                    this.chainedProperties.getProperty(ClassLoaderCacheOption.PROPERTY_NAME,
+                                                       "true"));
 
         setProperty( TrimCellsInDTableOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(TrimCellsInDTableOption.PROPERTY_NAME,
-                        "true"));
+                    this.chainedProperties.getProperty(TrimCellsInDTableOption.PROPERTY_NAME,
+                                                       "true"));
 
         setProperty( GroupDRLsInKieBasesByFolderOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(GroupDRLsInKieBasesByFolderOption.PROPERTY_NAME,
-                        "false"));
+                    this.chainedProperties.getProperty(GroupDRLsInKieBasesByFolderOption.PROPERTY_NAME,
+                                                       "false"));
 
         setProperty(PropertySpecificOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(PropertySpecificOption.PROPERTY_NAME,
-                        DEFAULT_PROP_SPEC_OPT.toString()));
+                    this.chainedProperties.getProperty(PropertySpecificOption.PROPERTY_NAME,
+                                                       DEFAULT_PROP_SPEC_OPT.toString()));
 
         setProperty(LanguageLevelOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(LanguageLevelOption.PROPERTY_NAME,
-                        DrlParser.DEFAULT_LANGUAGE_LEVEL.toString()));
+                    this.chainedProperties.getProperty(LanguageLevelOption.PROPERTY_NAME,
+                                                       DrlParser.DEFAULT_LANGUAGE_LEVEL.toString()));
 
         setProperty(ParallelRulesBuildThresholdOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(ParallelRulesBuildThresholdOption.PROPERTY_NAME,
-                        String.valueOf(DEFAULT_PARALLEL_RULES_BUILD_THRESHOLD)));
-
+        			this.chainedProperties.getProperty(ParallelRulesBuildThresholdOption.PROPERTY_NAME, 
+        												String.valueOf(DEFAULT_PARALLEL_RULES_BUILD_THRESHOLD)));
+        
         this.dialectConfigurations = new HashMap<String, DialectConfiguration>();
 
         buildDialectConfigurationMap();
@@ -243,12 +243,12 @@ public class KnowledgeBuilderConfigurationImpl
         buildSeverityMap();
 
         setProperty(ProcessStringEscapesOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(ProcessStringEscapesOption.PROPERTY_NAME,
-                        "true"));
+                    this.chainedProperties.getProperty(ProcessStringEscapesOption.PROPERTY_NAME,
+                                                       "true"));
 
         setProperty(DefaultPackageNameOption.PROPERTY_NAME,
-                this.chainedProperties.getProperty(DefaultPackageNameOption.PROPERTY_NAME,
-                        "defaultpkg"));
+                    this.chainedProperties.getProperty(DefaultPackageNameOption.PROPERTY_NAME,
+                                                       "defaultpkg"));
 
         this.componentFactory = new DroolsCompilerComponentFactory();
 
@@ -271,7 +271,7 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public void setProperty(String name,
-                            String value) {
+            String value) {
         name = name.trim();
         if (StringUtils.isEmpty(name)) {
             return;
@@ -312,7 +312,7 @@ public class KnowledgeBuilderConfigurationImpl
                 log.warn("Invalid value " + value + " for option " + LanguageLevelOption.PROPERTY_NAME);
             }
         } else if (name.equals(ParallelRulesBuildThresholdOption.PROPERTY_NAME)) {
-            setParallelRulesBuildThreshold(Integer.valueOf(value));
+        	setParallelRulesBuildThreshold(Integer.valueOf(value));
         } else {
             // if the property from the kmodule was not intercepted above, just add it to the chained properties.
             Properties additionalProperty = new Properties();
@@ -356,7 +356,7 @@ public class KnowledgeBuilderConfigurationImpl
         } else if (name.equals(LanguageLevelOption.PROPERTY_NAME)) {
             return "" + getLanguageLevel();
         } else if (name.equals(ParallelRulesBuildThresholdOption.PROPERTY_NAME)) {
-            return String.valueOf(getParallelRulesBuildThreshold());
+        	return String.valueOf(getParallelRulesBuildThreshold());
         }
         return null;
     }
@@ -382,7 +382,7 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public void addDialect(String dialectName,
-                           String dialectClass) {
+            String dialectClass) {
         Class<?> cls = null;
         try {
             cls = getClassLoader().loadClass(dialectClass);
@@ -397,15 +397,15 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public void addDialect(String dialectName,
-                           DialectConfiguration dialectConf) {
+            DialectConfiguration dialectConf) {
         dialectConfigurations.put(dialectName,
                 dialectConf);
     }
 
     public DialectCompiletimeRegistry buildDialectRegistry(ClassLoader rootClassLoader,
-                                                           KnowledgeBuilderConfigurationImpl pkgConf,
-                                                           PackageRegistry pkgRegistry,
-                                                           InternalKnowledgePackage pkg) {
+            KnowledgeBuilderConfigurationImpl pkgConf,
+            PackageRegistry pkgRegistry,
+            InternalKnowledgePackage pkg) {
         DialectCompiletimeRegistry registry = new DialectCompiletimeRegistry();
         for (DialectConfiguration conf : this.dialectConfigurations.values()) {
             Dialect dialect = conf.newDialect(rootClassLoader, pkgConf, pkgRegistry, pkg);
@@ -427,7 +427,7 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public void setDialectConfiguration(String name,
-                                        DialectConfiguration configuration) {
+            DialectConfiguration configuration) {
         this.dialectConfigurations.put(name,
                 configuration);
     }
@@ -542,14 +542,14 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public void addAccumulateFunction(String identifier,
-                                      String className) {
+            String className) {
         this.accumulateFunctions.put(identifier,
-                AccumulateUtil.loadAccumulateFunction(getClassLoader(), identifier,
+                                     AccumulateUtil.loadAccumulateFunction(getClassLoader(), identifier,
                         className));
     }
 
     public void addAccumulateFunction(String identifier,
-                                      Class<? extends AccumulateFunction> clazz) {
+            Class<? extends AccumulateFunction> clazz) {
         try {
             this.accumulateFunctions.put(identifier,
                     clazz.newInstance());
@@ -681,11 +681,11 @@ public class KnowledgeBuilderConfigurationImpl
     }
 
     public int getParallelRulesBuildThreshold() {
-        return parallelRulesBuildThreshold.getParallelRulesBuildThreshold();
+    	return parallelRulesBuildThreshold.getParallelRulesBuildThreshold();
     }
-
+    
     public void setParallelRulesBuildThreshold(int parallelRulesBuildThreshold) {
-        this.parallelRulesBuildThreshold = ParallelRulesBuildThresholdOption.get(parallelRulesBuildThreshold);
+    	this.parallelRulesBuildThreshold = ParallelRulesBuildThresholdOption.get(parallelRulesBuildThreshold);
     }
 
     public String getDefaultPackageName() {
@@ -754,7 +754,7 @@ public class KnowledgeBuilderConfigurationImpl
 
     @SuppressWarnings("unchecked")
     public <T extends MultiValueKnowledgeBuilderOption> T getOption(Class<T> option,
-                                                                    String key) {
+            String key) {
         if (AccumulateFunctionOption.class.equals(option)) {
             return (T) AccumulateFunctionOption.get(key,
                     this.accumulateFunctions.get(key));

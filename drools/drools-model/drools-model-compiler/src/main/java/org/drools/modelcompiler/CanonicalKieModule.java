@@ -19,7 +19,6 @@ package org.drools.modelcompiler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,10 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.drools.compiler.addon.DependencyFilter;
-import org.drools.compiler.addon.PomModel;
+import org.appformer.maven.support.DependencyFilter;
+import org.appformer.maven.support.PomModel;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
-import org.drools.compiler.compiler.ProcessBuilder;
 import org.drools.compiler.kie.builder.impl.AbstractKieModule;
 import org.drools.compiler.kie.builder.impl.FileKieModule;
 import org.drools.compiler.kie.builder.impl.InternalKieModule;
@@ -57,7 +55,6 @@ import org.drools.core.util.StringUtils;
 import org.drools.model.Model;
 import org.drools.model.NamedModelItem;
 import org.drools.modelcompiler.builder.CanonicalKieBaseUpdater;
-import org.drools.modelcompiler.builder.CanonicalModelKieProject;
 import org.drools.modelcompiler.builder.KieBaseBuilder;
 import org.drools.reflective.ResourceProvider;
 import org.drools.reflective.classloader.ProjectClassLoader;
@@ -85,7 +82,6 @@ import static java.util.stream.Collectors.toList;
 
 import static org.drools.compiler.kie.builder.impl.AbstractKieModule.checkStreamMode;
 import static org.drools.model.impl.ModelComponent.areEqualInModel;
-import static org.drools.modelcompiler.builder.CanonicalModelKieProject.PROJECT_MODEL_RESOURCE_CLASS;
 import static org.drools.modelcompiler.util.StringUtil.fileNameToClass;
 import static org.kie.api.io.ResourceType.determineResourceType;
 
@@ -106,10 +102,6 @@ public class CanonicalKieModule implements InternalKieModule {
 
     private ProjectClassLoader moduleClassLoader;
 
-    private boolean incrementalUpdate = false;
-
-    private KieModuleModel kieModuleModel;
-
     public CanonicalKieModule( ReleaseId releaseId, KieModuleModel kieProject, File file ) {
         this( releaseId, kieProject, file, null );
     }
@@ -122,34 +114,9 @@ public class CanonicalKieModule implements InternalKieModule {
         this( internalKieModule, null );
     }
 
-    private CanonicalKieModule( InternalKieModule internalKieModule, Collection<String> ruleClassesNames ) {
+    public CanonicalKieModule( InternalKieModule internalKieModule, Collection<String> ruleClassesNames ) {
         this.internalKieModule = internalKieModule;
         this.ruleClassesNames = ruleClassesNames;
-    }
-
-    public static CanonicalKieModule createFromClasspath() {
-        return createFromClassLoader(null);
-    }
-
-    public static CanonicalKieModule createFromClassLoader(ClassLoader classLoader) {
-        CanonicalKieModuleModel kmodel = getModuleModel( classLoader );
-        return kmodel == null ? null : new CanonicalKieModule( new CanonicalInternalKieModule(kmodel.getReleaseId(), kmodel.getKieModuleModel()) );
-    }
-
-    public static CanonicalKieModule create(InternalKieModule kieModule) {
-        return kieModule instanceof CanonicalKieModule ? (( CanonicalKieModule ) kieModule) : createFromClassLoader(kieModule.getModuleClassLoader(), kieModule);
-    }
-
-    public static CanonicalKieModule createFromClassLoader(ClassLoader classLoader, InternalKieModule kieModule) {
-        CanonicalKieModule canonicalKieModule = createFromClassLoader(classLoader);
-        if (canonicalKieModule == null) {
-            canonicalKieModule = new CanonicalKieModule( kieModule );
-        }
-        return canonicalKieModule;
-    }
-
-    private static CanonicalKieModuleModel getModuleModel(ClassLoader classLoader) {
-        return createInstance( classLoader, CanonicalModelKieProject.PROJECT_MODEL_CLASS );
     }
 
     @Override
@@ -221,6 +188,7 @@ public class CanonicalKieModule implements InternalKieModule {
                 }
                 KieBaseModelImpl includeKBaseModel = ( KieBaseModelImpl ) kieProject.getKieBaseModel( include );
                 CanonicalKieModule canonicalInclude = (CanonicalKieModule) includeModule;
+                canonicalInclude.setModuleClassLoader((ProjectClassLoader)kieProject.getClassLoader());
                 models.addAll( canonicalInclude.getModelForKBase( includeKBaseModel ) );
                 processes.addAll( findProcesses( includeModule, includeKBaseModel ) );
             }
@@ -281,12 +249,7 @@ public class CanonicalKieModule implements InternalKieModule {
     public ProjectClassLoader getModuleClassLoader() {
         if (moduleClassLoader == null) {
             moduleClassLoader = createModuleClassLoader( null );
-
-            Map<String, byte[]> classesMap = getClassesMap();
-            for (InternalKieModule dep : getKieDependencies().values()) {
-                dep.getClassesMap().forEach( classesMap::putIfAbsent );
-            }
-            moduleClassLoader.storeClasses( classesMap );
+            moduleClassLoader.storeClasses( getClassesMap() );
         }
         return moduleClassLoader;
     }
@@ -297,41 +260,14 @@ public class CanonicalKieModule implements InternalKieModule {
         this.moduleClassLoader = moduleClassLoader;
     }
 
-    public void setIncrementalUpdate( boolean incrementalUpdate ) {
-        this.incrementalUpdate = incrementalUpdate;
-    }
-
     private Map<String, Model> getModels() {
         if ( models.isEmpty() ) {
-            // During incremental update, to keep compatible classes generated from declared types, the new kmodule
-            // is loaded with the classloader of the old one. This implies that the models cannot be retrieved from the
-            // project model class but loaded one by one from the classloader itself.
-            if (incrementalUpdate) {
-                initModelsFromProjectDescriptor();
-            } else {
-                initModels( getModuleModel( getModuleClassLoader() ) );
+            for (String rulesFile : getRuleClassNames()) {
+                Model model = createInstance( getModuleClassLoader(), rulesFile );
+                models.put( model.getName(), model );
             }
         }
         return models;
-    }
-
-    private void initModelsFromProjectDescriptor() {
-        for (String rulesFile : getRuleClassNames()) {
-            Model model = createInstance( getModuleClassLoader(), rulesFile );
-            models.put( model.getName(), model );
-        }
-    }
-
-    private void initModels( CanonicalKieModuleModel kmodel ) {
-        if (kmodel != null) {
-            ruleClassesNames = new ArrayList<>();
-            for (Model model : kmodel.getModels()) {
-                models.put( model.getName(), model );
-                ruleClassesNames.add( model.getClass().getCanonicalName() );
-            }
-        } else {
-            initModelsFromProjectDescriptor();
-        }
     }
 
     private Collection<String> getRuleClassNames() {
@@ -370,7 +306,6 @@ public class CanonicalKieModule implements InternalKieModule {
             throw new RuntimeException(e);
         }
 
-
         String[] lines = modelFiles.split( "\n" );
         String header = lines[0];
         if ( !header.startsWith( MODEL_VERSION ) ) {
@@ -390,15 +325,16 @@ public class CanonicalKieModule implements InternalKieModule {
 
     private static <T> T createInstance( ClassLoader cl, String className ) {
         try {
-            return ( T ) (cl == null ? Class.forName( className ) : cl.loadClass( className )).newInstance();
+            return ( T ) cl.loadClass( className ).newInstance();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            return null;
+            throw new RuntimeException( e );
         }
     }
 
     @Override
     public KieJarChangeSet getChanges( InternalKieModule newKieModule ) {
-        KieJarChangeSet result = findChanges(newKieModule);
+        KieJarChangeSet result = new KieJarChangeSet();
+        findChanges(result, newKieModule);
 
         Map<String, Model> oldModels = getModels();
         Map<String, Model> newModels = (( CanonicalKieModule ) newKieModule).getModels();
@@ -425,7 +361,6 @@ public class CanonicalKieModule implements InternalKieModule {
         }
 
         KieJarChangeSet internalChanges = internalKieModule.getChanges(((CanonicalKieModule) newKieModule).internalKieModule);
-        internalChanges.removeFile( PROJECT_MODEL_RESOURCE_CLASS );
         return result.merge(internalChanges);
     }
 
@@ -446,8 +381,7 @@ public class CanonicalKieModule implements InternalKieModule {
         return changeSet;
     }
 
-    private KieJarChangeSet findChanges(InternalKieModule newKieModule) {
-        KieJarChangeSet result = new KieJarChangeSet();
+    private void findChanges(KieJarChangeSet result, InternalKieModule newKieModule) {
         Collection<String> oldFiles = getFileNames();
         Collection<String> newFiles = newKieModule.getFileNames();
 
@@ -475,14 +409,10 @@ public class CanonicalKieModule implements InternalKieModule {
                 result.addFile( file );
             }
         }
-
-        return result;
     }
 
     private boolean isChange(String fileName, CanonicalKieModule module) {
-        return fileName.endsWith( ".class" ) &&
-                !fileName.equals( PROJECT_MODEL_RESOURCE_CLASS ) &&
-                module.getRuleClassNames().stream().noneMatch( fileNameToClass(fileName)::startsWith );
+        return fileName.endsWith( ".class" ) && !module.getRuleClassNames().stream().anyMatch( fileNameToClass(fileName)::startsWith );
     }
 
     private Collection<ResourceChangeSet> calculateResourceChangeSet( Model oldModel, Model newModel ) {
@@ -584,7 +514,13 @@ public class CanonicalKieModule implements InternalKieModule {
         return new CanonicalKieBaseUpdater( context );
     }
 
-    private static KieBaseConfiguration getKieBaseConfiguration( KieBaseModelImpl kBaseModel, ClassLoader cl, KieBaseConfiguration conf ) {
+    @Override
+    public void updateKieModule(InternalKieModule newKM) {
+        CanonicalKieModule newCanonicalKieModule = (CanonicalKieModule) newKM;
+        newCanonicalKieModule.setModuleClassLoader(this.getModuleClassLoader());
+    }
+
+    private static KieBaseConfiguration getKieBaseConfiguration(KieBaseModelImpl kBaseModel, ClassLoader cl, KieBaseConfiguration conf ) {
         if (conf == null) {
             conf = getKnowledgeBaseConfiguration(kBaseModel, cl);
         } else if (conf instanceof RuleBaseConfiguration ) {
@@ -606,27 +542,6 @@ public class CanonicalKieModule implements InternalKieModule {
 
     public InternalKieModule getInternalKieModule() {
         return internalKieModule;
-    }
-
-    @Override
-    public void initModel() {
-        initModel( moduleClassLoader );
-    }
-
-    @Override
-    public void initModel(ClassLoader classLoader) {
-        CanonicalKieModuleModel kmodel = getModuleModel( classLoader );
-        if (kmodel != null) {
-            initModels( kmodel );
-            kieModuleModel = kmodel.getKieModuleModel();
-        } else {
-            kieModuleModel = internalKieModule.getKieModuleModel();
-        }
-    }
-
-    @Override
-    public KieModuleModel getKieModuleModel() {
-        return kieModuleModel;
     }
 
     // Delegate methods
@@ -654,6 +569,11 @@ public class CanonicalKieModule implements InternalKieModule {
     @Override
     public Map<String, Results> getKnowledgeResultsCache() {
         return internalKieModule.getKnowledgeResultsCache();
+    }
+
+    @Override
+    public KieModuleModel getKieModuleModel() {
+        return internalKieModule.getKieModuleModel();
     }
 
     @Override
@@ -762,9 +682,6 @@ public class CanonicalKieModule implements InternalKieModule {
     }
 
     public static String getModelFileWithGAV(ReleaseId releaseId) {
-        return Paths.get(MODEL_FILE_DIRECTORY,
-                              releaseId.getGroupId(),
-                              releaseId.getArtifactId(),
-                              MODEL_FILE_NAME).toString();
+        return MODEL_FILE_DIRECTORY + releaseId.getGroupId() + "/" + releaseId.getArtifactId() + "/" + MODEL_FILE_NAME;
     }
 }

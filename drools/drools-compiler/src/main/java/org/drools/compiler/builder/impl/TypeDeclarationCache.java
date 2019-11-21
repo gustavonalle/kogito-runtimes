@@ -15,10 +15,6 @@
 
 package org.drools.compiler.builder.impl;
 
-import static org.drools.compiler.builder.impl.ClassDefinitionFactory.createClassDefinition;
-import static org.drools.compiler.builder.impl.TypeDeclarationConfigurator.processMvelBasedAccessors;
-import static org.drools.core.util.BitMaskUtil.isSet;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -44,6 +40,10 @@ import org.kie.api.definition.type.Modifies;
 import org.kie.api.definition.type.Position;
 import org.kie.api.io.Resource;
 import org.kie.api.runtime.rule.Match;
+
+import static org.drools.compiler.builder.impl.ClassDefinitionFactory.createClassDefinition;
+import static org.drools.compiler.builder.impl.TypeDeclarationConfigurator.processMvelBasedAccessors;
+import static org.drools.core.util.BitMaskUtil.isSet;
 
 public class TypeDeclarationCache {
 

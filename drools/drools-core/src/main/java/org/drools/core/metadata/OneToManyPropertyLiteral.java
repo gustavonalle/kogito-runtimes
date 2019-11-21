@@ -16,6 +16,7 @@
 package org.drools.core.metadata;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class OneToManyPropertyLiteral<T,R>

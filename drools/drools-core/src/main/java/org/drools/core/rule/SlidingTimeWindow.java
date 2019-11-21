@@ -16,8 +16,6 @@
 
 package org.drools.core.rule;
 
-import static org.drools.core.common.PhreakPropagationContextFactory.createPropagationContextForFact;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -42,11 +40,13 @@ import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.WindowNode;
 import org.drools.core.reteoo.WindowNode.WindowMemory;
 import org.drools.core.spi.PropagationContext;
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.impl.PointInTimeTrigger;
+
+import static org.drools.core.common.PhreakPropagationContextFactory.createPropagationContextForFact;
 
 public class SlidingTimeWindow
         implements
@@ -217,7 +217,7 @@ public class SlidingTimeWindow
                 JobContext jobctx = new BehaviorJobContext( nodeId, workingMemory, this, context);
                 JobHandle handle = clock.scheduleJob( job,
                                                       jobctx,
-                                                      new PointInTimeTrigger( nextTimestamp, null, null ) );
+                                                      PointInTimeTrigger.createPointInTimeTrigger( nextTimestamp, null ) );
                 jobctx.setJobHandle( handle );
             }
         }
@@ -408,6 +408,7 @@ public class SlidingTimeWindow
             // TODO Auto-generated method stub
         }
 
+        @Override
         public InternalWorkingMemory getWorkingMemory() {
             return workingMemory;
         }

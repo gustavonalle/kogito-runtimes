@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.templates.SimpleTemplateRegistry;

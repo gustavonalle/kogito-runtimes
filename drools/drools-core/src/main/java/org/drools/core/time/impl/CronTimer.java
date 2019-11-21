@@ -16,7 +16,13 @@
 
 package org.drools.core.time.impl;
 
-import static org.drools.core.time.TimeUtils.evalDateExpression;
+import org.drools.core.base.mvel.MVELObjectExpression;
+import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.rule.ConditionalElement;
+import org.drools.core.rule.Declaration;
+import org.drools.core.spi.Tuple;
+import org.drools.core.time.Trigger;
+import org.kie.api.runtime.Calendars;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -25,16 +31,7 @@ import java.io.ObjectOutput;
 import java.text.ParseException;
 import java.util.Map;
 
-import org.drools.core.base.mvel.MVELObjectExpression;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.ConditionalElement;
-import org.drools.core.rule.Declaration;
-import org.drools.core.spi.Tuple;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.CronExpression;
-import org.kie.services.time.impl.CronTrigger;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.api.runtime.Calendars;
+import static org.drools.core.time.TimeUtils.evalDateExpression;
 
 public class CronTimer extends BaseTimer
     implements
@@ -43,7 +40,7 @@ public class CronTimer extends BaseTimer
     private MVELObjectExpression startTime;
     private MVELObjectExpression endTime;
     private int                  repeatLimit;
-    private CronExpression cronExpression;
+    private CronExpression       cronExpression;
     
     public CronTimer() {
         
@@ -106,13 +103,13 @@ public class CronTimer extends BaseTimer
                                  InternalWorkingMemory wm) {
         Declaration[] startDeclarations = declrs[0];
 
-        return new CronTrigger(timestamp,
-                               evalDateExpression( this.startTime, leftTuple, startDeclarations, wm ),
-                               evalDateExpression( this.endTime, leftTuple, startDeclarations, wm ),
-                               this.repeatLimit,
-                               this.cronExpression,
-                               calendarNames,
-                               calendars );
+        return new CronTrigger( timestamp,
+                                evalDateExpression( this.startTime, leftTuple, startDeclarations, wm ),
+                                evalDateExpression( this.endTime, leftTuple, startDeclarations, wm ),
+                                this.repeatLimit,
+                                this.cronExpression,
+                                calendarNames,
+                                calendars );
     }
 
     public Trigger createTrigger(long timestamp,

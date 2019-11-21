@@ -8,10 +8,10 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.Pattern;
 import org.drools.core.spi.Tuple;
+import org.drools.core.time.Interval;
 import org.drools.model.BitMask;
 import org.drools.model.Index;
 import org.drools.model.SingleConstraint;
-import org.kie.services.time.Interval;
 
 public class ConstraintEvaluator {
 
@@ -71,16 +71,16 @@ public class ConstraintEvaluator {
 
     public boolean evaluate( InternalFactHandle handle, InternalWorkingMemory workingMemory ) {
         try {
-            return declarations.length == 1 ?
-                    constraint.getPredicate1().test( getSingleArg( handle, workingMemory ) ) :
-                    constraint.getPredicate().test( getAlphaInvocationArgs( handle, workingMemory ) );
+            return constraint.getPredicate().test( declarations.length == 1 ?
+                                                   getSingleArg( handle, workingMemory ) :
+                                                   getAlphaInvocationArgs( handle, workingMemory ) );
         } catch (Exception e) {
             throw new RuntimeException( e );
         }
     }
 
-    private Object getSingleArg( InternalFactHandle handle, InternalWorkingMemory workingMemory ) {
-        return declarations[0].isInternalFact() ? declarations[0].getValue( workingMemory, handle.getObject() ) : handle.getObject();
+    private Object[] getSingleArg( InternalFactHandle handle, InternalWorkingMemory workingMemory ) {
+        return declarations[0].isInternalFact() ? new Object[] { declarations[0].getValue( workingMemory, handle.getObject() ) } : new Object[] { handle.getObject() };
     }
 
     public Object[] getAlphaInvocationArgs( InternalFactHandle handle, InternalWorkingMemory workingMemory ) {

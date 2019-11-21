@@ -16,8 +16,6 @@
 
 package org.drools.core.time.impl;
 
-import static org.drools.core.time.TimeUtils.evalDateExpression;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -30,10 +28,10 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.rule.ConditionalElement;
 import org.drools.core.rule.Declaration;
 import org.drools.core.spi.Tuple;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.services.time.impl.IntervalTrigger;
+import org.drools.core.time.Trigger;
 import org.kie.api.runtime.Calendars;
+
+import static org.drools.core.time.TimeUtils.evalDateExpression;
 
 public class    IntervalTimer extends BaseTimer
     implements

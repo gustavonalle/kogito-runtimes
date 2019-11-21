@@ -32,9 +32,7 @@ import java.util.Set;
 
 import org.drools.core.base.ClassObjectType;
 import org.drools.core.factmodel.AnnotationDefinition;
-import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.reteoo.NodeTypeEnums;
-import org.drools.core.reteoo.PropertySpecificUtil;
 import org.drools.core.rule.constraint.MvelConstraint;
 import org.drools.core.rule.constraint.XpathConstraint;
 import org.drools.core.spi.AcceptsClassObjectType;
@@ -45,15 +43,11 @@ import org.drools.core.spi.ObjectType;
 import org.drools.core.spi.PatternExtractor;
 import org.drools.core.spi.SelfDateExtractor;
 import org.drools.core.spi.SelfNumberExtractor;
-import org.drools.core.util.bitmask.BitMask;
+import org.kie.internal.ruleunit.RuleUnitComponentFactory;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.calculateNegativeMask;
-import static org.drools.core.reteoo.PropertySpecificUtil.calculatePositiveMask;
-import static org.drools.reflective.util.ClassUtils.convertFromPrimitiveType;
-import static org.drools.reflective.util.ClassUtils.isDataSource;
-import static org.drools.reflective.util.ClassUtils.isFinal;
-import static org.drools.reflective.util.ClassUtils.isInterface;
-import static org.drools.reflective.util.ClassUtils.isIterable;
+import static org.drools.core.util.ClassUtils.convertFromPrimitiveType;
+import static org.drools.core.util.ClassUtils.isFinal;
+import static org.drools.core.util.ClassUtils.isInterface;
 
 ;
 
@@ -84,9 +78,6 @@ public class Pattern
     private boolean           passive;
     
     private XpathConstraint xPath;
-
-    private BitMask positiveWatchMask;
-    private BitMask negativeWatchMask;
 
     public Pattern() {
         this(0,
@@ -543,36 +534,6 @@ public class Pattern
         this.listenedProperties = listenedProperties;
     }
 
-    public List<String> getAccessibleProperties(InternalKnowledgeBase kBase) {
-        return PropertySpecificUtil.getAccessibleProperties( kBase, getClassType() );
-    }
-
-    public BitMask getPositiveWatchMask( List<String> accessibleProperties ) {
-        if (positiveWatchMask == null) {
-            positiveWatchMask = calculatePositiveMask( getClassType(), listenedProperties, accessibleProperties );
-        }
-        return positiveWatchMask;
-    }
-
-    public void setPositiveWatchMask( BitMask positiveWatchMask ) {
-        this.positiveWatchMask = positiveWatchMask;
-    }
-
-    public BitMask getNegativeWatchMask( List<String> accessibleProperties ) {
-        if (negativeWatchMask == null) {
-            negativeWatchMask = calculateNegativeMask(getClassType(), listenedProperties, accessibleProperties);
-        }
-        return negativeWatchMask;
-    }
-
-    public void setNegativeWatchMask( BitMask negativeWatchMask ) {
-        this.negativeWatchMask = negativeWatchMask;
-    }
-
-    private Class<?> getClassType() {
-        return (( ClassObjectType ) objectType).getClassType();
-    }
-
     public Map<String, AnnotationDefinition> getAnnotations() {
         if ( annotations == null ) {
             annotations = new HashMap<String, AnnotationDefinition>();
@@ -619,5 +580,14 @@ public class Pattern
 
     private Class<?> getPatternType() {
         return objectType instanceof ClassObjectType ? ((ClassObjectType)objectType).getClassType() : null;
+    }
+
+    private static boolean isIterable(Class<?> clazz) {
+        return Iterable.class.isAssignableFrom( clazz ) || clazz.isArray();
+    }
+
+    private static boolean isDataSource(Class<?> clazz) {
+        RuleUnitComponentFactory ruleUnitComponent = RuleUnitComponentFactory.get();
+        return ruleUnitComponent != null && ruleUnitComponent.isDataSourceClass( clazz );
     }
 }

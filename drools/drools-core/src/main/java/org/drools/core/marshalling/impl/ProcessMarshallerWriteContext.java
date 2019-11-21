@@ -23,6 +23,7 @@ import java.util.Map;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.impl.InternalKnowledgeBase;
+import org.drools.core.marshalling.impl.MarshallerWriteContext;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
 import org.kie.api.runtime.Environment;
 
@@ -35,9 +36,9 @@ public class ProcessMarshallerWriteContext extends MarshallerWriteContext {
     public static final int STATE_ACTIVE = 1;
     public static final int STATE_COMPLETED = 2;
 
-    private String processInstanceId;
-    private String taskId;
-    private String workItemId;
+    private Long processInstanceId;
+    private Long taskId;
+    private Long workItemId;
     private int state;
     
 
@@ -50,27 +51,27 @@ public class ProcessMarshallerWriteContext extends MarshallerWriteContext {
         super(stream, kBase, wm, sinks, resolverStrategyFactory, env);
     }
     
-    public String getProcessInstanceId() {
+    public Long getProcessInstanceId() {
         return processInstanceId;
     }
     
-    public void setProcessInstanceId(String processInstanceId) {
+    public void setProcessInstanceId(Long processInstanceId) {
         this.processInstanceId = processInstanceId;
     }
     
-    public String getTaskId() {
+    public Long getTaskId() {
         return taskId;
     }
     
-    public void setTaskId(String taskId) {
+    public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
     
-    public String getWorkItemId() {
+    public Long getWorkItemId() {
         return workItemId;
     }
     
-    public void setWorkItemId(String workItemId) {
+    public void setWorkItemId(Long workItemId) {
         this.workItemId = workItemId;
     }
     

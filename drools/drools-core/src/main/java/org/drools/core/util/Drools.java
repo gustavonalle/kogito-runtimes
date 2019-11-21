@@ -17,14 +17,13 @@ package org.drools.core.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class Drools {
+public class Drools {
 
-    private static final Pattern VERSION_PAT = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)([\\.-](.*))?");
+    private static Pattern VERSION_PAT = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)([\\.-](.*))?");
 
     private static String droolsFullVersion;
     private static int droolsMajorVersion;
@@ -43,7 +42,7 @@ public final class Drools {
                 properties.load(is);
                 droolsFullVersion = properties.get("drools.version").toString();
             } catch ( IOException e ) {
-                throw new UncheckedIOException(e);
+                throw new RuntimeException(e);
             }
         }
 
@@ -104,9 +103,5 @@ public final class Drools {
 
     public static boolean isJndiAvailable() {
         return jndiAvailable;
-    }
-
-    private Drools() {
-        // It is forbidden to create instances of util classes.
     }
 }

@@ -40,6 +40,7 @@ import org.drools.core.reteoo.ReteooBuilder;
 import org.drools.core.reteoo.SegmentMemory;
 import org.drools.core.rule.InvalidPatternException;
 import org.drools.core.rule.TypeDeclaration;
+import org.drools.core.ruleunit.RuleUnitDescriptionRegistry;
 import org.drools.core.spi.FactHandleFactory;
 import org.drools.core.util.TripleStore;
 import org.kie.api.KieBase;
@@ -142,6 +143,7 @@ public interface InternalKnowledgeBase extends KieBase {
     void setKieContainer( InternalKieContainer kieContainer );
 	void initMBeans();
 
+    RuleUnitDescriptionRegistry getRuleUnitDescriptionRegistry();
     boolean hasUnits();
 
     SessionConfiguration getSessionConfiguration();

@@ -15,8 +15,6 @@
 
 package org.drools.core.phreak;
 
-import static org.drools.core.phreak.RuleNetworkEvaluator.normalizeStagedTuples;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -46,12 +44,12 @@ import org.drools.core.reteoo.TimerNode;
 import org.drools.core.reteoo.TimerNode.TimerNodeMemory;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.DefaultJobHandle;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.Trigger;
+import org.drools.core.time.impl.DefaultJobHandle;
 import org.drools.core.time.impl.Timer;
 import org.drools.core.util.LinkedList;
 import org.drools.core.util.index.TupleList;
@@ -60,6 +58,8 @@ import org.kie.api.runtime.Calendars;
 import org.kie.api.runtime.conf.TimedRuleExecutionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.drools.core.phreak.RuleNetworkEvaluator.normalizeStagedTuples;
 
 public class PhreakTimerNode {
     private static final Logger log = LoggerFactory.getLogger( PhreakTimerNode.class );
@@ -546,16 +546,19 @@ public class PhreakTimerNode {
                                                        MarshallerWriteContext outputCtx) {
             // TimerNodeJobContext   
             TimerNodeJobContext tnJobCtx = (TimerNodeJobContext) jobCtx;
-
-            return ProtobufMessages.Timers.Timer.newBuilder()
-                                          .setType( ProtobufMessages.Timers.TimerType.TIMER_NODE )
-                                          .setTimerNode( ProtobufMessages.Timers.TimerNodeTimer.newBuilder()
-                                                                                .setNodeId( tnJobCtx.getTimerNodeId() )
-                                                                                .setTuple( PersisterHelper.createTuple( tnJobCtx.getTuple() ) )
-                                                                                .setTrigger( ProtobufOutputMarshaller.writeTrigger( tnJobCtx.getTrigger(),
-                                                                                                                                    outputCtx ) )
-                                                                                .build() )
-                                          .build();
+            ProtobufMessages.Trigger trigger = ProtobufOutputMarshaller.writeTrigger( tnJobCtx.getTrigger(), outputCtx );
+            if (trigger != null) {
+                return ProtobufMessages.Timers.Timer.newBuilder()
+                        .setType( ProtobufMessages.Timers.TimerType.TIMER_NODE )
+                        .setTimerNode( ProtobufMessages.Timers.TimerNodeTimer.newBuilder()
+                                               .setNodeId( tnJobCtx.getTimerNodeId() )
+                                               .setTuple( PersisterHelper.createTuple( tnJobCtx.getTuple() ) )
+                                               .setTrigger( trigger )
+                                               .build() )
+                        .build();
+            } else {
+                return null;
+            }
         }
     }
 

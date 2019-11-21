@@ -16,8 +16,6 @@
 
 package org.drools.core.common;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.getEmptyPropertyReactiveMask;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -31,6 +29,8 @@ import org.drools.core.spi.BetaNodeFieldConstraint;
 import org.drools.core.spi.Tuple;
 import org.drools.core.util.bitmask.BitMask;
 import org.drools.core.util.index.TupleList;
+
+import static org.drools.core.reteoo.PropertySpecificUtil.getEmptyPropertyReactiveMask;
 
 public class EmptyBetaConstraints
     implements

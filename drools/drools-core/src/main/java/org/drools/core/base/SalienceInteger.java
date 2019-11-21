@@ -16,15 +16,15 @@
 
 package org.drools.core.base;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
 import org.drools.core.WorkingMemory;
 import org.drools.core.spi.KnowledgeHelper;
 import org.drools.core.spi.Salience;
 import org.kie.api.definition.rule.Rule;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 public class SalienceInteger
     implements

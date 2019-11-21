@@ -15,8 +15,6 @@
 
 package org.drools.compiler.rule.builder;
 
-import java.util.List;
-
 import org.drools.compiler.compiler.DroolsError;
 import org.drools.compiler.compiler.RuleBuildError;
 import org.drools.compiler.lang.descr.BaseDescr;
@@ -30,6 +28,8 @@ import org.drools.core.rule.GroupElement;
 import org.drools.core.rule.NamedConsequence;
 import org.drools.core.rule.Pattern;
 import org.drools.core.rule.RuleConditionElement;
+
+import java.util.List;
 
 public class ConditionalBranchBuilder implements RuleConditionBuilder {
 

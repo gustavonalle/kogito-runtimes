@@ -16,11 +16,11 @@
 
 package org.drools.core.factmodel;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 import org.kie.api.Service;
 import org.mvel2.asm.Opcodes;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public interface ClassBuilder extends Opcodes, Service {
 

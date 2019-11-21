@@ -106,8 +106,6 @@ import org.kie.internal.command.RegistryContext;
 import org.kie.internal.process.CorrelationAwareProcessRuntime;
 import org.kie.internal.process.CorrelationKey;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
-import org.kie.kogito.jobs.JobsService;
-import org.kie.kogito.process.workitem.Policy;
 
 public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
     implements
@@ -132,20 +130,20 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
         return runner.execute( new GetIdCommand() );
     }
 
-    public ProcessInstance getProcessInstance(String id) {
+    public ProcessInstance getProcessInstance(long id) {
         GetProcessInstanceCommand command = new GetProcessInstanceCommand();
         command.setProcessInstanceId( id );
         return runner.execute( command );
     }
 
-    public ProcessInstance getProcessInstance(String id, boolean readOnly) {
+    public ProcessInstance getProcessInstance(long id, boolean readOnly) {
         GetProcessInstanceCommand command = new GetProcessInstanceCommand();
         command.setProcessInstanceId( id );
         command.setReadOnly( readOnly );
         return runner.execute( command );
     }
 
-    public void abortProcessInstance(String id) {
+    public void abortProcessInstance(long id) {
         AbortProcessInstanceCommand command = new AbortProcessInstanceCommand();
         command.setProcessInstanceId( id );
         runner.execute( command );
@@ -162,16 +160,15 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
     public WorkItemManager getWorkItemManager() {
         if ( workItemManager == null ) {
             workItemManager = new WorkItemManager() {
-                public void completeWorkItem(String id,
-                                             Map<String, Object> results, 
-                                             Policy<?>... policies) {
+                public void completeWorkItem(long id,
+                                             Map<String, Object> results) {
                     CompleteWorkItemCommand command = new CompleteWorkItemCommand();
                     command.setWorkItemId( id );
                     command.setResults( results );
                     runner.execute( command );
                 }
 
-                public void abortWorkItem(String id, Policy<?>... policies) {
+                public void abortWorkItem(long id) {
                     AbortWorkItemCommand command = new AbortWorkItemCommand();
                     command.setWorkItemId( id );
                     runner.execute( command );
@@ -185,7 +182,7 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
                     runner.execute( command );
                 }
 
-                public WorkItem getWorkItem(String id) {
+                public WorkItem getWorkItem(long id) {
                     GetWorkItemCommand command = new GetWorkItemCommand();
                     command.setWorkItemId( id );
                     return runner.execute( command );
@@ -199,7 +196,7 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
                     throw new UnsupportedOperationException();
                 }
 
-                public void internalAbortWorkItem(String id) {
+                public void internalAbortWorkItem(long id) {
                     throw new UnsupportedOperationException();
                 }
 
@@ -218,7 +215,7 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
                 }
 
                 @Override
-                public void signalEvent(String type, Object event, String processInstanceId) {
+                public void signalEvent(String type, Object event, long processInstanceId) {
                     SignalEventCommand command = new SignalEventCommand(processInstanceId, type, event);
                     runner.execute(command);
                 }
@@ -229,14 +226,9 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
                 }
 
                 @Override
-                public void retryWorkItem( String workItemID, Map<String, Object> params ) {
+                public void retryWorkItem( Long workItemID, Map<String, Object> params ) {
                    ReTryWorkItemCommand command = new ReTryWorkItemCommand(workItemID,params);
                     runner.execute( command );
-                }
-
-                @Override
-                public void internalCompleteWorkItem(WorkItem workItem) {
-                    
                 }
             };
         }
@@ -252,7 +244,7 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
 
     public void signalEvent(String type,
                             Object event,
-                            String processInstanceId) {
+                            long processInstanceId) {
         SignalEventCommand command = new SignalEventCommand( processInstanceId,
                                                              type,
                                                              event );
@@ -280,17 +272,11 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
         return runner.execute( command );
 	}
 
-	public ProcessInstance startProcessInstance(String processInstanceId) {
+	public ProcessInstance startProcessInstance(long processInstanceId) {
         StartProcessInstanceCommand command = new StartProcessInstanceCommand();
         command.setProcessInstanceId( processInstanceId );
         return runner.execute( command );
 	}
-	
-	public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
-        StartProcessInstanceCommand command = new StartProcessInstanceCommand();
-        command.setProcessInstanceId( processInstanceId );
-        return runner.execute( command );
-    }
 
     public void dispose() {
         runner.execute( new DisposeCommand() );
@@ -593,10 +579,5 @@ public class CommandBasedStatefulKnowledgeSession extends AbstractRuntime
     public ProcessInstance getProcessInstance(CorrelationKey correlationKey) {
         
         return this.runner.execute(new GetProcessInstanceByCorrelationKeyCommand(correlationKey));
-    }
-
-    @Override
-    public JobsService getJobsService() {
-        return null;
     }
 }

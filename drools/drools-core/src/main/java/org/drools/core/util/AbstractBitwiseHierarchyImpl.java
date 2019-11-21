@@ -15,6 +15,8 @@
 
 package org.drools.core.util;
 
+import org.drools.core.factmodel.traits.LatticeElement;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -24,13 +26,11 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.drools.core.factmodel.traits.LatticeElement;
 
 
 public abstract class AbstractBitwiseHierarchyImpl<H ,J extends LatticeElement<H>> implements Externalizable, CodedHierarchy<H> {

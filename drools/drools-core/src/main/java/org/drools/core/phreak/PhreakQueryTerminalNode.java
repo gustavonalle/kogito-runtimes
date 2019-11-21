@@ -15,8 +15,6 @@
 
 package org.drools.core.phreak;
 
-import java.util.List;
-
 import org.drools.core.base.DroolsQuery;
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.TupleSets;
@@ -29,6 +27,8 @@ import org.drools.core.reteoo.RuleTerminalNode;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
 import org.drools.core.util.LinkedList;
+
+import java.util.List;
 
 /**
 * Created with IntelliJ IDEA.

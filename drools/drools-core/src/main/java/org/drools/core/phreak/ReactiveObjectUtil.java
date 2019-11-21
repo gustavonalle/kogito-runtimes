@@ -16,10 +16,6 @@
 
 package org.drools.core.phreak;
 
-import static org.drools.core.phreak.PhreakFromNode.deleteChildLeftTuple;
-import static org.drools.core.phreak.PhreakFromNode.isAllowed;
-import static org.drools.core.phreak.PhreakFromNode.propagate;
-
 import java.util.Collection;
 
 import org.drools.core.common.BetaConstraints;
@@ -33,6 +29,10 @@ import org.drools.core.reteoo.RightTupleImpl;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
+
+import static org.drools.core.phreak.PhreakFromNode.deleteChildLeftTuple;
+import static org.drools.core.phreak.PhreakFromNode.isAllowed;
+import static org.drools.core.phreak.PhreakFromNode.propagate;
 
 public class ReactiveObjectUtil {
 
@@ -53,15 +53,10 @@ public class ReactiveObjectUtil {
             ReactiveFromNode node = (ReactiveFromNode)leftTuple.getTupleSink();
 
             LeftTupleSinkNode sink = node.getSinkPropagator().getFirstLeftTupleSink();
-            InternalWorkingMemory wm = getInternalWorkingMemory(propagationContext);
+            InternalWorkingMemory wm = propagationContext.getFactHandle().getWorkingMemory();
 
             wm.addPropagation(new ReactivePropagation(object, (ReactiveFromNodeLeftTuple)leftTuple, propagationContext, node, sink, type));
         }
-    }
-
-    private static InternalWorkingMemory getInternalWorkingMemory(PropagationContext propagationContext) {
-        InternalFactHandle fh = propagationContext.getFactHandle();
-        return fh.getEntryPoint().getInternalWorkingMemory();
     }
 
     static class ReactivePropagation extends PropagationEntry.AbstractPropagationEntry {

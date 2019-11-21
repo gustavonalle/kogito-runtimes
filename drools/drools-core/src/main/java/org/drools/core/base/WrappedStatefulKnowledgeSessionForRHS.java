@@ -46,6 +46,7 @@ import org.drools.core.spi.Activation;
 import org.drools.core.spi.AsyncExceptionHandler;
 import org.drools.core.spi.FactHandleFactory;
 import org.drools.core.spi.GlobalResolver;
+import org.drools.core.time.TimerService;
 import org.drools.core.util.bitmask.BitMask;
 import org.kie.api.KieBase;
 import org.kie.api.command.Command;
@@ -74,9 +75,6 @@ import org.kie.api.runtime.rule.ViewChangedEventListener;
 import org.kie.api.time.SessionClock;
 import org.kie.internal.event.rule.RuleEventListener;
 import org.kie.internal.process.CorrelationKey;
-import org.kie.kogito.Application;
-import org.kie.kogito.jobs.JobsService;
-import org.kie.services.time.TimerService;
 
 /**
  * Wrapper of StatefulKnowledgeSessionImpl so to intercept call from RHS internal Drools execution and proxy or delegate method call as appropriate.
@@ -166,7 +164,7 @@ public final class WrappedStatefulKnowledgeSessionForRHS
         delegate.update(factHandle);
     }
 
-    public void abortProcessInstance(String id) {
+    public void abortProcessInstance(long id) {
         delegate.abortProcessInstance(id);
     }
 
@@ -174,7 +172,7 @@ public final class WrappedStatefulKnowledgeSessionForRHS
         delegate.signalEvent(type, event);
     }
 
-    public void signalEvent(String type, Object event, String processInstanceId) {
+    public void signalEvent(String type, Object event, long processInstanceId) {
         delegate.signalEvent(type, event, processInstanceId);
     }
 
@@ -243,12 +241,8 @@ public final class WrappedStatefulKnowledgeSessionForRHS
         return delegate.createProcessInstance(processId, parameters);
     }
 
-    public ProcessInstance startProcessInstance(String processInstanceId) {
+    public ProcessInstance startProcessInstance(long processInstanceId) {
         return delegate.startProcessInstance(processInstanceId);
-    }
-
-    public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
-        return delegate.startProcessInstance(processInstanceId, trigger);
     }
 
     public ProcessInstance createProcessInstance(String processId, CorrelationKey correlationKey,
@@ -757,11 +751,11 @@ public final class WrappedStatefulKnowledgeSessionForRHS
         return delegate.getProcessInstances();
     }
 
-    public ProcessInstance getProcessInstance(String id) {
+    public ProcessInstance getProcessInstance(long id) {
         return delegate.getProcessInstance(id);
     }
 
-    public ProcessInstance getProcessInstance(String id, boolean readOnly) {
+    public ProcessInstance getProcessInstance(long id, boolean readOnly) {
         return delegate.getProcessInstance(id, readOnly);
     }
 
@@ -781,12 +775,19 @@ public final class WrappedStatefulKnowledgeSessionForRHS
         return delegate.getSessionClock();
     }
 
-    public Application getApplication() {
-        return delegate.getApplication();
-    }
-    
-    @Override
-    public JobsService getJobsService() {
-        return delegate.getJobsService();
-    }
+//    public void switchToRuleUnit(RuleUnit ruleUnit, Activation activation) {
+//        delegate.getRuleUnitExecutor().switchToRuleUnit(ruleUnit, activation);
+//    }
+//
+//    public void switchToRuleUnit(Class<? extends RuleUnit> ruleUnitClass, Activation activation) {
+//        delegate.getRuleUnitExecutor().switchToRuleUnit(ruleUnitClass, activation);
+//    }
+//
+//    public void guardRuleUnit(RuleUnit ruleUnit, Activation activation) {
+//        delegate.getRuleUnitExecutor().guardRuleUnit(ruleUnit, activation);
+//    }
+//
+//    public void guardRuleUnit(Class<? extends RuleUnit> ruleUnitClass, Activation activation) {
+//        delegate.getRuleUnitExecutor().guardRuleUnit(ruleUnitClass, activation);
+//    }
 }

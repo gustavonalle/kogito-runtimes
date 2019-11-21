@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,16 +74,17 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.drools.core.reteoo.PropertySpecificUtil.allSetBitMask;
 import static org.drools.core.reteoo.PropertySpecificUtil.allSetButTraitBitMask;
 import static org.drools.core.reteoo.PropertySpecificUtil.getEmptyPropertyReactiveMask;
 import static org.drools.core.reteoo.PropertySpecificUtil.setPropertyOnMask;
+import static org.drools.core.util.ClassUtils.areNullSafeEquals;
+import static org.drools.core.util.ClassUtils.getter2property;
 import static org.drools.core.util.Drools.isJmxAvailable;
 import static org.drools.core.util.StringUtils.codeAwareIndexOf;
 import static org.drools.core.util.StringUtils.equalsIgnoreSpaces;
 import static org.drools.core.util.StringUtils.extractFirstIdentifier;
 import static org.drools.core.util.StringUtils.skipBlanks;
-import static org.drools.reflective.util.ClassUtils.areNullSafeEquals;
-import static org.drools.reflective.util.ClassUtils.getter2property;
 
 public class MvelConstraint extends MutableTypeConstraint implements IndexableConstraint, AcceptsReadAccessor {
     protected static final boolean TEST_JITTING = false;
@@ -405,7 +407,7 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
     @Override
     public BitMask getListenedPropertyMask(Class modifiedClass, List<String> settableProperties) {
         return analyzedCondition != null ?
-                calculateMask(modifiedClass, analyzedCondition, settableProperties) :
+                calculateMask(modifiedClass, settableProperties) :
                 calculateMaskFromExpression(settableProperties);
     }
 
@@ -423,8 +425,11 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
                 propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
                 pos = settableProperties.indexOf(propertyName);
             }
-            if (pos >= 0) { // Ignore not settable properties
+            if (pos >= 0) {
                 mask = mask.set(pos + PropertySpecificUtil.CUSTOM_BITS_OFFSET);
+            } else {
+                // if it is not able to find the property name it could be a function invocation so property reactivity shouldn't filter anything
+                return allSetBitMask();
             }
         }
 
@@ -454,19 +459,23 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
             int exprPos = simpleExpression.indexOf(propertyName);
             int propNameEnd = exprPos + propertyName.length();
             if (simpleExpression.length() > propNameEnd + 1 && simpleExpression.charAt(propNameEnd) == '(') {
-                propertyName = getter2property(propertyName);
+                int argsEnd = simpleExpression.indexOf( ')', propNameEnd );
+                // the getter has to be used for property reactivity only if it's a true getter (doesn't have any argument)
+                if (simpleExpression.substring( propNameEnd+1, argsEnd ).trim().isEmpty()) {
+                    propertyName = getter2property(propertyName);
+                }
             }
         }
 
         return propertyName;
     }
 
-    private BitMask calculateMask(Class modifiedClass, Condition condition, List<String> settableProperties) {
+    private BitMask calculateMask(Class modifiedClass, List<String> settableProperties) {
         BitMask mask = getEmptyPropertyReactiveMask(settableProperties.size());
-        if (condition instanceof SingleCondition) {
-            mask = setPropertyOnReactiveMask( modifiedClass, settableProperties, mask, ( SingleCondition ) condition );
+        if (analyzedCondition instanceof SingleCondition) {
+            mask = setPropertyOnReactiveMask( modifiedClass, settableProperties, mask, ( SingleCondition ) analyzedCondition );
         } else {
-            for (Condition c : (( CombinedCondition ) condition).getConditions()) {
+            for (Condition c : (( CombinedCondition ) analyzedCondition).getConditions()) {
                 mask = setPropertyOnReactiveMask( modifiedClass, settableProperties, mask, ( SingleCondition ) c );
             }
         }
@@ -474,14 +483,13 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
     }
 
     private BitMask setPropertyOnReactiveMask( Class modifiedClass, List<String> settableProperties, BitMask mask, SingleCondition c ) {
-        String propertyName = getFirstInvokedPropertyName( c.getLeft());
-        if (propertyName != null) {
-            mask = setPropertyOnMask(modifiedClass, mask, settableProperties, propertyName);
-        }
-        return mask;
+        String propertyName = getFirstInvokedPropertyName( modifiedClass, c.getLeft() );
+        return propertyName != null ?
+                setPropertyOnMask(modifiedClass, mask, settableProperties, propertyName) :
+                allSetBitMask();
     }
 
-    private String getFirstInvokedPropertyName(Expression expression) {
+    private String getFirstInvokedPropertyName(Class modifiedClass, Expression expression) {
         if (!(expression instanceof EvaluatedExpression)) {
             return null;
         }
@@ -502,7 +510,8 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
                     return null;
                 }
             }
-            return method != null ? getter2property(method.getName()) : null;
+            return method != null && !Modifier.isStatic(method.getModifiers()) && method.getDeclaringClass().isAssignableFrom( modifiedClass )
+                    ? getter2property(method.getName()) : null;
         }
 
         if (invocation instanceof FieldAccessInvocation) {

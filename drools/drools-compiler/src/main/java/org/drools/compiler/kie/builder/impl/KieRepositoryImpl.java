@@ -17,25 +17,32 @@ package org.drools.compiler.kie.builder.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.drools.compiler.addon.PomModel;
+import org.appformer.maven.support.PomModel;
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
 import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.compiler.kproject.models.KieModuleModelImpl;
 import org.drools.core.io.internal.InternalResource;
 import org.kie.api.builder.KieModule;
 import org.kie.api.builder.KieRepository;
+import org.kie.api.builder.KieScannerFactoryService;
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.builder.ReleaseIdComparator.ComparableVersion;
 import org.kie.api.builder.model.KieModuleModel;
+import org.kie.api.event.kiescanner.KieScannerEventListener;
+import org.kie.api.internal.utils.ServiceRegistry;
 import org.kie.api.io.Resource;
+import org.kie.api.runtime.KieContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +68,30 @@ public class KieRepositoryImpl
     private final KieModuleRepo kieModuleRepo;
 
     public static void setInternalKieScanner(InternalKieScanner scanner) {
-        
+        synchronized (KieScannerHolder.class) {
+            KieScannerHolder.kieScanner = scanner;
+        }
+    }
+
+    private static class KieScannerHolder {
+        // Use holder class idiom to lazily initialize the kieScanner
+        private static volatile InternalKieScanner kieScanner = getInternalKieScanner();
+
+        private static InternalKieScanner getInternalKieScanner() {
+            synchronized (KieScannerHolder.class) {
+                if ( kieScanner != null ) {
+                    return kieScanner;
+                }
+                try {
+                    KieScannerFactoryService scannerFactoryService = ServiceRegistry.getInstance().get(KieScannerFactoryService.class);
+                    return (InternalKieScanner) scannerFactoryService.newKieScanner();
+                } catch (Exception e) {
+                    log.debug( "Cannot load a KieRepositoryScanner, using the DummyKieScanner" );
+                    // kie-ci is not on the classpath
+                    return new DummyKieScanner();
+                }
+            }
+        }
     }
 
     public KieRepositoryImpl() {
@@ -95,7 +125,7 @@ public class KieRepositoryImpl
     }
 
     public KieModule getKieModule(ReleaseId releaseId, PomModel pomModel) {
-        KieModule kieModule = kieModuleRepo.load( null, releaseId );
+        KieModule kieModule = kieModuleRepo.load( KieScannerHolder.kieScanner, releaseId );
         if (kieModule == null) {
             log.debug("KieModule Lookup. ReleaseId {} was not in cache, checking classpath",
                       releaseId.toExternalForm());
@@ -151,7 +181,7 @@ public class KieRepositoryImpl
                 return null;
             }
 
-            log.debug( "Adding KieModule from classpath: " + pathToJar );
+            log.info( "Adding KieModule from classpath: " + pathToJar );
             return ClasspathKieProject.fetchKModule( pathToKmodule );
         }
 
@@ -159,18 +189,78 @@ public class KieRepositoryImpl
     }
 
     private KieModule loadKieModuleFromMavenRepo(ReleaseId releaseId, PomModel pomModel) {
-        return null;
+        return KieScannerHolder.kieScanner.loadArtifact( releaseId, pomModel );
     }
-    
+
+    private static class DummyKieScanner
+            implements
+            InternalKieScanner {
+
+        public void start(long pollingInterval) { }
+
+        public void stop() { }
+
+        public void shutdown() { }
+
+        public void scanNow() { }
+
+        public void setKieContainer(KieContainer kieContainer) { }
+
+        public KieModule loadArtifact(ReleaseId releaseId) {
+            logArtifactNotFetched(releaseId);
+            return null;
+        }
+
+        public KieModule loadArtifact(ReleaseId releaseId, InputStream pomXML) {
+            logArtifactNotFetched(releaseId);
+            return null;
+        }
+
+        public KieModule loadArtifact(ReleaseId releaseId, PomModel pomModel) {
+            logArtifactNotFetched(releaseId);
+            return null;
+        }
+
+        public String getArtifactVersion(ReleaseId releaseId) {
+            logArtifactNotFetched(releaseId);
+            return null;
+        }
+
+        private void logArtifactNotFetched(ReleaseId releaseId) {
+            log.info("Artifact not fetched from maven: " + releaseId + ". To enable the KieScanner you need kie-ci on the classpath");
+        }
+
+        public ReleaseId getScannerReleaseId() {
+            return null;
+        }
+
+        public ReleaseId getCurrentReleaseId() {
+            return null;
+        }
+
+        public Status getStatus() {
+            return Status.STOPPED;
+        }
+
+        public long getPollingInterval() { return 0; }
+
+        public void addListener(KieScannerEventListener listener) { }
+
+        public void removeListener(KieScannerEventListener listener) { }
+
+        public Collection<KieScannerEventListener> getListeners() {
+            return Collections.emptyList();
+        }
+    }
 
     public KieModule addKieModule(Resource resource, Resource... dependencies) {
-        log.debug("Adding KieModule from resource: " + resource);
+        log.info("Adding KieModule from resource: " + resource);
         KieModule kModule = getKieModule(resource);
         if (dependencies != null && dependencies.length > 0) {
             for (Resource depRes : dependencies) {
                 InternalKieModule depKModule = (InternalKieModule) getKieModule(depRes);
                 ((InternalKieModule) kModule).addKieDependency(depKModule);
-                log.debug("Adding KieModule dependency from resource: " + resource);
+                log.info("Adding KieModule dependency from resource: " + resource);
             }
         }
 

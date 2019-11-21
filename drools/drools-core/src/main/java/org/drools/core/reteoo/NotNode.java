@@ -16,11 +16,10 @@
 
 package org.drools.core.reteoo;
 
-import static org.drools.core.phreak.AddRemoveRule.flushLeftTupleIfNecessary;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collection;
 
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.InternalFactHandle;
@@ -28,6 +27,8 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.TupleSets;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.spi.PropagationContext;
+
+import static org.drools.core.phreak.AddRemoveRule.flushLeftTupleIfNecessary;
 
 public class NotNode extends BetaNode {
     private static final long serialVersionUID = 510l;

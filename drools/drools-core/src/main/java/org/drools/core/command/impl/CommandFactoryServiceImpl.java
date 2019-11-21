@@ -30,6 +30,7 @@ import org.drools.core.command.runtime.GetGlobalCommand;
 import org.drools.core.command.runtime.GetSessionTimeCommand;
 import org.drools.core.command.runtime.KBuilderSetPropertyCommand;
 import org.drools.core.command.runtime.SetGlobalCommand;
+import org.drools.core.command.runtime.pmml.ApplyPmmlModelCommand;
 import org.drools.core.command.runtime.process.AbortWorkItemCommand;
 import org.drools.core.command.runtime.process.CompleteWorkItemCommand;
 import org.drools.core.command.runtime.process.RegisterWorkItemHandlerCommand;
@@ -58,6 +59,7 @@ import org.drools.core.command.runtime.rule.QueryCommand;
 import org.kie.api.command.BatchExecutionCommand;
 import org.kie.api.command.Command;
 import org.kie.api.command.Setter;
+import org.kie.api.pmml.PMMLRequestData;
 import org.kie.api.runtime.ObjectFilter;
 import org.kie.api.runtime.process.WorkItemHandler;
 import org.kie.api.runtime.rule.FactHandle;
@@ -229,18 +231,18 @@ public class CommandFactoryServiceImpl implements ExtendedKieCommands {
         return new SignalEventCommand( type, event );
     }
 
-    public Command newSignalEvent(String processInstanceId,
+    public Command newSignalEvent(long processInstanceId,
                                String type,
                                Object event) {
         return new SignalEventCommand( processInstanceId, type, event );
     }
 
-    public Command newCompleteWorkItem(String workItemId,
+    public Command newCompleteWorkItem(long workItemId,
                                        Map<String, Object> results) {
         return new CompleteWorkItemCommand(workItemId, results);
     }
 
-    public Command newAbortWorkItem(String workItemId) {
+    public Command newAbortWorkItem(long workItemId) {
         return new AbortWorkItemCommand( workItemId);
     }
 
@@ -359,5 +361,10 @@ public class CommandFactoryServiceImpl implements ExtendedKieCommands {
     @Override
     public Command<Long> newAdvanceSessionTime(long amount, TimeUnit unit, String outIdentifier) {
         return new AdvanceSessionTimeCommand( outIdentifier, amount, unit );
+    }
+
+    @Override
+    public Command newApplyPmmlModel(PMMLRequestData request) {
+    	return new ApplyPmmlModelCommand(request);
     }
 }

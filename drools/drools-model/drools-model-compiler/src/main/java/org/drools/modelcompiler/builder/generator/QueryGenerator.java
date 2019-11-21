@@ -1,8 +1,6 @@
 package org.drools.modelcompiler.builder.generator;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.github.javaparser.ast.Modifier;
@@ -23,7 +21,6 @@ import org.drools.compiler.lang.descr.QueryDescr;
 import org.drools.model.Query;
 import org.drools.model.QueryDef;
 import org.drools.modelcompiler.builder.PackageModel;
-import org.drools.modelcompiler.builder.QueryModel;
 import org.drools.modelcompiler.builder.generator.visitor.ModelGeneratorVisitor;
 
 import static com.github.javaparser.StaticJavaParser.parseType;
@@ -31,12 +28,9 @@ import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.getClassF
 import static org.drools.modelcompiler.builder.generator.DrlxParseUtil.toClassOrInterfaceType;
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.BUILD_CALL;
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.QUERY_CALL;
-import static org.drools.modelcompiler.builder.generator.visitor.pattern.PatternDSL.GENERATED_PATTERN_PREFIX;
 import static org.drools.modelcompiler.util.StringUtil.toId;
 
 public class QueryGenerator {
-
-    public static String QUERY_METHOD_PREFIX = "query_";
 
     public static void processQueryDef(PackageModel packageModel, QueryDescr queryDescr, RuleContext context) {
         context.setDescr(queryDescr);
@@ -86,25 +80,13 @@ public class QueryGenerator {
     public static void processQuery(KnowledgeBuilderImpl kbuilder, PackageModel packageModel, QueryDescr queryDescr) {
         String queryDefVariableName = toQueryDef(queryDescr.getName());
         RuleContext context = packageModel.getQueryDefWithType().get(queryDefVariableName).getContext();
-
-        context.setDescr(queryDescr);
         context.addGlobalDeclarations(packageModel.getGlobals());
         context.setDialectFromAttributes(queryDescr.getAttributes().values());
 
         new ModelGeneratorVisitor(context, packageModel).visit(queryDescr.getLhs());
-        if (context.getRuleUnitDescr() != null) {
-            Map<String, Class<?>> queryBindings = new HashMap<>();
-            for (DeclarationSpec declr : context.getAllDeclarations()) {
-                if (!declr.isGlobal() && !declr.getBindingId().startsWith( GENERATED_PATTERN_PREFIX )) {
-                    queryBindings.put(declr.getBindingId(), declr.getDeclarationClass());
-                }
-            }
-            QueryModel queryModel = new QueryModel( queryDescr.getName(), queryDescr.getNamespace(), queryDescr.getParameters(), queryBindings );
-            packageModel.addQueryInRuleUnit( context.getRuleUnitDescr().getRuleUnitClass(), queryModel );
-        }
-
         final Type queryType = parseType(Query.class.getCanonicalName());
-        MethodDeclaration queryMethod = new MethodDeclaration(NodeList.nodeList(Modifier.privateModifier()), queryType, QUERY_METHOD_PREFIX + toId(queryDescr.getName()));
+
+        MethodDeclaration queryMethod = new MethodDeclaration(NodeList.nodeList(Modifier.privateModifier()), queryType, "query_" + toId(queryDescr.getName()));
 
         BlockStmt queryBody = new BlockStmt();
         ModelGenerator.createVariables(kbuilder, queryBody, packageModel, context);
@@ -130,7 +112,7 @@ public class QueryGenerator {
             context.addDeclaration(argument, getClassFromContext(context.getTypeResolver(), type));
             QueryParameter queryParameter = new QueryParameter(argument, getClassFromContext(context.getTypeResolver(), type));
             context.getQueryParameters().add(queryParameter);
-            packageModel.putQueryVariable(QUERY_METHOD_PREFIX + toId( descr.getName() ), queryParameter);
+            packageModel.putQueryVariable("query_" + toId( descr.getName() ), queryParameter);
         }
     }
 

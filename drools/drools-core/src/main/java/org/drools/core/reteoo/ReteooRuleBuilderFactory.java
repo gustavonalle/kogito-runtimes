@@ -16,9 +16,9 @@
 
 package org.drools.core.reteoo;
 
-import java.io.Serializable;
-
 import org.drools.core.reteoo.builder.ReteooRuleBuilder;
+
+import java.io.Serializable;
 
 public class ReteooRuleBuilderFactory implements RuleBuilderFactory, Serializable {
 

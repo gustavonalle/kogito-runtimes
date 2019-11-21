@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.google.protobuf.ExtensionRegistry;
 import org.drools.core.SessionConfiguration;
 import org.drools.core.SessionConfigurationImpl;
 import org.drools.core.WorkingMemoryEntryPoint;
@@ -65,11 +66,11 @@ import org.drools.core.spi.FactHandleFactory;
 import org.drools.core.spi.GlobalResolver;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.CompositeMaxDurationTrigger;
-import org.kie.services.time.impl.CronTrigger;
-import org.kie.services.time.impl.IntervalTrigger;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.Trigger;
+import org.drools.core.time.impl.CompositeMaxDurationTrigger;
+import org.drools.core.time.impl.CronTrigger;
+import org.drools.core.time.impl.IntervalTrigger;
+import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.time.impl.PseudoClockScheduler;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.runtime.Environment;
@@ -77,8 +78,6 @@ import org.kie.api.runtime.EnvironmentName;
 import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.Match;
-
-import com.google.protobuf.ExtensionRegistry;
 
 /**
  * An input marshaller that uses protobuf. 
@@ -271,6 +270,7 @@ public class ProtobufInputMarshaller {
                 // This actually does ALL timers, due to backwards compatability issues
                 // It will read in old JBPM binaries, but always write to the new binary format.
                 context.parameterObject = _session.getProcessData();
+                processMarshaller.readProcessTimers( context );
             }
         } else {
             if ( _session.hasProcessData() ) {
@@ -457,7 +457,7 @@ public class ProtobufInputMarshaller {
                                             InternalFactHandle handle,
                                             List<PropagationContext> pctxs) {
         Object object = handle.getObject();
-        WorkingMemoryEntryPoint ep = handle.getEntryPoint();
+        WorkingMemoryEntryPoint ep = handle.getEntryPoint(wm);
         ObjectTypeConf typeConf = ep.getObjectTypeConfigurationRegistry().getObjectTypeConf( ep.getEntryPoint(), object );
 
         PropagationContextFactory pctxFactory = wm.getKnowledgeBase().getConfiguration().getComponentFactory().getPropagationContextFactory();
@@ -488,8 +488,7 @@ public class ProtobufInputMarshaller {
         ObjectMarshallingStrategy strategy = null;
         if ( _handle.hasStrategyIndex() ) {
             strategy = context.usedStrategies.get( _handle.getStrategyIndex() );
-            object = strategy.unmarshal( null, 
-                                         context.strategyContexts.get( strategy ),
+            object = strategy.unmarshal( context.strategyContexts.get( strategy ),
                                          context,
                                          _handle.getObject().toByteArray(),
                                          (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -563,7 +562,7 @@ public class ProtobufInputMarshaller {
             InternalFactHandle handle = (InternalFactHandle) context.handles.get( _key.getHandleId() );
 
             // ObjectTypeConf state is not marshalled, so it needs to be re-determined
-            ObjectTypeConf typeConf = context.wm.getObjectTypeConfigurationRegistry().getObjectTypeConf( ((NamedEntryPoint) handle.getEntryPoint()).getEntryPoint(),
+            ObjectTypeConf typeConf = context.wm.getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getEntryPointId(),
                                                                                                          handle.getObject() );
             if ( !typeConf.isTMSEnabled() && (!wasOTCSerialized || tmsEnabled.contains(typeConf.getTypeName()) ) ) {
                 typeConf.enableTMS();
@@ -575,8 +574,8 @@ public class ProtobufInputMarshaller {
 
             if ( key.getStatus() == EqualityKey.JUSTIFIED ) {
                 // not yet added to the object stores
-                ((NamedEntryPoint) handle.getEntryPoint()).getObjectStore().addHandle( handle,
-                                                                                       handle.getObject() );
+                ((NamedEntryPoint) handle.getEntryPoint((( NamedEntryPoint ) wmep).getInternalWorkingMemory())).getObjectStore()
+                        .addHandle( handle, handle.getObject() );
                 // add handle to object type node
                 assertHandleIntoOTN( context,
                                      context.wm,
@@ -618,8 +617,7 @@ public class ProtobufInputMarshaller {
                     ObjectMarshallingStrategy strategy = null;
                     if ( _logicalDependency.hasObjectStrategyIndex() ) {
                         strategy = context.usedStrategies.get( _logicalDependency.getObjectStrategyIndex() );
-                        object = strategy.unmarshal( null, 
-                                                     context.strategyContexts.get( strategy ),
+                        object = strategy.unmarshal( context.strategyContexts.get( strategy ),
                                                      context,
                                                      _logicalDependency.getObject().toByteArray(),
                                                      (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -628,14 +626,13 @@ public class ProtobufInputMarshaller {
                     Object value = null;
                     if ( _logicalDependency.hasValueStrategyIndex() ) {
                         strategy = context.usedStrategies.get( _logicalDependency.getValueStrategyIndex() );
-                        value = strategy.unmarshal( null, 
-                                                    context.strategyContexts.get( strategy ),
+                        value = strategy.unmarshal( context.strategyContexts.get( strategy ),
                                                     context,
                                                     _logicalDependency.getValue().toByteArray(),
                                                     (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
                     }
 
-                    ObjectTypeConf typeConf = context.wm.getObjectTypeConfigurationRegistry().getObjectTypeConf( ((NamedEntryPoint) handle.getEntryPoint()).getEntryPoint(),
+                    ObjectTypeConf typeConf = context.wm.getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getEntryPointId(),
                                                                                                                  handle.getObject() );
                     tms.readLogicalDependency( handle,
                                                object,
@@ -666,8 +663,7 @@ public class ProtobufInputMarshaller {
                     ObjectMarshallingStrategy strategy = context.usedStrategies.get( _object.getStrategyIndex() );
 
                     try {
-                        objects[i++] = strategy.unmarshal( null, 
-                                                           context.strategyContexts.get( strategy ),
+                        objects[i++] = strategy.unmarshal( context.strategyContexts.get( strategy ),
                                                            context,
                                                            _object.getObject().toByteArray(),
                                                            (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -743,7 +739,7 @@ public class ProtobufInputMarshaller {
                 return trigger;
             }
             case POINT_IN_TIME : {
-                PointInTimeTrigger trigger = new PointInTimeTrigger( _trigger.getPit().getNextFireTime(), null, null );
+                PointInTimeTrigger trigger = PointInTimeTrigger.createPointInTimeTrigger( _trigger.getPit().getNextFireTime(), null );
                 return trigger;
             }
             case COMPOSITE_MAX_DURATION : {

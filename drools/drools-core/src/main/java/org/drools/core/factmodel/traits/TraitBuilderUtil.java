@@ -16,11 +16,12 @@
 
 package org.drools.core.factmodel.traits;
 
-import static java.util.Arrays.asList;
-import static org.mvel2.asm.Opcodes.ACC_PUBLIC;
-import static org.mvel2.asm.Opcodes.ALOAD;
-import static org.mvel2.asm.Opcodes.GETFIELD;
-import static org.mvel2.asm.Opcodes.INVOKEVIRTUAL;
+import org.drools.core.factmodel.BuildUtils;
+import org.drools.core.factmodel.FieldDefinition;
+import org.drools.core.util.asm.ClassFieldInspector;
+import org.mvel2.asm.ClassWriter;
+import org.mvel2.asm.MethodVisitor;
+import org.mvel2.asm.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -33,12 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.drools.core.factmodel.BuildUtils;
-import org.drools.core.factmodel.FieldDefinition;
-import org.drools.core.util.asm.ClassFieldInspector;
-import org.mvel2.asm.ClassWriter;
-import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Type;
+import static java.util.Arrays.asList;
+import static org.mvel2.asm.Opcodes.ACC_PUBLIC;
+import static org.mvel2.asm.Opcodes.ALOAD;
+import static org.mvel2.asm.Opcodes.GETFIELD;
+import static org.mvel2.asm.Opcodes.INVOKEVIRTUAL;
 
 public class TraitBuilderUtil {
 

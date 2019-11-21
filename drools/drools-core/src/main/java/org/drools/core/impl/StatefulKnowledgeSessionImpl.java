@@ -112,6 +112,7 @@ import org.drools.core.spi.FactHandleFactory;
 import org.drools.core.spi.GlobalResolver;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
+import org.drools.core.time.TimerService;
 import org.drools.core.time.TimerServiceFactory;
 import org.drools.core.util.bitmask.BitMask;
 import org.drools.core.util.index.TupleList;
@@ -140,7 +141,6 @@ import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.runtime.process.WorkItemHandler;
 import org.kie.api.runtime.process.WorkItemManager;
 import org.kie.api.runtime.rule.AgendaFilter;
-import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.api.runtime.rule.LiveQuery;
 import org.kie.api.runtime.rule.ViewChangedEventListener;
@@ -151,9 +151,6 @@ import org.kie.internal.marshalling.MarshallerFactory;
 import org.kie.internal.process.CorrelationAwareProcessRuntime;
 import org.kie.internal.process.CorrelationKey;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
-import org.kie.kogito.Application;
-import org.kie.kogito.jobs.JobsService;
-import org.kie.services.time.TimerService;
 
 import static java.util.stream.Collectors.toList;
 
@@ -257,8 +254,6 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     private transient StatefulSessionPool pool;
     private transient boolean alive = true;
 
-    private transient Application application;
-
     // ------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------
@@ -336,7 +331,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         this.propagationIdCounter = new AtomicLong(propagationContext);
         init( config, environment, propagationContext );
         if (kBase != null) {
-            bindRuleBase( kBase, agenda, initInitFactHandle );
+            bindRuleBase( this, kBase, agenda, initInitFactHandle );
         }
     }
 
@@ -345,15 +340,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return this;
     }
 
-    public void setApplication( Application application ) {
-        this.application = application;
-    }
-
-    public Application getApplication() {
-        return application;
-    }
-
-    protected void init( SessionConfiguration config, Environment environment) {
+    public void init(SessionConfiguration config, Environment environment) {
         init( config, environment, 1 );
     }
 
@@ -394,7 +381,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
     }
 
-    protected void bindRuleBase( InternalKnowledgeBase kBase, InternalAgenda agenda, boolean initInitFactHandle ) {
+    public void bindRuleBase( InternalWorkingMemory workingMemory, InternalKnowledgeBase kBase, InternalAgenda agenda, boolean initInitFactHandle ) {
         this.kBase = kBase;
 
         this.nodeMemories = new ConcurrentNodeMemories(kBase, DEFAULT_RULE_UNIT);
@@ -407,7 +394,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         } else {
             this.agenda = agenda;
         }
-        this.agenda.setWorkingMemory(this);
+        this.agenda.setWorkingMemory(workingMemory);
 
         RuleBaseConfiguration conf = kBase.getConfiguration();
         this.sequential = conf.isSequential();
@@ -429,7 +416,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return handleFactory;
     }
 
-    public <T> T getKieRuntime(Class<T> cls) {
+    public void setHandleFactory( FactHandleFactory handleFactory ) {
+        this.handleFactory = handleFactory;
+    }
+
+    public <T> T getKieRuntime( Class<T> cls) {
         return createRuntimeService(cls);
     }
 
@@ -569,7 +560,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
                     ((InternalFactHandle) factHandle).getObject());
     }
 
-    public void abortProcessInstance(String id) {
+    public void abortProcessInstance(long id) {
         this.getProcessRuntime().abortProcessInstance(id);
     }
 
@@ -580,7 +571,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     public void signalEvent(String type,
                             Object event,
-                            String processInstanceId) {
+                            long processInstanceId) {
         this.getProcessRuntime().signalEvent( type, event, processInstanceId );
     }
 
@@ -770,14 +761,14 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     public String getEntryPointId() {
         return EntryPointId.DEFAULT.getEntryPointId();
     }
-
+    
     /**
-     * (This shall NOT be exposed on public API)
+     * (This shall NOT be exposed on public API)  
      */
     public QueryResultsImpl getQueryResultsFromRHS(String queryName, Object... arguments) {
     	return internalGetQueryResult(true, queryName, arguments);
     }
-
+    
     public QueryResultsImpl getQueryResults(String queryName, Object... arguments) {
     	return internalGetQueryResult(false, queryName, arguments);
     }
@@ -944,7 +935,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
             done(tnodes);
         }
-
+        
         @Override
         public boolean isCalledFromRHS() {
         	return calledFromRHS;
@@ -1077,7 +1068,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     protected void initDefaultEntryPoint() {
         this.defaultEntryPoint = createDefaultEntryPoint();
         this.entryPoints.clear();
-        this.entryPoints.put( EntryPoint.DEFAULT_NAME, this.defaultEntryPoint);
+        this.entryPoints.put("DEFAULT", this.defaultEntryPoint);
     }
 
     protected InternalWorkingMemoryEntryPoint createDefaultEntryPoint() {
@@ -1098,6 +1089,10 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
         this.globalResolver.clear();
         this.kieBaseEventListeners.clear();
+        this.ruleRuntimeEventSupport.clear();
+        this.ruleEventListenerSupport.clear();
+        this.agendaEventSupport.clear();
+
         this.handleFactory.clear( 0, 0 );
         this.propagationIdCounter.set(0);
         this.opCounter.set(0);
@@ -1186,6 +1181,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     public RuleEventListenerSupport getRuleEventSupport() {
         return ruleEventListenerSupport;
+    }
+
+
+    public void setRuleEventListenerSupport( RuleEventListenerSupport ruleEventListenerSupport ) {
+        this.ruleEventListenerSupport = ruleEventListenerSupport;
     }
 
     public void addEventListener( final RuleEventListener listener ) {
@@ -1803,7 +1803,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
             if (factHandle.getOtnCount() == 0) {
                 factHandle.setExpired( true );
                 if (factHandle.getActivationsCount() == 0) {
-                    String epId = factHandle.getEntryPoint().getEntryPointId();
+                    String epId = factHandle.getEntryPointName();
                     ( (InternalWorkingMemoryEntryPoint) workingMemory.getEntryPoint( epId ) ).removeFromObjectStore( factHandle );
                 } else {
                     factHandle.setPendingRemoveFromStore( true );
@@ -1879,19 +1879,15 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return getProcessRuntime().createProcessInstance( processId, parameters );
     }
 
-    public ProcessInstance startProcessInstance(String processInstanceId) {
+    public ProcessInstance startProcessInstance(long processInstanceId) {
         return getProcessRuntime().startProcessInstance( processInstanceId );
-    }
-
-    public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
-        return getProcessRuntime().startProcessInstance( processInstanceId, trigger );
     }
 
     public Collection<ProcessInstance> getProcessInstances() {
         return getProcessRuntime().getProcessInstances();
     }
 
-    public ProcessInstance getProcessInstance(String processInstanceId) {
+    public ProcessInstance getProcessInstance(long processInstanceId) {
         return getProcessRuntime().getProcessInstance( processInstanceId );
     }
 
@@ -1914,7 +1910,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return getProcessRuntime().getProcessInstance( correlationKey );
     }
 
-    public ProcessInstance getProcessInstance(String processInstanceId, boolean readOnly) {
+    public ProcessInstance getProcessInstance(long processInstanceId, boolean readOnly) {
         return getProcessRuntime().getProcessInstance( processInstanceId, readOnly);
     }
 
@@ -2188,13 +2184,8 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
 
         @Override
-        public ProcessInstance startProcessInstance( String processInstanceId ) {
+        public ProcessInstance startProcessInstance( long processInstanceId ) {
             throw new UnsupportedOperationException( );
-        }
-
-        @Override
-        public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
-            return null;
         }
 
         @Override
@@ -2203,7 +2194,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
 
         @Override
-        public void signalEvent( String type, Object event, String processInstanceId ) {
+        public void signalEvent( String type, Object event, long processInstanceId ) {
             throw new UnsupportedOperationException( );
         }
 
@@ -2213,27 +2204,22 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
 
         @Override
-        public ProcessInstance getProcessInstance( String processInstanceId ) {
+        public ProcessInstance getProcessInstance( long processInstanceId ) {
             throw new UnsupportedOperationException( );
         }
 
         @Override
-        public ProcessInstance getProcessInstance( String processInstanceId, boolean readonly ) {
+        public ProcessInstance getProcessInstance( long processInstanceId, boolean readonly ) {
             throw new UnsupportedOperationException( );
         }
 
         @Override
-        public void abortProcessInstance( String processInstanceId ) {
+        public void abortProcessInstance( long processInstanceId ) {
             throw new UnsupportedOperationException( );
         }
 
         @Override
         public WorkItemManager getWorkItemManager() {
-            throw new UnsupportedOperationException( );
-        }
-
-        @Override
-        public JobsService getJobsService() {
             throw new UnsupportedOperationException( );
         }
     }
@@ -2314,12 +2300,6 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
             }
         }
         return result;
-    }
-
-
-    @Override
-    public JobsService getJobsService() {
-        return null;
     }
 
     ///////////////////////////////////////////////////////////////////////////

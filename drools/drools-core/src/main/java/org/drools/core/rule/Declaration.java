@@ -15,9 +15,6 @@
 
 package org.drools.core.rule;
 
-import static org.drools.reflective.util.ClassUtils.canonicalName;
-import static org.drools.reflective.util.ClassUtils.convertFromPrimitiveType;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -30,6 +27,9 @@ import org.drools.core.common.DroolsObjectInputStream;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.spi.AcceptsReadAccessor;
 import org.drools.core.spi.InternalReadAccessor;
+
+import static org.drools.core.util.ClassUtils.canonicalName;
+import static org.drools.core.util.ClassUtils.convertFromPrimitiveType;
 
 public class Declaration
     implements

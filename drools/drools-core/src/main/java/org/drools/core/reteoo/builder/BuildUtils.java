@@ -48,7 +48,7 @@ import org.drools.core.rule.constraint.MvelConstraint;
 import org.drools.core.spi.AlphaNodeFieldConstraint;
 import org.drools.core.spi.BetaNodeFieldConstraint;
 import org.drools.core.spi.ObjectType;
-import org.kie.services.time.Interval;
+import org.drools.core.time.Interval;
 import org.drools.core.time.TemporalDependencyMatrix;
 import org.drools.core.time.TimeUtils;
 import org.kie.api.definition.rule.Rule;
@@ -173,8 +173,9 @@ public class BuildUtils {
             int i = 0;
             for (BetaNodeFieldConstraint betaConstraint : betaConstraints) {
                 if (betaConstraint instanceof MvelConstraint) {
-                    ((MvelConstraint) betaConstraint).addPackageNames(((MvelConstraint) ((BetaNode) duplicate).getConstraints()[i++]).getPackageNames());
+                    ((MvelConstraint) betaConstraint).addPackageNames(((MvelConstraint) ((BetaNode) duplicate).getConstraints()[i]).getPackageNames());
                 }
+                i++;
             }
         }
     }

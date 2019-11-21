@@ -15,13 +15,13 @@
 
 package org.drools.compiler.lang.descr;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.kie.api.io.Resource;
 import org.kie.internal.builder.ResourceChange;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class CompositePackageDescr extends PackageDescr {
     

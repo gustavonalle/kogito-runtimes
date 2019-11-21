@@ -16,12 +16,6 @@
 
 package org.drools.core.common;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.marshalling.impl.MarshallerReaderContext;
 import org.drools.core.marshalling.impl.MarshallerWriteContext;
@@ -29,6 +23,12 @@ import org.drools.core.marshalling.impl.ProtobufMessages;
 import org.drools.core.phreak.PropagationEntry;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.PropagationContext;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Implementation of a <code>RuleFlowGroup</code> that collects activations
@@ -53,7 +53,7 @@ public class RuleFlowGroupImpl
     private boolean                     autoDeactivate   = true;
 //    private LinkedList<ActivationNode>  list;
     private List<RuleFlowGroupListener> listeners;
-    private Map<String, String>           nodeInstances    = new HashMap<String, String>();
+    private Map<Long, String>           nodeInstances    = new HashMap<Long, String>();
 
 //    private long activatedForRecency;
 //    private long clearedForRecency;
@@ -316,19 +316,19 @@ public class RuleFlowGroupImpl
         return null;
     }
     
-    public void addNodeInstance(String processInstanceId,
+    public void addNodeInstance(Long processInstanceId,
                                 String nodeInstanceId) {
         nodeInstances.put( processInstanceId,
                            nodeInstanceId );
     }
 
-    public void removeNodeInstance(String processInstanceId,
+    public void removeNodeInstance(Long processInstanceId,
                                    String nodeInstanceId) {
         nodeInstances.put( processInstanceId,
                            nodeInstanceId );
     }
 
-    public Map<String, String> getNodeInstances() {
+    public Map<Long, String> getNodeInstances() {
         return nodeInstances;
     }
     

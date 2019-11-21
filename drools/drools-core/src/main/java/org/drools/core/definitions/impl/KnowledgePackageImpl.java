@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.drools.core.addon.TypeResolver;
 import org.drools.core.base.ClassFieldAccessorCache;
 import org.drools.core.base.ClassFieldAccessorStore;
 import org.drools.core.common.DroolsObjectInputStream;
@@ -64,6 +63,7 @@ import org.kie.api.definition.type.FactType;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.rule.AccumulateFunction;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 
 public class KnowledgePackageImpl
         implements

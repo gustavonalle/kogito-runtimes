@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2005 JBoss Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.UnknownType;
 import org.drools.model.Index;
 import org.drools.modelcompiler.builder.errors.InvalidExpressionErrorResult;
-import org.drools.modelcompiler.builder.generator.DrlxParseUtil;
 import org.drools.modelcompiler.builder.generator.RuleContext;
 import org.drools.modelcompiler.builder.generator.TypedExpression;
 import org.drools.modelcompiler.builder.generator.drlxparse.DrlxParseSuccess;
@@ -176,8 +175,9 @@ public abstract class AbstractExpressionBuilder {
 
     private static String getExpressionSymbolForBetaIndex(Expression expr) {
         Expression scope;
-        if (expr instanceof MethodCallExpr && (( MethodCallExpr ) expr).getScope().isPresent()) {
-            scope = (( MethodCallExpr ) expr).getScope().get();
+        if (expr instanceof MethodCallExpr) {
+            Optional<Expression> scopeExpression = (( MethodCallExpr ) expr).getScope();
+            scope = scopeExpression.orElseThrow(() -> new IllegalArgumentException("Scope expression for " + ((MethodCallExpr) expr).getNameAsString() + " is not present!"));
         } else if (expr instanceof FieldAccessExpr ) {
             scope = (( FieldAccessExpr ) expr).getScope();
         } else {
@@ -267,9 +267,13 @@ public abstract class AbstractExpressionBuilder {
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("Cannot find index from: " + left.toString() + ", " + right.toString() + "!")));
     }
 
-    protected String getIndexIdArgument( SingleDrlxParseSuccess drlxParseResult, TypedExpression left ) {
+    String getIndexIdArgument(SingleDrlxParseSuccess drlxParseResult, TypedExpression left) {
         return isAccessibleProperties( drlxParseResult.getPatternType(), left.getFieldName() ) ?
                 context.getPackageModel().getDomainClassName( drlxParseResult.getPatternType() ) + ".getPropertyIndex(\"" + left.getFieldName() + "\")" :
                 "-1";
+    }
+
+    boolean shouldBuildReactOn(SingleDrlxParseSuccess drlxParseResult) {
+        return !drlxParseResult.isTemporal() && !drlxParseResult.getReactOnProperties().isEmpty() && context.isPropertyReactive( drlxParseResult.getPatternType() );
     }
 }

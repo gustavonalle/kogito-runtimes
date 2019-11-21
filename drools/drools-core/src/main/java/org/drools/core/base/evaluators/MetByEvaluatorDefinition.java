@@ -16,13 +16,6 @@
 
 package org.drools.core.base.evaluators;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.drools.core.base.BaseEvaluator;
 import org.drools.core.base.ValueType;
 import org.drools.core.common.EventFactHandle;
@@ -33,7 +26,14 @@ import org.drools.core.rule.VariableRestriction.VariableContextEntry;
 import org.drools.core.spi.Evaluator;
 import org.drools.core.spi.FieldValue;
 import org.drools.core.spi.InternalReadAccessor;
-import org.kie.services.time.Interval;
+import org.drools.core.time.Interval;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>The implementation of the <code>metby</code> evaluator definition.</p>

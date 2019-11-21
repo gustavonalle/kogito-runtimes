@@ -15,6 +15,9 @@
 
 package org.drools.core.factmodel.traits;
 
+import org.drools.core.util.AbstractCodedHierarchyImpl;
+import org.drools.core.util.HierNode;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -22,9 +25,6 @@ import java.io.ObjectOutput;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.drools.core.util.AbstractCodedHierarchyImpl;
-import org.drools.core.util.HierNode;
 
 
 /**

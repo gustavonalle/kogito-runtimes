@@ -16,6 +16,8 @@
 
 package org.drools.modelcompiler.builder.generator;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
+import org.drools.compiler.lang.descr.AndDescr;
+import org.drools.compiler.lang.descr.AnnotationDescr;
+import org.drools.compiler.lang.descr.AttributeDescr;
+import org.drools.compiler.lang.descr.BehaviorDescr;
+import org.drools.compiler.lang.descr.PackageDescr;
+import org.drools.compiler.lang.descr.QueryDescr;
+import org.drools.compiler.lang.descr.RuleDescr;
+import org.drools.core.definitions.InternalKnowledgePackage;
+import org.drools.core.factmodel.AnnotationDefinition;
+import org.drools.core.rule.Behavior;
+import org.kie.internal.ruleunit.RuleUnitDescription;
+import org.drools.core.time.TimeUtils;
+import org.drools.core.util.MVELSafeHelper;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -40,22 +56,8 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
-import org.drools.compiler.lang.descr.AndDescr;
-import org.drools.compiler.lang.descr.AnnotationDescr;
-import org.drools.compiler.lang.descr.AttributeDescr;
-import org.drools.compiler.lang.descr.BehaviorDescr;
-import org.drools.compiler.lang.descr.PackageDescr;
-import org.drools.compiler.lang.descr.QueryDescr;
-import org.drools.compiler.lang.descr.RuleDescr;
-import org.drools.core.addon.TypeResolver;
-import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.factmodel.AnnotationDefinition;
-import org.drools.core.rule.Behavior;
-import org.drools.core.ruleunit.RuleUnitDescription;
-import org.drools.core.time.TimeUtils;
-import org.drools.core.util.MVELSafeHelper;
 import org.drools.model.Rule;
+import org.drools.model.UnitData;
 import org.drools.model.Variable;
 import org.drools.modelcompiler.builder.PackageModel;
 import org.drools.modelcompiler.builder.errors.ParseExpressionErrorResult;
@@ -63,12 +65,10 @@ import org.drools.modelcompiler.builder.errors.UnknownDeclarationError;
 import org.drools.modelcompiler.builder.generator.expressiontyper.ExpressionTyper;
 import org.drools.modelcompiler.builder.generator.expressiontyper.ExpressionTyperContext;
 import org.drools.modelcompiler.builder.generator.visitor.ModelGeneratorVisitor;
-import org.kie.kogito.rules.RuleUnitData;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 
 import static java.util.stream.Collectors.toList;
-
 import static com.github.javaparser.StaticJavaParser.parseExpression;
-import static org.drools.core.impl.StatefulKnowledgeSessionImpl.DEFAULT_RULE_UNIT;
 import static org.drools.modelcompiler.builder.PackageModel.DATE_TIME_FORMATTER_FIELD;
 import static org.drools.modelcompiler.builder.PackageModel.DOMAIN_CLASSESS_METADATA_FILE_NAME;
 import static org.drools.modelcompiler.builder.PackageModel.DOMAIN_CLASS_METADATA_INSTANCE;
@@ -83,8 +83,10 @@ import static org.drools.modelcompiler.builder.generator.DslMethodNames.METADATA
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.RULE_CALL;
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.SUPPLY_CALL;
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.UNIT_CALL;
+import static org.drools.modelcompiler.builder.generator.DslMethodNames.UNIT_DATA_CALL;
 import static org.drools.modelcompiler.builder.generator.DslMethodNames.WINDOW_CALL;
 import static org.drools.modelcompiler.util.ClassUtil.asJavaSourceName;
+import static org.drools.modelcompiler.util.ClassUtil.toRawClass;
 import static org.drools.modelcompiler.util.StringUtil.toId;
 
 public class ModelGenerator {
@@ -145,8 +147,6 @@ public class ModelGenerator {
             }
         }
 
-        HashSet<RuleUnitDescription> ruleUnitDescriptions = new HashSet<>();
-
         for (RuleDescr descr : packageDescr.getRules()) {
             RuleContext context = new RuleContext(kbuilder, packageModel, typeResolver, isPattern);
             context.setDialectFromAttributes(packageDescr.getAttributes());
@@ -154,26 +154,24 @@ public class ModelGenerator {
                 QueryGenerator.processQuery(kbuilder, packageModel, (QueryDescr) descr);
             } else {
                 processRule(kbuilder, packageModel, packageDescr, descr, context);
-                RuleUnitDescription ruleUnitDescr = context.getRuleUnitDescr();
-                if (ruleUnitDescr != null) ruleUnitDescriptions.add(ruleUnitDescr);
             }
         }
-
-
-        for (RuleUnitDescription rud : ruleUnitDescriptions) {
-            Class<? extends RuleUnitData> ruc = rud.getRuleUnitClass();
-            packageModel.addRuleUnit(ruc);
-        }
     }
+
 
     private static void processRule(KnowledgeBuilderImpl kbuilder, PackageModel packageModel, PackageDescr packageDescr, RuleDescr ruleDescr, RuleContext context) {
         context.setDescr(ruleDescr);
         context.addGlobalDeclarations(packageModel.getGlobals());
-        context.setDialectFromAttributes(ruleDescr.getAttributes().values());
 
         for(Entry<String, Object> kv : ruleDescr.getNamedConsequences().entrySet()) {
             context.addNamedConsequence(kv.getKey(), kv.getValue().toString());
         }
+
+        context.setDialectFromAttributes(ruleDescr.getAttributes().values());
+
+        RuleUnitDescription ruleUnitDescr = context.getRuleUnitDescr();
+        BlockStmt ruleVariablesBlock = new BlockStmt();
+        createUnitData(context, ruleUnitDescr, ruleVariablesBlock );
 
         new ModelGeneratorVisitor(context, packageModel).visit(getExtendedLhs(packageDescr, ruleDescr));
         final String ruleMethodName = "rule_" + toId(ruleDescr.getName());
@@ -189,7 +187,6 @@ public class ModelGenerator {
         }
         ruleCall.addArgument( new StringLiteralExpr( ruleDescr.getName() ) );
 
-        RuleUnitDescription ruleUnitDescr = context.getRuleUnitDescr();
         MethodCallExpr buildCallScope = ruleUnitDescr != null ?
                 new MethodCallExpr(ruleCall, UNIT_CALL).addArgument( new ClassExpr( classToReferenceType(ruleUnitDescr.getRuleUnitClass()) ) ) :
                 ruleCall;
@@ -206,7 +203,6 @@ public class ModelGenerator {
 
         MethodCallExpr buildCall = new MethodCallExpr(buildCallScope, BUILD_CALL, NodeList.nodeList(context.getExpressions()));
 
-        BlockStmt ruleVariablesBlock = new BlockStmt();
         createVariables(kbuilder, ruleVariablesBlock, packageModel, context);
         ruleMethod.setBody(ruleVariablesBlock);
 
@@ -216,7 +212,7 @@ public class ModelGenerator {
         ruleVariablesBlock.addStatement(new AssignExpr(ruleVar, buildCall, AssignExpr.Operator.ASSIGN));
 
         ruleVariablesBlock.addStatement( new ReturnStmt("rule") );
-        packageModel.putRuleMethod(ruleUnitDescr != null ? ruleUnitDescr.getRuleUnitClass().getSimpleName() : DEFAULT_RULE_UNIT, ruleMethod);
+        packageModel.putRuleMethod(ruleMethodName, ruleMethod);
     }
 
     private static AndDescr getExtendedLhs(PackageDescr packageDescr, RuleDescr ruleDescr) {
@@ -382,6 +378,43 @@ public class ModelGenerator {
             // do nothing
         }
         return result;
+    }
+
+    private static void createUnitData(RuleContext context, RuleUnitDescription ruleUnitDescr, BlockStmt ruleVariablesBlock ) {
+        if (ruleUnitDescr != null) {
+            for (Map.Entry<String, Method> unitVar : ruleUnitDescr.getUnitVarAccessors().entrySet()) {
+                addUnitData(context, unitVar.getKey(), unitVar.getValue().getGenericReturnType(), ruleVariablesBlock);
+            }
+        }
+    }
+
+    private static void addUnitData(RuleContext context, String unitVar, java.lang.reflect.Type type, BlockStmt ruleBlock) {
+        Class<?> rawClass = toRawClass(type);
+        Type declType = classToReferenceType( toRawClass(type) );
+
+        context.addRuleUnitVar( unitVar, getClassForUnitData( type, rawClass ) );
+
+        ClassOrInterfaceType varType = toClassOrInterfaceType(UnitData.class);
+        varType.setTypeArguments(declType);
+        VariableDeclarationExpr var_ = new VariableDeclarationExpr(varType, context.getVar(unitVar), Modifier.finalModifier());
+
+        MethodCallExpr unitDataCall = new MethodCallExpr(null, UNIT_DATA_CALL);
+
+        unitDataCall.addArgument(new ClassExpr( declType ));
+        unitDataCall.addArgument(new StringLiteralExpr(unitVar));
+
+        AssignExpr var_assign = new AssignExpr(var_, unitDataCall, AssignExpr.Operator.ASSIGN);
+        ruleBlock.addStatement(var_assign);
+    }
+
+    private static Class<?> getClassForUnitData( java.lang.reflect.Type type, Class<?> rawClass ) {
+        if (Iterable.class.isAssignableFrom( rawClass ) && type instanceof ParameterizedType) {
+            return toRawClass( (( ParameterizedType ) type).getActualTypeArguments()[0] );
+        }
+        if (rawClass.isArray()) {
+            return rawClass.getComponentType();
+        }
+        return rawClass;
     }
 
     public static void createVariables(KnowledgeBuilderImpl kbuilder, BlockStmt block, PackageModel packageModel, RuleContext context) {

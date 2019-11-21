@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import org.drools.compiler.builder.DroolsAssemblerContext;
 import org.drools.compiler.compiler.AnalysisResult;
 import org.drools.compiler.compiler.BoundIdentifiers;
 import org.drools.compiler.compiler.DescrBuildError;
@@ -62,7 +61,7 @@ import org.drools.compiler.rule.builder.dialect.DialectUtil;
 import org.drools.compiler.rule.builder.dialect.java.JavaDialect;
 import org.drools.compiler.rule.builder.dialect.mvel.MVELAnalysisResult;
 import org.drools.compiler.rule.builder.dialect.mvel.MVELDialect;
-import org.drools.core.addon.TypeResolver;
+import org.drools.compiler.builder.DroolsAssemblerContext;
 import org.drools.core.base.ClassFieldReader;
 import org.drools.core.base.ClassObjectType;
 import org.drools.core.base.EvaluatorWrapper;
@@ -118,6 +117,7 @@ import org.kie.api.definition.rule.Watch;
 import org.kie.api.definition.type.Role;
 import org.kie.internal.builder.KnowledgeBuilderResult;
 import org.kie.internal.builder.ResultSeverity;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -236,6 +236,11 @@ public class PatternBuilder
             }
         } else {
             Declaration declr = resolver.getDeclaration(identifier);
+            if (declr == null) {
+                registerDescrBuildError(context, patternDescr,
+                                        "The identifier '" + identifier + "' is not in scope");
+                return;
+            }
             patternDescr.setXpathStartDeclaration(declr);
             patternDescr.setObjectType(declr.getExtractor().getExtractToClassName());
             expr = patternDescr.getIdentifier() + (patternDescr.isUnification() ? " := " : " : ") + expr.substring(identifier.length() + 1);
@@ -1156,6 +1161,8 @@ public class PatternBuilder
                 }
             }
         }
+
+        value2 = context.getDeclarationResolver().normalizeValueForUnit(value2);
 
         Declaration declr = null;
         if (value2.indexOf('(') < 0 && value2.indexOf('.') < 0 && value2.indexOf('[') < 0) {

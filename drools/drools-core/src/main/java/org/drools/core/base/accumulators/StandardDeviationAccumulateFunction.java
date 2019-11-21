@@ -16,6 +16,11 @@
 
 package org.drools.core.base.accumulators;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+
 /**
  * An implementation of an accumulator capable of calculating standard deviation.
  */

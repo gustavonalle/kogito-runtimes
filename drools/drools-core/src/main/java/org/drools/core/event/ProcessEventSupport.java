@@ -24,22 +24,137 @@ import org.kie.api.event.process.ProcessNodeLeftEvent;
 import org.kie.api.event.process.ProcessNodeTriggeredEvent;
 import org.kie.api.event.process.ProcessStartedEvent;
 import org.kie.api.event.process.ProcessVariableChangedEvent;
-import org.kie.api.event.process.ProcessWorkItemTransitionEvent;
 import org.kie.api.event.process.SLAViolatedEvent;
 import org.kie.api.runtime.KieRuntime;
 import org.kie.api.runtime.process.NodeInstance;
 import org.kie.api.runtime.process.ProcessInstance;
-import org.kie.api.runtime.process.WorkItem;
-import org.kie.kogito.process.workitem.Transition;
-import org.kie.kogito.uow.UnitOfWorkManager;
-import org.kie.kogito.uow.WorkUnit;
 
 public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListener> {
 
-    private UnitOfWorkManager unitOfWorkManager;
+    public void fireBeforeProcessStarted(final ProcessInstance instance, KieRuntime kruntime ) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
 
-    public ProcessEventSupport(UnitOfWorkManager unitOfWorkManager) {
-        this.unitOfWorkManager = unitOfWorkManager;
+        if (iter.hasNext()) {
+            final ProcessStartedEvent event = new ProcessStartedEventImpl(instance, kruntime);
+
+            do{
+                iter.next().beforeProcessStarted(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireAfterProcessStarted(final ProcessInstance instance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessStartedEvent event = new ProcessStartedEventImpl(instance, kruntime);
+
+            do {
+                iter.next().afterProcessStarted(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireBeforeProcessCompleted(final ProcessInstance instance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessCompletedEvent event = new ProcessCompletedEventImpl(instance, kruntime);
+
+            do {
+                iter.next().beforeProcessCompleted(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireAfterProcessCompleted(final ProcessInstance instance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessCompletedEvent event = new ProcessCompletedEventImpl(instance, kruntime);
+
+            do {
+                iter.next().afterProcessCompleted(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireBeforeNodeTriggered(final NodeInstance nodeInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessNodeTriggeredEvent event = new ProcessNodeTriggeredEventImpl(nodeInstance, kruntime);
+
+            do {
+                iter.next().beforeNodeTriggered(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireAfterNodeTriggered(final NodeInstance nodeInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessNodeTriggeredEvent event = new ProcessNodeTriggeredEventImpl(nodeInstance, kruntime);
+
+            do{
+                iter.next().afterNodeTriggered(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireBeforeNodeLeft(final NodeInstance nodeInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessNodeLeftEvent event = new ProcessNodeLeftEventImpl(nodeInstance, kruntime);
+
+            do{
+                iter.next().beforeNodeLeft(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireAfterNodeLeft(final NodeInstance nodeInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessNodeLeftEvent event = new ProcessNodeLeftEventImpl(nodeInstance, kruntime);
+
+            do{
+                iter.next().afterNodeLeft(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireBeforeVariableChanged(final String id, final String instanceId, 
+            final Object oldValue, final Object newValue,
+            final ProcessInstance processInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessVariableChangedEvent event = new ProcessVariableChangedEventImpl(
+                id, instanceId, oldValue, newValue, processInstance, kruntime);
+
+            do {
+                iter.next().beforeVariableChanged(event);
+            } while (iter.hasNext());
+        }
+    }
+
+    public void fireAfterVariableChanged(final String name, final String id, 
+            final Object oldValue, final Object newValue,
+            final ProcessInstance processInstance, KieRuntime kruntime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+        if (iter.hasNext()) {
+            final ProcessVariableChangedEvent event = new ProcessVariableChangedEventImpl(
+                name, id, oldValue, newValue, processInstance, kruntime);
+
+            do {
+                iter.next().afterVariableChanged(event);
+            } while (iter.hasNext());
+        }
     }
 
     /**
@@ -48,226 +163,52 @@ public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListen
     public ProcessEventSupport() {
     }
 
-    public void fireBeforeProcessStarted(final ProcessInstance instance, KieRuntime kruntime ) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessStartedEvent event = new ProcessStartedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-                do{
-                    iter.next().beforeProcessStarted(e);
-                } while (iter.hasNext());        
-            }
-        }));
-    }
-
-    public void fireAfterProcessStarted(final ProcessInstance instance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessStartedEvent event = new ProcessStartedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-                do {
-                    iter.next().afterProcessStarted(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireBeforeProcessCompleted(final ProcessInstance instance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessCompletedEvent event = new ProcessCompletedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-                do {
-                    iter.next().beforeProcessCompleted(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireAfterProcessCompleted(final ProcessInstance instance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessCompletedEvent event = new ProcessCompletedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-            
-                do {
-                    iter.next().afterProcessCompleted(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireBeforeNodeTriggered(final NodeInstance nodeInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessNodeTriggeredEvent event = new ProcessNodeTriggeredEventImpl(nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-            
-                do {
-                    iter.next().beforeNodeTriggered(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireAfterNodeTriggered(final NodeInstance nodeInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessNodeTriggeredEvent event = new ProcessNodeTriggeredEventImpl(nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-            
-                do{
-                    iter.next().afterNodeTriggered(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireBeforeNodeLeft(final NodeInstance nodeInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-        
-        final ProcessNodeLeftEvent event = new ProcessNodeLeftEventImpl(nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-            
-                do{
-                    iter.next().beforeNodeLeft(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireAfterNodeLeft(final NodeInstance nodeInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessNodeLeftEvent event = new ProcessNodeLeftEventImpl(nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-            
-                do{
-                    iter.next().afterNodeLeft(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireBeforeVariableChanged(final String id, final String instanceId, 
-            final Object oldValue, final Object newValue,
-            final ProcessInstance processInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-        
-        final ProcessVariableChangedEvent event = new ProcessVariableChangedEventImpl(
-                                                                                      id, instanceId, oldValue, newValue, processInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-            
-                do {
-                    iter.next().beforeVariableChanged(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-
-    public void fireAfterVariableChanged(final String name, final String id, 
-            final Object oldValue, final Object newValue,
-            final ProcessInstance processInstance, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-        final ProcessVariableChangedEvent event = new ProcessVariableChangedEventImpl(
-                                                                                      name, id, oldValue, newValue, processInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-                      
-                do {
-                    iter.next().afterVariableChanged(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-    
     public void fireBeforeSLAViolated(final ProcessInstance instance, KieRuntime kruntime ) {
         final Iterator<ProcessEventListener> iter = getEventListenersIterator();
 
-        final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-            
-                do{
-                    iter.next().beforeSLAViolated(e);
-                } while (iter.hasNext());            
-            }
-        }));
+        if (iter.hasNext()) {
+            final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, kruntime);
+
+            do{
+                iter.next().beforeSLAViolated(event);
+            } while (iter.hasNext());
+        }
     }
 
     public void fireAfterSLAViolated(final ProcessInstance instance, KieRuntime kruntime) {
         final Iterator<ProcessEventListener> iter = getEventListenersIterator();
 
-        final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {
-            
-                do {
-                    iter.next().afterSLAViolated(e);
-                } while (iter.hasNext());            
-            }
-        }));
+        if (iter.hasNext()) {
+            final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, kruntime);
+
+            do {
+                iter.next().afterSLAViolated(event);
+            } while (iter.hasNext());
+        }
     }
     
     public void fireBeforeSLAViolated(final ProcessInstance instance, NodeInstance nodeInstance, KieRuntime kruntime ) {
         final Iterator<ProcessEventListener> iter = getEventListenersIterator();
 
-        final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {            
-                do{
-                    iter.next().beforeSLAViolated(e);
-                } while (iter.hasNext());
-            }
-        }));
+        if (iter.hasNext()) {
+            final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, nodeInstance, kruntime);
+
+            do{
+                iter.next().beforeSLAViolated(event);
+            } while (iter.hasNext());
+        }
     }
 
     public void fireAfterSLAViolated(final ProcessInstance instance, NodeInstance nodeInstance, KieRuntime kruntime) {
         final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-        final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, nodeInstance, kruntime);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
-            if (iter.hasNext()) {           
-            
-                do {
-                    iter.next().afterSLAViolated(e);
-                } while (iter.hasNext());            
-            }
-        }));
-    }
-    
-    public void fireBeforeWorkItemTransition(final ProcessInstance instance, WorkItem workitem, Transition<?> transition, KieRuntime kruntime ) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
 
-        final ProcessWorkItemTransitionEvent event = new ProcessWorkItemTransitionEventImpl(instance, workitem, transition, kruntime, false);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
-            if (iter.hasNext()) {
-                do{
-                    iter.next().beforeWorkItemTransition(e);
-                } while (iter.hasNext());        
-            }
-        }));
-    }
+        if (iter.hasNext()) {
+            final SLAViolatedEvent event = new SLAViolatedEventImpl(instance, nodeInstance, kruntime);
 
-    public void fireAfterWorkItemTransition(final ProcessInstance instance, WorkItem workitem, Transition<?> transition, KieRuntime kruntime) {
-        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
-
-        final ProcessWorkItemTransitionEvent event = new ProcessWorkItemTransitionEventImpl(instance, workitem, transition, kruntime, true);
-        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
-            if (iter.hasNext()) {            
-                do {
-                    iter.next().afterWorkItemTransition(e);
-                } while (iter.hasNext());            
-            }
-        }));
+            do {
+                iter.next().afterSLAViolated(event);
+            } while (iter.hasNext());
+        }
     }
 
     public void reset() {

@@ -16,8 +16,6 @@
 
 package org.drools.core.factmodel.traits;
 
-import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +36,8 @@ import org.mvel2.asm.FieldVisitor;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Type;
+
+import static org.drools.core.rule.builder.dialect.asm.ClassGenerator.createClassWriter;
 
 public class TraitMapPropertyWrapperClassBuilderImpl extends AbstractPropertyWrapperClassBuilderImpl implements TraitPropertyWrapperClassBuilder, Serializable {
 	

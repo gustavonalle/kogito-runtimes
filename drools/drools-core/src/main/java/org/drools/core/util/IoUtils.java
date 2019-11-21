@@ -27,26 +27,93 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-public final class IoUtils {
+public class IoUtils {
 
-    public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
+    public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+
+    public static int findPort() {
+        for( int i = 1024; i < 65535; i++) {
+            if ( validPort( i ) ) {
+                return i;
+            }
+        }
+        throw new RuntimeException( "No valid port could be found" );
+    }
+    
+    public static boolean validPort(int port) {
+
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
+                }
+            }
+        }
+
+        return false;
+    }
 
     public static String readFileAsString(File file) {
-        try ( BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF8_CHARSET))) {
-            StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF8_CHARSET));
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 sb.append(line).append("\n");
             }
-            return sb.toString();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new RuntimeException(e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) { }
+            }
+        }
+        return sb.toString();
+    }
+
+    public static void copyFile(File sourceFile, File destFile) {
+        if (!destFile.getParentFile().mkdirs()) {
+            throw new IllegalStateException("Cannot create directory structure for file " + destFile.getParentFile().getAbsolutePath() + "!");
+        }
+        try {
+            destFile.createNewFile();
+        } catch (IOException ioe) {
+            throw new RuntimeException("Unable to create file " + destFile.getAbsolutePath(), ioe);
+        }
+
+        try (FileChannel source = new FileInputStream(sourceFile).getChannel();
+             FileChannel destination = new FileOutputStream(destFile).getChannel()) {
+            destination.transferFrom(source, 0, source.size());
+        } catch (IOException ioe) {
+            throw new RuntimeException("Unable to copy " + sourceFile.getAbsolutePath() + " to " + destFile.getAbsolutePath(), ioe);
         }
     }
 
@@ -59,6 +126,13 @@ public final class IoUtils {
             count += n;
         }
         return count;
+    }
+
+    public static File copyInTempFile( InputStream input, String fileExtension ) throws IOException {
+        File tempFile = File.createTempFile(UUID.randomUUID().toString(), "." + fileExtension );
+        tempFile.deleteOnExit();
+        copy(input, new FileOutputStream(tempFile));
+        return tempFile;
     }
 
     public static List<String> recursiveListFile(File folder) {
@@ -110,13 +184,13 @@ public final class IoUtils {
     public static byte[] readBytesFromInputStream(InputStream input, boolean closeInput) throws IOException {
         try {
             byte[] buffer = createBytesBuffer( input );
-            try (ByteArrayOutputStream output = new ByteArrayOutputStream( buffer.length )) {
-                int n = 0;
-                while ( -1 != ( n = input.read( buffer ) ) ) {
-                    output.write( buffer, 0, n );
-                }
-                return output.toByteArray();
+            ByteArrayOutputStream output = new ByteArrayOutputStream( buffer.length );
+
+            int n = 0;
+            while ( -1 != ( n = input.read( buffer ) ) ) {
+                output.write( buffer, 0, n );
             }
+            return output.toByteArray();
         } finally {
             try {
                 if ( closeInput ) {
@@ -132,9 +206,21 @@ public final class IoUtils {
         return new byte[Math.max(input.available(), 8192)];
     }
 
+    public static byte[] readBytesFromZipEntry(File file, ZipEntry entry) throws IOException {
+        if ( entry == null ) {
+            return null;
+        }
+
+        byte[] bytes;
+        try (ZipFile zipFile = new ZipFile( file )) {
+            bytes = IoUtils.readBytesFromInputStream(  zipFile.getInputStream( entry ), true );
+        }
+        return bytes;
+
+    }
+
     public static byte[] readBytes(File f) throws IOException {
         byte[] buf = new byte[1024];
-
         try (BufferedInputStream bais = new BufferedInputStream(new FileInputStream(f));
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             int len;
@@ -186,11 +272,22 @@ public final class IoUtils {
     public static void writeBytes(File f, byte[] data) throws IOException {
         byte[] buf = new byte[1024];
 
-        try (BufferedOutputStream bos = new BufferedOutputStream( new FileOutputStream(f) );
-             ByteArrayInputStream bais = new ByteArrayInputStream( data )) {
+        BufferedOutputStream bos = null;
+        ByteArrayInputStream bais = null;
+
+        try {
+            bos = new BufferedOutputStream( new FileOutputStream(f) );
+            bais = new ByteArrayInputStream( data );
             int len;
             while ( (len = bais.read( buf )) > 0 ) {
                 bos.write( buf, 0, len );
+            }
+        } finally {
+            if (  bos != null ) {
+                bos.close();
+            }
+            if ( bais != null ) {
+                bais.close();
             }
         }
     }
@@ -220,9 +317,5 @@ public final class IoUtils {
         } else {
             return urlPath.substring( colonIndex + 1 );
         }
-    }
-
-    private IoUtils() {
-        // It is forbidden to create instances of util classes.
     }
 }

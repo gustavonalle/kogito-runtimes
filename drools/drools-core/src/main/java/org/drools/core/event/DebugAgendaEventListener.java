@@ -16,6 +16,7 @@
 
 package org.drools.core.event;
 
+import org.drools.core.WorkingMemory;
 import org.kie.api.event.rule.AfterMatchFiredEvent;
 import org.kie.api.event.rule.AgendaEventListener;
 import org.kie.api.event.rule.BeforeMatchFiredEvent;

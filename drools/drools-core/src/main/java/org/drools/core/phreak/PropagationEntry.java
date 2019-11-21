@@ -15,8 +15,6 @@
 
 package org.drools.core.phreak;
 
-import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
-
 import java.util.concurrent.CountDownLatch;
 
 import org.drools.core.WorkingMemoryEntryPoint;
@@ -32,9 +30,11 @@ import org.drools.core.reteoo.ModifyPreviousTuples;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.spi.PropagationContext;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.impl.PointInTimeTrigger;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.impl.PointInTimeTrigger;
+
+import static org.drools.core.rule.TypeDeclaration.NEVER_EXPIRES;
 
 public interface PropagationEntry {
 
@@ -192,7 +192,7 @@ public interface PropagationEntry {
                 JobHandle jobHandle = wm.getTimerService()
                                         .scheduleJob( job,
                                                       jobctx,
-                                                      new PointInTimeTrigger( nextTimestamp, null, null ) );
+                                                      PointInTimeTrigger.createPointInTimeTrigger( nextTimestamp, null ) );
                 jobctx.setJobHandle( jobHandle );
                 eventFactHandle.addJob( jobHandle );
             }

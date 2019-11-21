@@ -15,9 +15,6 @@
 
 package org.drools.compiler.rule.builder.dialect.mvel;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.drools.compiler.compiler.BoundIdentifiers;
 import org.drools.compiler.compiler.DescrBuildError;
 import org.drools.compiler.rule.builder.RuleBuildContext;
@@ -29,6 +26,9 @@ import org.drools.core.rule.Declaration;
 import org.drools.core.rule.MVELDialectRuntimeData;
 import org.drools.core.spi.DeclarationScopeResolver;
 import org.drools.core.spi.KnowledgeHelper;
+
+import java.util.Arrays;
+import java.util.Map;
 
 public class MVELObjectExpressionBuilder {
 

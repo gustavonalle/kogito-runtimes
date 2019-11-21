@@ -15,9 +15,6 @@
 
 package org.drools.core.factmodel.traits;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.onlyTraitBitSetMask;
-import static org.drools.core.reteoo.PropertySpecificUtil.setPropertyOnMask;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -33,6 +30,9 @@ import org.drools.core.WorkingMemory;
 import org.drools.core.util.ClassUtils;
 import org.drools.core.util.MVELSafeHelper;
 import org.drools.core.util.bitmask.BitMask;
+
+import static org.drools.core.reteoo.PropertySpecificUtil.onlyTraitBitSetMask;
+import static org.drools.core.reteoo.PropertySpecificUtil.setPropertyOnMask;
 
 public class TraitFieldTMSImpl implements TraitFieldTMS, Externalizable {
 

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.drools.compiler.addon.DependencyFilter;
-import org.drools.compiler.addon.PomModel;
+import org.appformer.maven.support.DependencyFilter;
+import org.appformer.maven.support.PomModel;
 import org.drools.compiler.kie.util.ChangeSetBuilder;
 import org.drools.compiler.kie.util.KieJarChangeSet;
 import org.drools.compiler.kproject.models.KieBaseModelImpl;
@@ -148,21 +148,22 @@ public interface InternalKieModule extends KieModule, Serializable {
 
     default CompilationCache getCompilationCache( String kbaseName) { return null; }
 
-    default void initModel() { }
-    default void initModel(ClassLoader classLoader) { }
-
-    static InternalKieModule createKieModule( ReleaseId releaseId, File jar ) {
-        try (ZipFile zipFile = new ZipFile( jar )) {
+    static InternalKieModule createKieModule(ReleaseId releaseId, File jar) {
+        try (ZipFile zipFile = new ZipFile(jar)) {
             ZipEntry zipEntry = zipFile.getEntry(KieModuleModelImpl.KMODULE_JAR_PATH);
             if (zipEntry != null) {
                 KieModuleModel kieModuleModel = KieModuleModelImpl.fromXML( zipFile.getInputStream( zipEntry ) );
                 setDefaultsforEmptyKieModule( kieModuleModel );
                 return kieModuleModel != null ? InternalKieModuleProvider.get( adapt( releaseId ), kieModuleModel, jar ) : null;
             }
-        } catch ( Exception e ) {
+        } catch (Exception e) {
             LocalLogger.logger.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    default void updateKieModule(InternalKieModule newKM) {
+
     }
 
     class CompilationCache implements Serializable {

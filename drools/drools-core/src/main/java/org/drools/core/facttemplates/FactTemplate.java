@@ -16,9 +16,9 @@
 
 package org.drools.core.facttemplates;
 
-import java.io.Externalizable;
-
 import org.drools.core.definitions.InternalKnowledgePackage;
+
+import java.io.Externalizable;
 
 
 public interface FactTemplate

@@ -28,6 +28,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.ByteString.Output;
+import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.Message;
 import org.drools.core.beliefsystem.simple.BeliefSystemLogicalCallback;
 import org.drools.core.common.DroolsObjectInputStream;
 import org.drools.core.common.DroolsObjectOutputStream;
@@ -48,11 +52,6 @@ import org.drools.core.util.KeyStoreHelper;
 import org.drools.reflective.classloader.ProjectClassLoader;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategy.Context;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.ByteString.Output;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.Message;
 
 public class PersisterHelper {
     public static WorkingMemoryAction readWorkingMemoryAction(MarshallerReaderContext context) throws IOException,

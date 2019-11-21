@@ -16,9 +16,9 @@
 
 package org.drools.core.reteoo;
 
-import java.io.Externalizable;
-
 import org.drools.core.common.BaseNode;
+
+import java.io.Externalizable;
 
 public interface LeftTupleSinkPropagator
     extends

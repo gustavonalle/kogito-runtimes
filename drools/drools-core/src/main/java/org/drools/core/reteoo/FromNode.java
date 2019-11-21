@@ -45,13 +45,14 @@ import org.drools.core.spi.PropagationContext;
 import org.drools.core.spi.Tuple;
 import org.drools.core.util.AbstractBaseLinkedListNode;
 import org.drools.core.util.bitmask.AllSetBitMask;
+import org.drools.core.util.bitmask.BitMask;
 import org.drools.core.util.index.TupleList;
 
 import static org.drools.core.reteoo.PropertySpecificUtil.calculateNegativeMask;
 import static org.drools.core.reteoo.PropertySpecificUtil.calculatePositiveMask;
 import static org.drools.core.reteoo.PropertySpecificUtil.getAccessibleProperties;
 import static org.drools.core.reteoo.PropertySpecificUtil.isPropertyReactive;
-import static org.drools.reflective.util.ClassUtils.areNullSafeEquals;
+import static org.drools.core.util.ClassUtils.areNullSafeEquals;
 
 public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
     implements
@@ -164,7 +165,6 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
         return betaConstraints;
     }
 
-
     @Override
     protected void initDeclaredMask(BuildContext context,
                                     LeftTupleSource leftInput) {
@@ -202,6 +202,14 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
     @Override
     protected Pattern getLeftInputPattern( BuildContext context ) {
         return context.getLastBuiltPatterns()[0];
+    }
+
+    @Override
+    protected BitMask setNodeConstraintsPropertyReactiveMask( BitMask mask, Class objectClass, List<String> accessibleProperties) {
+        for (int i = 0; i < alphaConstraints.length; i++) {
+            mask = mask.setAll(alphaConstraints[i].getListenedPropertyMask(objectClass, accessibleProperties));
+        }
+        return mask;
     }
 
     public Class< ? > getResultClass() {

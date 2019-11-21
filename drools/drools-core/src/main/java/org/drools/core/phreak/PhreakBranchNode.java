@@ -15,8 +15,6 @@
 
 package org.drools.core.phreak;
 
-import static org.drools.core.phreak.RuleNetworkEvaluator.normalizeStagedTuples;
-
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.TupleSets;
 import org.drools.core.reteoo.ConditionalBranchEvaluator;
@@ -26,6 +24,8 @@ import org.drools.core.reteoo.ConditionalBranchNode.ConditionalBranchMemory;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.RuleTerminalNode;
+
+import static org.drools.core.phreak.RuleNetworkEvaluator.normalizeStagedTuples;
 
 
 public class PhreakBranchNode {

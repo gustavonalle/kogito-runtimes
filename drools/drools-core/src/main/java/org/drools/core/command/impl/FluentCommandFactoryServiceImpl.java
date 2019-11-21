@@ -16,15 +16,15 @@
 
 package org.drools.core.command.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.kie.api.command.Command;
 import org.kie.api.command.Setter;
 import org.kie.api.runtime.ObjectFilter;
 import org.kie.api.runtime.process.WorkItemHandler;
 import org.kie.api.runtime.rule.FactHandle;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class FluentCommandFactoryServiceImpl {
     private final CommandFactoryServiceImpl factory = new CommandFactoryServiceImpl();
@@ -170,17 +170,17 @@ public class FluentCommandFactoryServiceImpl {
         return this;
     }
 
-    public FluentCommandFactoryServiceImpl newSignalEvent(String processInstanceId, String type, Object event) {
+    public FluentCommandFactoryServiceImpl newSignalEvent(long processInstanceId, String type, Object event) {
         commands.add( factory.newSignalEvent( processInstanceId, type, event ) );
         return this;
     }
 
-    public FluentCommandFactoryServiceImpl newCompleteWorkItem(String workItemId, Map<String, Object> results) {
+    public FluentCommandFactoryServiceImpl newCompleteWorkItem(long workItemId, Map<String, Object> results) {
         commands.add( factory.newCompleteWorkItem( workItemId, results ) );
         return this;
     }
 
-    public FluentCommandFactoryServiceImpl newAbortWorkItem(String workItemId) {
+    public FluentCommandFactoryServiceImpl newAbortWorkItem(long workItemId) {
         commands.add( factory.newAbortWorkItem( workItemId ) );
         return this;
     }

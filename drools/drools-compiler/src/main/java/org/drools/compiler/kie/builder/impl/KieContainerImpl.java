@@ -75,8 +75,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.drools.compiler.kie.util.InjectionHelper.wireSessionComponents;
+import static org.drools.core.util.ClassUtils.convertResourceToClassName;
 import static org.drools.core.util.Drools.isJndiAvailable;
-import static org.drools.reflective.util.ClassUtils.convertResourceToClassName;
 
 public class KieContainerImpl
     implements
@@ -245,6 +245,8 @@ public class KieContainerImpl
         Map<String, KieBaseModel> currentKieBaseModels = ((KieModuleKieProject ) kProject).updateToModule( newKM );
 
         final ResultsImpl results = new ResultsImpl();
+
+        currentKM.updateKieModule(newKM);
 
         List<String> kbasesToRemove = new ArrayList<String>();
         for ( Entry<String, KieBase> kBaseEntry : kBases.entrySet() ) {
@@ -642,12 +644,11 @@ public class KieContainerImpl
     }
 
     private KieSessionConfiguration getKieSessionConfiguration( KieSessionModel kSessionModel ) {
-        return sessionConfsCache.computeIfAbsent(kSessionModel.getName(), k -> {
-            KieSessionConfiguration ksConf = new SessionConfigurationImpl( null, kProject.getClassLoader() );
-            ksConf.setOption( kSessionModel.getClockType() );
-            ksConf.setOption( kSessionModel.getBeliefSystem() );
-            return ksConf;
-        });
+        KieSessionConfiguration ksConf = sessionConfsCache.computeIfAbsent(kSessionModel.getName(),
+                k -> new SessionConfigurationImpl( null, kProject.getClassLoader() ) );
+        ksConf.setOption( kSessionModel.getClockType() );
+        ksConf.setOption( kSessionModel.getBeliefSystem() );
+        return ksConf;
     }
 
     public void dispose() {

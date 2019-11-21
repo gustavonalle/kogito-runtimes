@@ -16,16 +16,9 @@
 
 package org.drools.core.factmodel;
 
-import java.io.Serializable;
+import org.drools.core.factmodel.traits.*;
 
-import org.drools.core.factmodel.traits.TraitClassBuilder;
-import org.drools.core.factmodel.traits.TraitClassBuilderImpl;
-import org.drools.core.factmodel.traits.TraitMapPropertyWrapperClassBuilderImpl;
-import org.drools.core.factmodel.traits.TraitMapProxyClassBuilderImpl;
-import org.drools.core.factmodel.traits.TraitPropertyWrapperClassBuilder;
-import org.drools.core.factmodel.traits.TraitProxyClassBuilder;
-import org.drools.core.factmodel.traits.TraitTriplePropertyWrapperClassBuilderImpl;
-import org.drools.core.factmodel.traits.TraitTripleProxyClassBuilderImpl;
+import java.io.Serializable;
 
 public class ClassBuilderFactory implements Serializable {
 

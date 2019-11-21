@@ -16,8 +16,13 @@
 
 package org.drools.core.time.impl;
 
-import static org.drools.core.time.TimeUtils.evalDateExpression;
-import static org.drools.core.time.TimeUtils.evalTimeExpression;
+import org.drools.core.base.mvel.MVELObjectExpression;
+import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.rule.ConditionalElement;
+import org.drools.core.rule.Declaration;
+import org.drools.core.spi.Tuple;
+import org.drools.core.time.Trigger;
+import org.kie.api.runtime.Calendars;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,15 +31,8 @@ import java.io.ObjectOutput;
 import java.util.Date;
 import java.util.Map;
 
-import org.drools.core.base.mvel.MVELObjectExpression;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.ConditionalElement;
-import org.drools.core.rule.Declaration;
-import org.drools.core.spi.Tuple;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.services.time.impl.IntervalTrigger;
-import org.kie.api.runtime.Calendars;
+import static org.drools.core.time.TimeUtils.evalDateExpression;
+import static org.drools.core.time.TimeUtils.evalTimeExpression;
 
 public class ExpressionIntervalTimer  extends BaseTimer
     implements

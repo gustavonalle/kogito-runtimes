@@ -2,6 +2,7 @@ package org.drools.modelcompiler.builder.generator.visitor.pattern;
 
 import java.util.List;
 
+import com.github.javaparser.ast.body.MethodDeclaration;
 import org.drools.compiler.lang.descr.AccumulateDescr;
 import org.drools.compiler.lang.descr.BaseDescr;
 import org.drools.compiler.lang.descr.ExprConstraintDescr;
@@ -9,13 +10,11 @@ import org.drools.compiler.lang.descr.FromDescr;
 import org.drools.compiler.lang.descr.MVELExprDescr;
 import org.drools.compiler.lang.descr.PatternDescr;
 import org.drools.compiler.rule.builder.XpathAnalysis;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import org.drools.modelcompiler.builder.PackageModel;
 import org.drools.modelcompiler.builder.errors.InvalidExpressionErrorResult;
 import org.drools.modelcompiler.builder.generator.RuleContext;
 import org.drools.modelcompiler.builder.generator.visitor.DSLNode;
 
-import static org.drools.modelcompiler.builder.generator.QueryGenerator.QUERY_METHOD_PREFIX;
 import static org.drools.modelcompiler.builder.generator.QueryGenerator.toQueryDef;
 
 public class PatternVisitor {
@@ -32,26 +31,9 @@ public class PatternVisitor {
         String className = pattern.getObjectType();
 
         if (className != null) {
-            List<? extends BaseDescr> constraintDescrs = pattern.getConstraint().getDescrs();
-
-            String queryName = QUERY_METHOD_PREFIX + className;
-            final MethodDeclaration queryMethod = packageModel.getQueryMethod( queryName );
-            // Expression is a query, get bindings from query parameter type
-            if ( queryMethod != null ) {
-                return new Query( context, packageModel, pattern, constraintDescrs, queryName );
-            }
-
-            String queryDef = toQueryDef( className );
-            if ( packageModel.getQueryDefWithType().containsKey( queryDef ) ) {
-                return new QueryCall( context, packageModel, pattern, queryDef );
-            }
-
-            if ( pattern.getIdentifier() == null && className.equals( "Object" ) && pattern.getSource() instanceof AccumulateDescr ) {
-                if ( context.isPatternDSL() ) {
-                    return new PatternAccumulateConstraint( context, packageModel, pattern, (( AccumulateDescr ) pattern.getSource()), constraintDescrs );
-                } else {
-                    return new FlowAccumulateConstraint( context, packageModel, pattern, (( AccumulateDescr ) pattern.getSource()), constraintDescrs );
-                }
+            DSLNode constraintDescrs = parsePatternWithClass(pattern, className);
+            if (constraintDescrs != null) {
+                return constraintDescrs;
             }
         } else {
             pattern = normalizeOOPathPattern( pattern );
@@ -60,7 +42,7 @@ public class PatternVisitor {
 
         List<? extends BaseDescr> constraintDescrs = pattern.getConstraint().getDescrs();
 
-        Class<?> patternType = null;
+        Class<?> patternType;
         try {
             patternType = context.getTypeResolver().resolveType(className);
         } catch (ClassNotFoundException e) {
@@ -76,6 +58,31 @@ public class PatternVisitor {
         }
     }
 
+    private DSLNode parsePatternWithClass(PatternDescr pattern, String className) {
+        List<? extends BaseDescr> constraintDescrs = pattern.getConstraint().getDescrs();
+
+        String queryName = "query_" + className;
+        final MethodDeclaration queryMethod = packageModel.getQueryMethod(queryName );
+        // Expression is a query, get bindings from query parameter type
+        if ( queryMethod != null ) {
+            return new Query(context, packageModel, pattern, constraintDescrs, queryName );
+        }
+
+        String queryDef = toQueryDef( className );
+        if ( packageModel.getQueryDefWithType().containsKey( queryDef ) ) {
+            return new QueryCall(context, packageModel, pattern, queryDef );
+        }
+
+        if ( pattern.getIdentifier() == null && className.equals( "Object" ) && pattern.getSource() instanceof AccumulateDescr) {
+            if ( context.isPatternDSL() ) {
+                return new PatternAccumulateConstraint(context, packageModel, pattern, (( AccumulateDescr ) pattern.getSource()), constraintDescrs );
+            } else {
+                return new FlowAccumulateConstraint(context, packageModel, pattern, (( AccumulateDescr ) pattern.getSource()), constraintDescrs );
+            }
+        }
+        return null;
+    }
+
     private PatternDescr normalizeOOPathPattern(PatternDescr pattern) {
         String oopathExpr = pattern.getDescrs().get(0).getText();
         XpathAnalysis xpathAnalysis = XpathAnalysis.analyze(oopathExpr);
@@ -89,7 +96,7 @@ public class PatternVisitor {
             if (ruleUnitVarType == null) {
                 throw new IllegalArgumentException("Unknown declaration: " + firstPart.getField());
             }
-            patternType = ruleUnitVarType.getCanonicalName();
+            patternType = ruleUnitVarType.getSimpleName();
         }
 
         PatternDescr normalizedPattern = new PatternDescr();

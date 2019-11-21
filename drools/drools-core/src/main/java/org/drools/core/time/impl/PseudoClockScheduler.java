@@ -29,18 +29,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.drools.core.common.DroolsObjectInputStream;
 import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.time.InternalSchedulerService;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
 import org.drools.core.time.SessionPseudoClock;
-import org.kie.services.time.InternalSchedulerService;
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.Trigger;
-import org.kie.services.time.impl.DefaultJobHandle;
-import org.kie.services.time.impl.DefaultTimerJobFactoryManager;
-import org.kie.services.time.impl.DefaultTimerJobInstance;
-import org.kie.services.time.impl.TimerJobFactoryManager;
-import org.kie.services.time.impl.TimerJobInstance;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +56,7 @@ public class PseudoClockScheduler
     private PriorityBlockingQueue<DefaultTimerJobInstance>   queue;
     private transient InternalWorkingMemory session;
 
-    private TimerJobFactoryManager jobFactoryManager = DefaultTimerJobFactoryManager.instance;
+    private TimerJobFactoryManager          jobFactoryManager = DefaultTimerJobFactoryManager.instance;
 
     private AtomicLong                      idCounter         = new AtomicLong();
 
@@ -113,7 +108,7 @@ public class PseudoClockScheduler
     /**
      * @inheritDoc
      *
-     * @see TimerService#scheduleJob(Job, JobContext, Trigger)
+     * @see org.drools.core.time.TimerService#scheduleJob(Job, JobContext, Trigger)
      */
     public JobHandle scheduleJob(Job job,
                                  JobContext ctx,
@@ -122,12 +117,12 @@ public class PseudoClockScheduler
         Date date = trigger.hasNextFireTime();
 
         if ( date != null ) {
-            DefaultJobHandle jobHandle = new DefaultJobHandle(idCounter.getAndIncrement() );
-            TimerJobInstance jobInstance = jobFactoryManager.createTimerJobInstance(job,
-                                                                                    ctx,
-                                                                                    trigger,
-                                                                                    jobHandle,
-                                                                                    this );
+            DefaultJobHandle jobHandle = new DefaultJobHandle( idCounter.getAndIncrement() );
+            TimerJobInstance jobInstance = jobFactoryManager.createTimerJobInstance( job,
+                                                                                   ctx,
+                                                                                   trigger,
+                                                                                   jobHandle,
+                                                                                   this );
             jobHandle.setTimerJobInstance( jobInstance );
             internalSchedule( jobInstance );
 
@@ -139,22 +134,19 @@ public class PseudoClockScheduler
 
     public void internalSchedule(TimerJobInstance timerJobInstance) {
         jobFactoryManager.addTimerJobInstance(timerJobInstance);
-        synchronized(queue) {
+        synchronized (this) {
             queue.add( ( DefaultTimerJobInstance ) timerJobInstance );
         }
     }
 
     /**
      * @inheritDoc
-     *
-     * @see TimerService#removeJob(JobHandle)
+     * @see org.drools.core.time.TimerService#removeJob(JobHandle)
      */
-    public boolean removeJob(JobHandle jobHandle) {
-        jobHandle.setCancel( true );
-        jobFactoryManager.removeTimerJobInstance( ((DefaultJobHandle) jobHandle).getTimerJobInstance() );
-        synchronized( queue ) {
-            return this.queue.remove( ((DefaultJobHandle) jobHandle).getTimerJobInstance() );
-        }
+    public synchronized boolean removeJob(JobHandle jobHandle) {
+        jobHandle.setCancel(true);
+        jobFactoryManager.removeTimerJobInstance(((DefaultJobHandle) jobHandle).getTimerJobInstance());
+        return this.queue.remove(((DefaultJobHandle) jobHandle).getTimerJobInstance());
     }
 
     /**
@@ -184,7 +176,7 @@ public class PseudoClockScheduler
     }
 
     @Override
-    public void reset() {
+    public synchronized void reset() {
         idCounter.set(0);
         timer.set(0);
         queue.clear();
@@ -202,15 +194,13 @@ public class PseudoClockScheduler
         long fireTime;
         while (item != null && item.getTrigger().hasNextFireTime() != null && (fireTime = item.getTrigger().hasNextFireTime().getTime()) <= endTime) {
             // remove the head
-            synchronized( queue ) {
-                queue.remove(item);
-            }
-
+            queue.remove(item);
             if ( item.getJobHandle().isCancel() ) {
                 // do not call it, do not reschedule it
+                item = (TimerJobInstance) queue.peek();
                 continue;
             }
-            
+
             try {
                 // set the clock back to the trigger's fire time
                 this.timer.getAndSet( fireTime );
@@ -220,19 +210,15 @@ public class PseudoClockScheduler
                 logger.error( "Exception running callbacks: ", e );
             }
             // get next head
-            synchronized( queue ) {
-                item = queue.peek();
-            }
+            item = queue.peek();
         }
         this.timer.set( endTime );
-        return this.timer.get(); 
+        return this.timer.get();
     }
 
-    public long getTimeToNextJob() {
-        synchronized( queue ) {
-            TimerJobInstance item = queue.peek();
-            return (item != null) ? item.getTrigger().hasNextFireTime().getTime() - this.timer.get() : -1;
-        }
+    public synchronized long getTimeToNextJob() {
+        TimerJobInstance item = queue.peek();
+        return (item != null) ? item.getTrigger().hasNextFireTime().getTime() - this.timer.get() : -1;
     }
 
     public Collection<TimerJobInstance> getTimerJobInstances(long id) {

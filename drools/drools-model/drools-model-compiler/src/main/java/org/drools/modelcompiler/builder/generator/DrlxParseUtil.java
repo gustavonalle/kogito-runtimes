@@ -66,7 +66,6 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.UnknownType;
 import org.drools.compiler.lang.descr.AnnotationDescr;
 import org.drools.compiler.lang.descr.PatternDescr;
-import org.drools.core.addon.TypeResolver;
 import org.drools.core.util.ClassUtils;
 import org.drools.core.util.StringUtils;
 import org.drools.model.Index;
@@ -81,6 +80,7 @@ import org.drools.mvel.parser.ast.expr.HalfBinaryExpr;
 import org.drools.mvel.parser.ast.expr.MapCreationLiteralExpression;
 import org.drools.mvel.parser.ast.expr.NullSafeFieldAccessExpr;
 import org.drools.mvel.parser.printer.PrintUtil;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
@@ -120,23 +120,6 @@ public class DrlxParseUtil {
         }
     }
 
-    public static Expression findLeftLeafOfMethodCall(Expression expression) {
-        if (expression instanceof BinaryExpr) {
-            BinaryExpr be = (BinaryExpr) expression;
-            return findLeftLeafOfMethodCall(be.getLeft());
-        }
-        if (expression instanceof CastExpr) {
-            CastExpr ce = (CastExpr) expression;
-            return findLeftLeafOfMethodCall(ce.getExpression());
-        } else if (expression instanceof MethodCallExpr) {
-            return expression;
-        } else if (expression instanceof FieldAccessExpr) {
-            return expression;
-        } else {
-            throw new UnsupportedOperationException("Unknown expression: " + expression);
-        }
-    }
-
     private static Operator toBinaryExprOperator(HalfBinaryExpr.Operator operator) {
         return Operator.valueOf(operator.name());
     }
@@ -150,6 +133,15 @@ public class DrlxParseUtil {
         if (accessor != null) {
             MethodCallExpr body = new MethodCallExpr( scope, accessor.getName() );
             return new TypedExpression( body, accessor.getGenericReturnType() );
+        } else {
+            // try parse it as inner class
+            for (Class<?> declaredClass : clazz.getClasses()) {
+                // An internal class has always a dot on the canonical name path
+                if (declaredClass.getCanonicalName().endsWith("." + name)) {
+                    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(scope, name);
+                    return new TypedExpression(fieldAccessExpr, declaredClass);
+                }
+            }
         }
         if (clazz.isArray() && name.equals( "length" )) {
             FieldAccessExpr expr = new FieldAccessExpr( scope != null ? scope : new NameExpr( THIS_PLACEHOLDER ), name );
@@ -209,8 +201,13 @@ public class DrlxParseUtil {
 
         if (expr instanceof MethodCallExpr) {
             MethodCallExpr methodCallExpr = ( MethodCallExpr ) expr;
-            java.lang.reflect.Type scopeType = getExpressionType(context, typeResolver, methodCallExpr.getScope().get(), usedDeclarations);
-            return returnTypeOfMethodCallExpr(context, typeResolver, methodCallExpr, scopeType, usedDeclarations);
+            Optional<Expression> scopeExpression = methodCallExpr.getScope();
+            if (scopeExpression.isPresent()) {
+                java.lang.reflect.Type scopeType = getExpressionType(context, typeResolver, scopeExpression.get(), usedDeclarations);
+                return returnTypeOfMethodCallExpr(context, typeResolver, methodCallExpr, scopeType, usedDeclarations);
+            } else {
+                throw new IllegalStateException("Scope expression is not present for " + ((MethodCallExpr) expr).getNameAsString() + "!");
+            }
         }
 
         if (expr instanceof ObjectCreationExpr) {
@@ -257,13 +254,26 @@ public class DrlxParseUtil {
         if (usedDeclarations != null) {
             usedDeclarations.add(name);
         }
-        return context.getDeclarationById( name )
-                .map(DeclarationSpec::getDeclarationClass ).get();
+        Optional<java.lang.reflect.Type> type = context.getDeclarationById( name ).map(DeclarationSpec::getDeclarationClass );
+        return type.orElseThrow(() -> new NoSuchElementException("Cannot get expression type by name " + name + "!"));
     }
 
     public static boolean canCoerceLiteralNumberExpr(Class<?> type) {
         final List<? extends Class<?>> classes = Arrays.asList(int.class, long.class, double.class);
         return classes.contains(type);
+    }
+
+    public static Expression coerceLiteralNumberExprToType(LiteralStringValueExpr expr, Class<?> type ) {
+        if (type == int.class) {
+            return new IntegerLiteralExpr( expr.getValue() );
+        }
+        if (type == long.class) {
+            return new LongLiteralExpr( expr.getValue().endsWith( "l" ) ? expr.getValue() : expr.getValue() + "l" );
+        }
+        if (type == double.class) {
+            return new DoubleLiteralExpr( expr.getValue().endsWith( "d" ) ? expr.getValue() : expr.getValue() + "d" );
+        }
+        throw new RuntimeException("Unknown literal: " + expr);
     }
 
     public static Class<?> getLiteralExpressionType( LiteralExpr expr ) {
@@ -288,10 +298,10 @@ public class DrlxParseUtil {
         if (expr instanceof StringLiteralExpr) {
             return String.class;
         }
-        if (expr instanceof BigDecimalLiteralExpr ) {
+        if (expr instanceof BigDecimalLiteralExpr) {
             return BigDecimal.class;
         }
-        if (expr instanceof BigIntegerLiteralExpr ) {
+        if (expr instanceof BigIntegerLiteralExpr) {
             return BigInteger.class;
         }
         throw new RuntimeException("Unknown literal: " + expr);
@@ -299,21 +309,19 @@ public class DrlxParseUtil {
 
     public static Expression prepend(Expression scope, Expression expr) {
         final Optional<Expression> rootNode = findRootNodeViaScope(expr);
-
-        if (!rootNode.isPresent()) {
-            throw new UnsupportedOperationException("No root found");
-        } else {
+        if (rootNode.isPresent()) {
             if (rootNode.get() instanceof NodeWithOptionalScope<?>) {
                 ((NodeWithOptionalScope) rootNode.get()).setScope(scope);
             }
+            return expr;
+        } else {
+            throw new IllegalStateException("No root node was found!");
         }
-
-        return expr;
     }
 
     public static Optional<Node> findRootNodeViaParent(Node expr) {
         final Optional<Node> parentNode = expr.getParentNode();
-        if(parentNode.isPresent()) {
+        if (parentNode.isPresent()) {
             return findRootNodeViaParent(parentNode.get());
         } else {
             return Optional.of(expr);
@@ -527,14 +535,14 @@ public class DrlxParseUtil {
 
     private static Expression createExpressionCall(Expression expr, Deque<ParsedMethod> expressions) {
 
-        if(expr instanceof NodeWithSimpleName) {
+        if (expr instanceof NodeWithSimpleName) {
             NodeWithSimpleName fae = (NodeWithSimpleName)expr;
             expressions.push(new ParsedMethod(expr, fae.getName().asString()));
         }
 
         if (expr instanceof NodeWithOptionalScope) {
             final NodeWithOptionalScope<?> exprWithScope = (NodeWithOptionalScope) expr;
-            exprWithScope.getScope().ifPresent((Expression scope) -> createExpressionCall(scope, expressions));
+            exprWithScope.getScope().ifPresent(expression -> createExpressionCall(expression, expressions));
         } else if (expr instanceof FieldAccessExpr) {
             // Cannot recurse over getScope() as FieldAccessExpr doesn't support the NodeWithOptionalScope,
             // it will support a new interface to traverse among scopes called NodeWithTraversableScope so
@@ -604,7 +612,7 @@ public class DrlxParseUtil {
         return Optional.empty();
     }
 
-    public static DrlxExpression parseExpression( String expression) {
+    public static DrlxExpression parseExpression(String expression) {
         return DrlxParser.parseExpression(DrlxParser.buildDrlxParserWithArguments(OperatorsHolder.operators), expression);
     }
 
@@ -637,9 +645,12 @@ public class DrlxParseUtil {
     public static void forceCastForName(String nameRef, Type type, Expression expression) {
         List<NameExpr> allNameExprForName = expression.findAll(NameExpr.class, n -> n.getNameAsString().equals(nameRef));
         for (NameExpr n : allNameExprForName) {
-            n.getParentNode()
-                    .orElseThrow(() -> new NoSuchElementException("NameExpr doesn't have a parent node!"))
-                    .replace(n, new EnclosedExpr(new CastExpr(type, n)));
+            Optional<Node> parentNode = n.getParentNode();
+            if (parentNode.isPresent()) {
+                parentNode.get().replace(n, new EnclosedExpr(new CastExpr(type, n)));
+            } else {
+                throw new IllegalStateException("Cannot find parent node for " + n.getNameAsString() + "!");
+            }
         }
     }
 
@@ -675,9 +686,12 @@ public class DrlxParseUtil {
                 if (names.contains(nameExpr.getNameAsString())) {
                     Expression prepend = new FieldAccessExpr(newScope, nameExpr.getNameAsString());
                     if (e instanceof NameExpr) {
-                        e.getParentNode()
-                                .orElseThrow(() -> new NoSuchElementException("NameExpr doesn't have a parent node!"))
-                                .replace(nameExpr, prepend); // actually `e` was not composite, it was already the NameExpr node I was looking to replace.
+                        Optional<Node> parentNode = e.getParentNode();
+                        if (parentNode.isPresent()) {
+                            parentNode.get().replace(nameExpr, prepend); // actually `e` was not composite, it was already the NameExpr node I was looking to replace.
+                        } else {
+                            throw new IllegalStateException("Cannot find parent node for " + ((NameExpr) e).getNameAsString() + "!" );
+                        }
                     } else {
                         e.replace(nameExpr, prepend);
                     }
@@ -730,12 +744,6 @@ public class DrlxParseUtil {
         } else {
             return Optional.of(collect.get(collect.size() - 1));
         }
-    }
-
-    public static boolean hasScopeWithName(MethodCallExpr expression, String name ) {
-        return findRootNodeViaScope(expression)
-                .filter(s -> isNameExprWithName(s, name))
-                .isPresent();
     }
 
     public static boolean isNameExprWithName(Node expression, String name) {

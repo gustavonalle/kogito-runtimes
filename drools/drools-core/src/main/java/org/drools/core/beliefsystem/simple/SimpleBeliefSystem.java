@@ -15,8 +15,7 @@
 
 package org.drools.core.beliefsystem.simple;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.allSetButTraitBitMask;
-
+import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.beliefsystem.BeliefSet;
 import org.drools.core.beliefsystem.BeliefSystem;
 import org.drools.core.common.EqualityKey;
@@ -30,6 +29,8 @@ import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.PropagationContext;
+
+import static org.drools.core.reteoo.PropertySpecificUtil.allSetButTraitBitMask;
 
 /**
  * Default implementation emulates classical Drools TMS behaviour.
@@ -125,8 +126,9 @@ public class SimpleBeliefSystem
         } else if ( !beliefSet.isEmpty() && bfh.getObject() == payload && payload != bfh.getObject() ) {
             // prime has changed, to update new object
             // Equality might have changed on the object, so remove (which uses the handle id) and add back in
-            bfh.getEntryPoint().getObjectStore().updateHandle(bfh, beliefSet.getFirst().getObject().getObject());
-            bfh.getEntryPoint().update( bfh, bfh.getObject(), allSetButTraitBitMask(), Object.class, null );
+            WorkingMemoryEntryPoint ep = bfh.getEntryPoint(this.ep.getInternalWorkingMemory());
+            ep.getObjectStore().updateHandle(bfh, beliefSet.getFirst().getObject().getObject());
+            ep.update( bfh, bfh.getObject(), allSetButTraitBitMask(), Object.class, null );
         }
 
         if ( beliefSet.isEmpty() && bfh.getEqualityKey() != null ) {

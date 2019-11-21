@@ -22,8 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,7 +30,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
@@ -683,15 +680,15 @@ public class ExtensibleXmlParser extends DefaultHandler {
     }
 
     public void warning(final SAXParseException x) {
-        logger.debug( buildPrintMessage( x ) );
+        logger.warn( buildPrintMessage( x ) );
     }
 
     public void error(final SAXParseException x) {
-        logger.debug( buildPrintMessage( x ) );
+        logger.error( buildPrintMessage( x ) );
     }
 
     public void fatalError(final SAXParseException x) throws SAXParseException {
-        logger.debug( buildPrintMessage( x ) );
+        logger.error( buildPrintMessage( x ) );
         throw x;
     }
 
@@ -701,17 +698,6 @@ public class ExtensibleXmlParser extends DefaultHandler {
         // Schema files must end with xsd
         if ( !systemId.toLowerCase().endsWith( "xsd" ) ) {
             return null;
-        }
-
-        // try the actual location given by systemId
-        try {
-            if ( getTimeout() >= 0 ) {
-                final URL url = new URL( systemId );
-                URLConnection conn = url.openConnection();
-                    conn.setConnectTimeout( getTimeout() );
-                return new InputSource( conn.getInputStream() );
-            }
-        } catch ( final Exception e ) {
         }
 
         // Try and get the index for the filename, else return null

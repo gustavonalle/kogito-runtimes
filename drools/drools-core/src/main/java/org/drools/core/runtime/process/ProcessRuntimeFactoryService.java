@@ -17,6 +17,7 @@
 package org.drools.core.runtime.process;
 
 import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.impl.StatefulKnowledgeSessionImpl;
 import org.kie.api.Service;
 
 /**

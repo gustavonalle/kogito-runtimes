@@ -16,6 +16,7 @@
 
 package org.drools.core.common;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -23,14 +24,13 @@ import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.factmodel.traits.TraitTypeEnum;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RightTuple;
-import org.drools.core.ruleunit.InternalDataStore;
+import org.drools.core.rule.EntryPointId;
 import org.drools.core.spi.Tuple;
 import org.kie.api.runtime.rule.FactHandle;
-import org.kie.kogito.rules.DataHandle;
 
 public interface InternalFactHandle
     extends
-    FactHandle, Cloneable {
+    FactHandle, Cloneable, Serializable {
     long getId();
 
     long getRecency();
@@ -78,9 +78,16 @@ public interface InternalFactHandle
 
     LeftTuple getFirstLeftTuple();
 
-    WorkingMemoryEntryPoint getEntryPoint();
-    void setEntryPoint( WorkingMemoryEntryPoint ep );
-    
+    default InternalWorkingMemory getWorkingMemory() {
+        return null;
+    }
+
+    EntryPointId getEntryPointId();
+    default String getEntryPointName() {
+        return getEntryPointId() != null ? getEntryPointId().getEntryPointId() : null;
+    }
+    WorkingMemoryEntryPoint getEntryPoint(InternalWorkingMemory wm);
+
     InternalFactHandle clone();
     
     String toExternalForm();
@@ -126,8 +133,9 @@ public interface InternalFactHandle
 
     LinkedTuples getLinkedTuples();
 
-    interface LinkedTuples {
+    interface LinkedTuples extends Serializable {
         LinkedTuples clone();
+        LinkedTuples newInstance();
 
         void addFirstLeftTuple( LeftTuple leftTuple );
         void addLastLeftTuple( LeftTuple leftTuple );
@@ -167,15 +175,13 @@ public interface InternalFactHandle
         }
     }
 
-    default InternalDataStore<?> getDataStore() {
+    default InternalFactHandle getParentHandle() {
         return null;
     }
-    default void setDataStore( InternalDataStore<?> dataStore ) { }
 
-    default DataHandle getDataHandle() {
-        return null;
+    default void setParentHandle( InternalFactHandle parentHandle ) {
+        throw new UnsupportedOperationException();
     }
-    default void setDataHandle( DataHandle dataHandle ) { }
 
     static InternalFactHandle dummyFactHandleOf(Object object) {
         return new DummyFactHandle( object );
@@ -290,14 +296,15 @@ public interface InternalFactHandle
         }
 
         @Override
-        public WorkingMemoryEntryPoint getEntryPoint() {
+        public EntryPointId getEntryPointId() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void setEntryPoint( WorkingMemoryEntryPoint ep ) {
+        public WorkingMemoryEntryPoint getEntryPoint( InternalWorkingMemory wm ) {
             throw new UnsupportedOperationException();
         }
+
 
         @Override
         public InternalFactHandle clone() {

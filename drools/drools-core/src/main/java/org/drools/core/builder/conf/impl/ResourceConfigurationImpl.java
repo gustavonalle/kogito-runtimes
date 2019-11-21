@@ -15,13 +15,13 @@
 
 package org.drools.core.builder.conf.impl;
 
-import static org.kie.api.io.ResourceType.determineResourceType;
+import org.kie.api.io.ResourceConfiguration;
+import org.kie.api.io.ResourceType;
 
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.kie.api.io.ResourceConfiguration;
-import org.kie.api.io.ResourceType;
+import static org.kie.api.io.ResourceType.determineResourceType;
 
 public class ResourceConfigurationImpl implements Serializable, ResourceConfiguration {
 

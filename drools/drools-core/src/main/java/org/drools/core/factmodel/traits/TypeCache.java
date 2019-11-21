@@ -15,6 +15,8 @@
 
 package org.drools.core.factmodel.traits;
 
+import org.drools.core.WorkingMemory;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -25,8 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.drools.core.WorkingMemory;
 
 public class TypeCache implements Externalizable {
 

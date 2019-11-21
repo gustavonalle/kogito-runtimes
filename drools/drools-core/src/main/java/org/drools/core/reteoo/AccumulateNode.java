@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,8 @@ import org.drools.core.spi.ObjectType;
 import org.drools.core.spi.PropagationContext;
 import org.drools.core.util.AbstractBaseLinkedListNode;
 import org.drools.core.util.bitmask.BitMask;
+
+import static org.drools.core.reteoo.PropertySpecificUtil.calculatePositiveMask;
 
 /**
  * AccumulateNode
@@ -110,7 +113,7 @@ public class AccumulateNode extends BetaNode {
                 List<String> accessibleProperties = typeDeclaration.getAccessibleProperties();
                 for ( Declaration decl : accumulate.getRequiredDeclarations() ) {
                     if ( leftObjectType.equals( decl.getPattern().getObjectType() ) ) {
-                        leftMask = leftMask.setAll( decl.getPattern().getPositiveWatchMask(accessibleProperties) );
+                        leftMask = leftMask.setAll( calculatePositiveMask( typeDeclaration.getTypeClass(), decl.getPattern().getListenedProperties(), accessibleProperties ) );
                     }
                 }
             }

@@ -18,7 +18,6 @@ package org.drools.core.rule;
 
 import org.drools.core.spi.Duration;
 import org.drools.core.spi.Tuple;
-import org.kie.api.definition.rule.Rule;
 
 /**
  * A fixed truthness duration.

@@ -45,6 +45,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 
 import org.drools.compiler.builder.DroolsAssemblerContext;
+import org.drools.compiler.builder.impl.errors.MissingImplementationException;
 import org.drools.compiler.compiler.AnnotationDeclarationError;
 import org.drools.compiler.compiler.BaseKnowledgeBuilderResultImpl;
 import org.drools.compiler.compiler.ConfigurableSeverityResult;
@@ -107,9 +108,9 @@ import org.drools.compiler.rule.builder.RuleBuildContext;
 import org.drools.compiler.rule.builder.RuleBuilder;
 import org.drools.compiler.rule.builder.RuleConditionBuilder;
 import org.drools.compiler.rule.builder.dialect.DialectError;
-import org.drools.core.addon.TypeResolver;
+import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
 import org.drools.core.base.ClassFieldAccessorCache;
-import org.drools.core.builder.conf.impl.DecisionTableConfigurationImpl;
+import org.drools.core.builder.conf.impl.JaxbConfigurationImpl;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.impl.KnowledgePackageImpl;
 import org.drools.core.definitions.rule.impl.RuleImpl;
@@ -117,6 +118,7 @@ import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.impl.KnowledgeBaseFactory;
 import org.drools.core.io.impl.BaseResource;
 import org.drools.core.io.impl.ClassPathResource;
+import org.drools.core.io.impl.DescrResource;
 import org.drools.core.io.impl.ReaderResource;
 import org.drools.core.io.internal.InternalResource;
 import org.drools.core.rule.Function;
@@ -132,6 +134,7 @@ import org.drools.core.xml.XmlChangeSetReader;
 import org.drools.reflective.classloader.ProjectClassLoader;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
+import org.kie.api.builder.ReleaseId;
 import org.kie.api.definition.KiePackage;
 import org.kie.api.definition.process.Process;
 import org.kie.api.internal.assembler.KieAssemblers;
@@ -156,6 +159,7 @@ import org.kie.internal.builder.ResultSeverity;
 import org.kie.internal.builder.ScoreCardConfiguration;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.io.ResourceWithConfigurationImpl;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -165,8 +169,8 @@ import static org.drools.core.util.StringUtils.isEmpty;
 import static org.drools.core.util.StringUtils.ucFirst;
 
 public class KnowledgeBuilderImpl implements KnowledgeBuilder,
-                                                DroolsAssemblerContext,
-                                                AssemblerContext  {
+                                             DroolsAssemblerContext,
+                                             AssemblerContext {
 
     protected static final transient Logger logger = LoggerFactory.getLogger(KnowledgeBuilderImpl.class);
 
@@ -215,6 +219,8 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
     private final TypeDeclarationBuilder typeBuilder;
 
     private Map<String, Object> builderCache;
+
+    private ReleaseId releaseId;
 
     /**
      * Use this when package is starting from scratch.
@@ -307,6 +313,10 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         typeBuilder = new TypeDeclarationBuilder(this);
     }
 
+    public void setReleaseId( ReleaseId releaseId ) {
+        this.releaseId = releaseId;
+    }
+
     Resource getCurrentResource() {
         return resource;
     }
@@ -366,7 +376,7 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
                                              ResourceConfiguration configuration) throws DroolsParserException, IOException {
         DecisionTableConfiguration dtableConfiguration = configuration instanceof DecisionTableConfiguration ?
                 (DecisionTableConfiguration) configuration :
-                new DecisionTableConfigurationImpl();
+                null;
 
         if (!dtableConfiguration.getRuleTemplateConfigurations().isEmpty()) {
             List<String> generatedDrls = DecisionTableFactory.loadFromInputStreamWithTemplates(resource, dtableConfiguration);
@@ -400,9 +410,11 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         this.resource = null;
     }
 
-    PackageDescr guidedDecisionTableToPackageDescr(Resource resource) throws DroolsParserException,
-            IOException {
+    PackageDescr guidedDecisionTableToPackageDescr(Resource resource) throws DroolsParserException, IOException {
         GuidedDecisionTableProvider guidedDecisionTableProvider = GuidedDecisionTableFactory.getGuidedDecisionTableProvider();
+        if (guidedDecisionTableProvider == null) {
+            throw new MissingImplementationException(resource, "drools-workbench-models-guided-dtable");
+        }
         ResourceConversionResult conversionResult = guidedDecisionTableProvider.loadFromInputStream(resource.getInputStream());
         return conversionResultToPackageDescr(resource, conversionResult);
     }
@@ -430,12 +442,11 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
     }
 
     private void dumpDrlGeneratedFromDTable(File dumpDir, String generatedDrl, String srcPath) {
-        File dumpFile;
-        if (srcPath != null) {
-            dumpFile = createDumpDrlFile(dumpDir, srcPath, ".drl");
-        } else {
-            dumpFile = createDumpDrlFile(dumpDir, "decision-table-" + UUID.randomUUID(), ".drl");
+        String fileName = srcPath != null ? srcPath : "decision-table-" + UUID.randomUUID();
+        if (releaseId != null) {
+            fileName = releaseId.getGroupId() + "_" + releaseId.getArtifactId() + "_" + fileName;
         }
+        File dumpFile = createDumpDrlFile(dumpDir, fileName, ".drl");
         try {
             IoUtils.write(dumpFile, generatedDrl.getBytes(IoUtils.UTF8_CHARSET));
         } catch (IOException ex) {
@@ -497,9 +508,11 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         this.resource = null;
     }
 
-    PackageDescr templateToPackageDescr(Resource resource) throws DroolsParserException,
-            IOException {
+    PackageDescr templateToPackageDescr(Resource resource) throws DroolsParserException, IOException {
         GuidedRuleTemplateProvider guidedRuleTemplateProvider = GuidedRuleTemplateFactory.getGuidedRuleTemplateProvider();
+        if (guidedRuleTemplateProvider == null) {
+            throw new MissingImplementationException(resource, "drools-workbench-models-guided-template");
+        }
         ResourceConversionResult conversionResult = guidedRuleTemplateProvider.loadFromInputStream(resource.getInputStream());
         return conversionResultToPackageDescr(resource, conversionResult);
     }
@@ -525,11 +538,23 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
 
     PackageDescr drlToPackageDescr(Resource resource) throws DroolsParserException,
             IOException {
-        PackageDescr pkg = KnowledgeBuilderUtil.drlToPackageDescr(resource, results, configuration.getLanguageLevel());
-        if (pkg == null) {
-            addBuilderResult(new ParserError(resource, "Parser returned a null Package", 0, 0));
+        PackageDescr pkg;
+        boolean hasErrors = false;
+        if (resource instanceof DescrResource) {
+            pkg = (PackageDescr) ((DescrResource) resource).getDescr();
+        } else {
+            final DrlParser parser = new DrlParser(configuration.getLanguageLevel());
+            pkg = parser.parse(resource);
+            this.results.addAll(parser.getErrors());
+            if (pkg == null) {
+                addBuilderResult(new ParserError(resource, "Parser returned a null Package", 0, 0));
+            }
+            hasErrors = parser.hasErrors();
         }
-        return pkg;
+        if (pkg != null) {
+            pkg.setResource(resource);
+        }
+        return hasErrors ? null : pkg;
     }
 
     /**
@@ -667,22 +692,24 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
      */
     public void addRuleFlow(Reader processSource) {
         addKnowledgeResource(
-                             new ReaderResource(processSource, ResourceType.DRF),
-                             ResourceType.DRF,
-                             null);
+                new ReaderResource(processSource, ResourceType.DRF),
+                ResourceType.DRF,
+                null);
     }
 
+    @Deprecated
     public void addProcessFromXml(Resource resource) {
         addKnowledgeResource(
-                             resource,
-                             resource.getResourceType(),
-                             resource.getConfiguration());
+                resource,
+                resource.getResourceType(),
+                resource.getConfiguration());
     }
 
     public ProcessBuilder getProcessBuilder() {
         return processBuilder;
     }
 
+    @Deprecated
     public void addProcessFromXml( Reader processSource) {
         addProcessFromXml(new ReaderResource(processSource, ResourceType.DRF));
     }
@@ -714,6 +741,8 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
                 addPackageFromInputStream(resource);
             } else if (ResourceType.CHANGE_SET.equals(type)) {
                 addPackageFromChangeSet(resource);
+            } else if (ResourceType.XSD.equals(type)) {
+                addPackageFromXSD(resource, (JaxbConfigurationImpl) configuration);
             } else if (ResourceType.SCARD.equals(type)) {
                 addPackageFromScoreCard(resource, configuration);
             } else if (ResourceType.TDRL.equals(type)) {
@@ -741,17 +770,30 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         KieAssemblers assemblers = ServiceRegistry.getInstance().get(KieAssemblers.class);
 
         assemblers.addResource(this,
-                               resource,
-                               type,
-                               configuration);
+                              resource,
+                              type,
+                              configuration);
     }
 
+    @Deprecated
     void addPackageForExternalType(ResourceType type, List<ResourceWithConfiguration> resources) throws Exception {
         KieAssemblers assemblers = ServiceRegistry.getInstance().get(KieAssemblers.class);
 
         assemblers.addResources(this, resources, type);
     }
 
+    void addPackageFromXSD(Resource resource,
+                           JaxbConfigurationImpl configuration) throws IOException {
+        if (configuration != null) {
+            String[] classes = DroolsJaxbHelperProviderImpl.addXsdModel(resource,
+                                                                        this,
+                                                                        configuration.getXjcOpts(),
+                                                                        configuration.getSystemId());
+            for (String cls : classes) {
+                configuration.getClasses().add(cls);
+            }
+        }
+    }
 
     void addPackageFromChangeSet(Resource resource) throws SAXException,
             IOException {
@@ -917,7 +959,7 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
     public void addBuilderResult(KnowledgeBuilderResult result) {
         this.results.add(result);
     }
-    
+
     @Override
     public <T extends ResourceTypePackage<?>> T computeIfAbsent(
             ResourceType resourceType,
@@ -1065,13 +1107,16 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         }
     }
 
+    private static class ForkJoinPoolHolder {
+        private static ForkJoinPool COMPILER_POOL = new ForkJoinPool(); // avoid common pool
+    }
+
     private void compileRulesLevel(PackageDescr packageDescr, PackageRegistry pkgRegistry, List<RuleDescr> rules) {
         boolean parallelRulesBuild = this.kBase == null && parallelRulesBuildThreshold != -1 && rules.size() > parallelRulesBuildThreshold;
         if (parallelRulesBuild) {
             Map<String, RuleBuildContext> ruleCxts = new ConcurrentHashMap<>();
-            ForkJoinPool pool = new ForkJoinPool(); // avoid common pool
             try {
-                pool.submit(() -> 
+                ForkJoinPoolHolder.COMPILER_POOL.submit(() ->
                 rules.stream().parallel()
                         .filter(ruleDescr -> filterAccepts(ResourceChange.Type.RULE, ruleDescr.getNamespace(), ruleDescr.getName()))
                         .forEach(ruleDescr -> {
@@ -1086,7 +1131,7 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
                             }
                         })
                 ).get();
-            } catch (InterruptedException | ExecutionException e) { 
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Rules compilation failed or interrupted", e);
             }
             for (RuleDescr ruleDescr : rules) {
@@ -1472,21 +1517,29 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         final Map<String, ImportDeclaration> imports = pkg.getImports();
         imports.putAll(newPkg.getImports());
 
-        // merge globals
-        if (newPkg.getGlobals() != null && !newPkg.getGlobals().isEmpty()) {
-            Map<String, Class<?>> pkgGlobals = pkg.getGlobals();
-            // Add globals
-            for (final Map.Entry<String, Class<?>> entry : newPkg.getGlobals().entrySet()) {
-                final String identifier = entry.getKey();
-                final Class<?> type = entry.getValue();
-                if (pkgGlobals.containsKey(identifier) && !pkgGlobals.get(identifier).equals(type)) {
-                    throw new RuntimeException(pkg.getName() + " cannot be integrated");
-                } else {
-                    pkg.addGlobal(identifier, type);
-                    // this isn't a package merge, it's adding to the rulebase, but I've put it here for convenience
-                    this.globals.put(identifier, type );
+        String lastType = null;
+        try {
+            // merge globals
+            if (newPkg.getGlobals() != null && !newPkg.getGlobals().isEmpty()) {
+                Map<String, String> pkgGlobals = pkg.getGlobals();
+                // Add globals
+                for (final Map.Entry<String, String> entry : newPkg.getGlobals().entrySet()) {
+                    final String identifier = entry.getKey();
+                    final String type = entry.getValue();
+                    lastType = type;
+                    if (pkgGlobals.containsKey(identifier) && !pkgGlobals.get(identifier).equals(type)) {
+                        throw new RuntimeException(pkg.getName() + " cannot be integrated");
+                    } else {
+                        pkg.addGlobal(identifier,
+                                      this.rootClassLoader.loadClass(type));
+                        // this isn't a package merge, it's adding to the rulebase, but I've put it here for convenience
+                        this.globals.put(identifier,
+                                         this.rootClassLoader.loadClass(type));
+                    }
                 }
             }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Unable to resolve class '" + lastType + "'");
         }
 
         // merge the type declarations
@@ -1771,7 +1824,7 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         Dialect dialect = pkgRegistry.getDialectCompiletimeRegistry().getDialect(functionDescr.getDialect());
         dialect.postCompileAddFunction(functionDescr, pkgRegistry.getTypeResolver());
 
-        if (rootClassLoader instanceof ProjectClassLoader) {
+        if (rootClassLoader instanceof ProjectClassLoader ) {
             String functionClassName = functionDescr.getClassName();
             JavaDialectRuntimeData runtime = ((JavaDialectRuntimeData) pkgRegistry.getDialectRuntimeRegistry().getDialectData("java"));
             try {
@@ -1903,11 +1956,6 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
     public boolean hasInfo() {
         return !getInfoList().isEmpty();
     }
-    
-    @Override
-    public void reportError(KnowledgeBuilderError error) {
-        getErrors().add(error);
-    }
 
     public List<DroolsWarning> getWarnings() {
         List<DroolsWarning> warnings = new ArrayList<>();
@@ -1925,6 +1973,11 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
 
     private List<KnowledgeBuilderResult> getInfoList() {
         return getResultList(ResultSeverity.INFO);
+    }
+
+    @Override
+    public void reportError(KnowledgeBuilderError error) {
+        getErrors().add(error);
     }
 
     /**

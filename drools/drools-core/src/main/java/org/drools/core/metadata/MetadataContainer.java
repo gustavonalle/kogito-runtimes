@@ -15,6 +15,9 @@
 
 package org.drools.core.metadata;
 
+import org.drools.core.factmodel.traits.InstantiatorFactory;
+import org.drools.core.util.BitMaskUtil;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;

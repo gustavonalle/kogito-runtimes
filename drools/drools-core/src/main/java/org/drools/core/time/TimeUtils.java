@@ -24,7 +24,6 @@ import org.drools.core.base.mvel.MVELObjectExpression;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.rule.Declaration;
 import org.drools.core.spi.Tuple;
-import org.kie.services.time.Interval;
 import org.drools.core.util.DateUtils;
 
 /**
@@ -78,7 +77,7 @@ public class TimeUtils {
      * 
      * @return the resulting temporal distance matrix
      */
-    public static Interval[][] calculateTemporalDistance(Interval[][] constraintMatrix ) {
+    public static Interval[][] calculateTemporalDistance( Interval[][] constraintMatrix ) {
         Interval[][] result = new Interval[constraintMatrix.length][];
         for( int i = 0; i < result.length; i++ ) {
             result[i] = new Interval[constraintMatrix[i].length];

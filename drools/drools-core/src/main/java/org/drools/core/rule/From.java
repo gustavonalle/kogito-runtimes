@@ -16,6 +16,14 @@
 
 package org.drools.core.rule;
 
+import org.drools.core.base.ClassObjectType;
+import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.spi.DataProvider;
+import org.drools.core.spi.PropagationContext;
+import org.drools.core.spi.Tuple;
+import org.drools.core.spi.Wireable;
+import org.kie.internal.security.KiePolicyHelper;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,14 +35,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.drools.core.base.ClassObjectType;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.spi.DataProvider;
-import org.drools.core.spi.PropagationContext;
-import org.drools.core.spi.Tuple;
-import org.drools.core.spi.Wireable;
-import org.kie.internal.security.KiePolicyHelper;
 
 public class From extends ConditionalElement
         implements

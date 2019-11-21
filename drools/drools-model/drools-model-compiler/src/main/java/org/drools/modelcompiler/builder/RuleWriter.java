@@ -19,7 +19,6 @@ package org.drools.modelcompiler.builder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -56,13 +55,9 @@ public class RuleWriter {
         return prettyPrinter.print(generatedPojo);
     }
 
-    public Map<String, String> getModelsByUnit() {
-        return rulesSource.getModelsByUnit();
-    }
-
     public List<RuleFileSource> getRuleSources() {
         List<RuleFileSource> rules = new ArrayList<>();
-        for (CompilationUnit cu : rulesSource.getModelClasses()) {
+        for (CompilationUnit cu : rulesSource.getSplitted()) {
             final Optional<ClassOrInterfaceDeclaration> classOptional = cu.findFirst(ClassOrInterfaceDeclaration.class);
             if (classOptional.isPresent()) {
 

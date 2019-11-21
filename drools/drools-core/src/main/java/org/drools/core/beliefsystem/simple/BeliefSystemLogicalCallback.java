@@ -15,8 +15,6 @@
 
 package org.drools.core.beliefsystem.simple;
 
-import static org.drools.core.reteoo.PropertySpecificUtil.allSetButTraitBitMask;
-
 import java.io.IOException;
 
 import org.drools.core.beliefsystem.BeliefSet;
@@ -32,6 +30,8 @@ import org.drools.core.phreak.PropagationEntry;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.spi.Activation;
 import org.drools.core.spi.PropagationContext;
+
+import static org.drools.core.reteoo.PropertySpecificUtil.allSetButTraitBitMask;
 
 public class BeliefSystemLogicalCallback
         extends PropagationEntry.AbstractPropagationEntry
@@ -112,7 +112,7 @@ public class BeliefSystemLogicalCallback
     }
 
     public void execute(InternalWorkingMemory workingMemory) {
-        NamedEntryPoint nep = (NamedEntryPoint) handle.getEntryPoint() ;
+        NamedEntryPoint nep = (NamedEntryPoint) handle.getEntryPoint(workingMemory) ;
 
         BeliefSet bs = handle.getEqualityKey().getBeliefSet();
         bs.setWorkingMemoryAction( null );
@@ -120,20 +120,14 @@ public class BeliefSystemLogicalCallback
         if ( update ) {
             if ( !bs.isEmpty() ) {
                 // We need the isEmpty check, in case the BeliefSet was made empty (due to retract) after this was scheduled
-                ((NamedEntryPoint) handle.getEntryPoint() ).update( handle, handle.getObject(), allSetButTraitBitMask(), Object.class, null );
+                nep.update( handle, handle.getObject(), allSetButTraitBitMask(), Object.class, null );
             }
         } else  {
             if ( fullyRetract ) {
-                ((NamedEntryPoint) handle.getEntryPoint()).delete( this.handle,
-                                                                   context.getRuleOrigin(),
-                                                                   this.activation.getTuple().getTupleSink() );
+                nep.delete( this.handle, context.getRuleOrigin(), this.activation.getTuple().getTupleSink() );
             } else {
-                final ObjectTypeConf typeConf = nep.getObjectTypeConfigurationRegistry().getObjectTypeConf( nep.getEntryPoint(),
-                                                                                                            handle.getObject() );
-                ((NamedEntryPoint) handle.getEntryPoint() ).getEntryPointNode().retractObject( handle,
-                                                                                               context,
-                                                                                               typeConf,
-                                                                                               workingMemory );
+                ObjectTypeConf typeConf = nep.getObjectTypeConfigurationRegistry().getObjectTypeConf( nep.getEntryPoint(), handle.getObject() );
+                nep.getEntryPointNode().retractObject( handle, context, typeConf, workingMemory );
             }
         }
     }

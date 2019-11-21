@@ -15,9 +15,6 @@
 
 package org.drools.core.common;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.drools.core.impl.StatefulKnowledgeSessionImpl;
 import org.drools.core.phreak.RuleAgendaItem;
 import org.drools.core.spi.Activation;
@@ -25,6 +22,9 @@ import org.drools.core.spi.Tuple;
 import org.drools.core.util.Iterator;
 import org.drools.core.util.index.TupleList;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PhreakActiveActivationIterator
     implements

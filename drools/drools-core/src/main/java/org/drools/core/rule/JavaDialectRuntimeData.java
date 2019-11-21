@@ -16,9 +16,6 @@
 
 package org.drools.core.rule;
 
-import static org.drools.reflective.util.ClassUtils.convertClassToResourcePath;
-import static org.drools.reflective.util.ClassUtils.convertResourceToClassName;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
@@ -59,6 +56,9 @@ import org.drools.core.util.StringUtils;
 import org.drools.reflective.classloader.ProjectClassLoader;
 import org.kie.internal.concurrent.ExecutorProviderFactory;
 import org.kie.internal.utils.FastClassLoader;
+
+import static org.drools.core.util.ClassUtils.convertClassToResourcePath;
+import static org.drools.core.util.ClassUtils.convertResourceToClassName;
 
 public class JavaDialectRuntimeData
                                    implements
@@ -359,7 +359,7 @@ public class JavaDialectRuntimeData
         if (store != null) {
             bytecode = store.get(resourceName);
         }
-        if (bytecode == null && rootClassLoader instanceof ProjectClassLoader) {
+        if (bytecode == null && rootClassLoader instanceof ProjectClassLoader ) {
             bytecode = ((ProjectClassLoader)rootClassLoader).getBytecode(resourceName);
         }
         return bytecode;

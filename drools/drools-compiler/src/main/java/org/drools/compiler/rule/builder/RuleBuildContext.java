@@ -24,7 +24,6 @@ import org.drools.compiler.compiler.DialectCompiletimeRegistry;
 import org.drools.compiler.compiler.RuleBuildError;
 import org.drools.compiler.lang.descr.QueryDescr;
 import org.drools.compiler.lang.descr.RuleDescr;
-import org.drools.core.addon.TypeResolver;
 import org.drools.core.beliefsystem.abductive.Abductive;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.rule.impl.RuleImpl;
@@ -34,7 +33,9 @@ import org.drools.core.rule.Pattern;
 import org.drools.core.rule.QueryImpl;
 import org.drools.core.spi.DeclarationScopeResolver;
 import org.drools.core.util.ClassUtils;
-import org.kie.kogito.rules.RuleUnitData;
+import org.kie.internal.ruleunit.RuleUnitComponentFactory;
+import org.kie.internal.ruleunit.RuleUnitDescription;
+import org.kie.soup.project.datamodel.commons.types.TypeResolver;
 
 /**
  * A context for the current build
@@ -185,12 +186,12 @@ public class RuleBuildContext extends PackageBuildContext {
             nameInferredFromResource = true;
         }
 
-        if (ruleUnitClassName != null) {
+        if (RuleUnitComponentFactory.get() != null && ruleUnitClassName != null) {
             TypeResolver typeResolver = getPkg().getTypeResolver();
             boolean unitFound = false;
             Class<?> ruleUnitClass = ClassUtils.safeLoadClass(typeResolver.getClassLoader(), ruleUnitClassName);
             if (ruleUnitClass != null) {
-                unitFound = RuleUnitData.class.isAssignableFrom(ruleUnitClass);
+                unitFound = RuleUnitComponentFactory.get().isRuleUnitClass( ruleUnitClass );
                 if (unitFound && nameInferredFromResource) {
                     rule.setRuleUnitClassName(ruleUnitClassName);
                 }
@@ -204,7 +205,11 @@ public class RuleBuildContext extends PackageBuildContext {
     }
 
     public Optional<EntryPointId> getEntryPointId(String name) {
-        return getPkg().getRuleUnitDescriptionLoader().getDescription(getRule()).flatMap(ruDescr -> ruDescr.getEntryPointId(name));
+        return getPkg().getRuleUnitDescriptionLoader().getDescription(getRule()).flatMap(ruDescr -> getEntryPointId(ruDescr, name));
+    }
+
+    public Optional<EntryPointId> getEntryPointId( RuleUnitDescription ruDescr, String name ) {
+        return ruDescr.hasVar( name ) ? Optional.of( new EntryPointId( ruDescr.getEntryPointName(name) ) ) : Optional.empty();
     }
 
     private String extractClassNameFromSourcePath() {
