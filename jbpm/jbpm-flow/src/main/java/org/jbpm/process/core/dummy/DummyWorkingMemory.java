@@ -68,7 +68,6 @@ import org.kie.services.time.impl.JDKTimerService;
 public class DummyWorkingMemory implements InternalWorkingMemory,
                                     InternalKnowledgeRuntime {
 
-    private final TimerService timerService;
     private final EnvironmentImpl environment;
     private final KieBase kieBase;
     private InternalProcessRuntime processRuntime;
@@ -77,7 +76,6 @@ public class DummyWorkingMemory implements InternalWorkingMemory,
     public DummyWorkingMemory(KieBase kieBase) {
         this.kieBase = kieBase;
         environment = new EnvironmentImpl();
-        timerService = new JDKTimerService();
         this.workItemManager = new DefaultWorkItemManager(this);
     }
 
@@ -201,8 +199,8 @@ public class DummyWorkingMemory implements InternalWorkingMemory,
     }
 
     @Override
-    public TimerService getTimerService() {
-        return timerService;
+    public org.drools.core.time.TimerService getTimerService() {
+        throw new UnsupportedOperationException("no timer service in dummy interface");
     }
 
     @Override
@@ -517,6 +515,16 @@ public class DummyWorkingMemory implements InternalWorkingMemory,
 
     @Override
     public Collection<ProcessInstance> getProcessInstances() {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    @Override
+    public ProcessInstance getProcessInstance(long id) {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    @Override
+    public ProcessInstance getProcessInstance(long id, boolean readOnly) {
         return null;
     }
 

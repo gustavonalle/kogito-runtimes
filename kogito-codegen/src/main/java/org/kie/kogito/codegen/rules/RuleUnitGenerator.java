@@ -28,7 +28,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
-import org.drools.modelcompiler.builder.QueryModel;
+//import org.drools.modelcompiler.builder.QueryModel;
 import org.kie.kogito.codegen.ApplicationGenerator;
 import org.kie.kogito.codegen.FileGenerator;
 import org.kie.kogito.codegen.di.DependencyInjectionAnnotator;
@@ -51,7 +51,7 @@ public class RuleUnitGenerator implements FileGenerator {
     private final String targetCanonicalName;
     private String targetTypeName;
     private DependencyInjectionAnnotator annotator;
-    private Collection<QueryModel> queries;
+//    private Collection<QueryModel> queries;
     private String applicationPackageName;
 
     public RuleUnitGenerator(Class<?> ruleUnit, String generatedSourceFile) {
@@ -68,13 +68,13 @@ public class RuleUnitGenerator implements FileGenerator {
     public RuleUnitInstanceGenerator instance(ClassLoader classLoader) {
         return new RuleUnitInstanceGenerator(packageName, typeName, classLoader);
     }
-
-    public List<QueryEndpointGenerator> queries() {
-        return queries.stream()
-                .filter(query -> !query.hasParameters())
-                .map(query -> new QueryEndpointGenerator(ruleUnit, query, annotator))
-                .collect(toList());
-    }
+//
+//    public List<QueryEndpointGenerator> queries() {
+//        return queries.stream()
+//                .filter(query -> !query.hasParameters())
+//                .map(query -> new QueryEndpointGenerator(ruleUnit, query, annotator))
+//                .collect(toList());
+//    }
 
     @Override
     public String generatedFilePath() {
@@ -164,10 +164,10 @@ public class RuleUnitGenerator implements FileGenerator {
         return this;
     }
 
-    public RuleUnitGenerator withQueries(Collection<QueryModel> queries) {
-        this.queries = queries;
-        return this;
-    }
+//    public RuleUnitGenerator withQueries(Collection<QueryModel> queries) {
+//        this.queries = queries;
+//        return this;
+//    }
 
     public Class<?> getRuleUnitClass() {
         return ruleUnit;

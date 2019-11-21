@@ -94,73 +94,73 @@ public class DefaultSignalManager implements SignalManager {
 		}
 	}
 	
-	public static class SignalProcessInstanceAction extends PropagationEntry.AbstractPropagationEntry implements WorkingMemoryAction {
-
-		private String processInstanceId;
-		private String type;
-		private Object event;
-		
-		public SignalProcessInstanceAction(String processInstanceId, String type, Object event) {
-			this.processInstanceId = processInstanceId;
-			this.type = type;
-			this.event = event;
-			
-		}
-		
-		public SignalProcessInstanceAction(MarshallerReaderContext context) throws IOException, ClassNotFoundException {
-			processInstanceId = context.readUTF();
-			type = context.readUTF();
-			if (context.readBoolean()) {
-				event = context.readObject();
-			}
-		}
-		
-		public void execute(InternalWorkingMemory workingMemory) {
-			ProcessInstance processInstance = workingMemory.getProcessInstance(processInstanceId);
-			if (processInstance != null) {
-				processInstance.signalEvent(type, event);
-			}
-		}
-
-		public void execute(InternalKnowledgeRuntime kruntime) {
-			ProcessInstance processInstance = kruntime.getProcessInstance(processInstanceId);
-			if (processInstance != null) {
-				processInstance.signalEvent(type, event);
-			}
-		}
-
-		public void write(MarshallerWriteContext context) throws IOException {
-			context.writeInt( WorkingMemoryAction.SignalProcessInstanceAction );
-			context.writeUTF(processInstanceId);
-			context.writeUTF(type);
-			context.writeBoolean(event != null);
-			if (event != null) {
-				context.writeObject(event);
-			}
-		}
-
-		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-			processInstanceId = in.readUTF();
-			type = in.readUTF();
-			if (in.readBoolean()) {
-				event = in.readObject();
-			}
-		}
-
-		public void writeExternal(ObjectOutput out) throws IOException {
-			out.writeUTF(processInstanceId);
-			out.writeUTF(type);
-			out.writeBoolean(event != null);
-			if (event != null) {
-				out.writeObject(event);
-			}
-		}
-
-        public Action serialize(MarshallerWriteContext context) throws IOException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-	}
+//	public static class SignalProcessInstanceAction extends PropagationEntry.AbstractPropagationEntry implements WorkingMemoryAction {
+//
+//		private String processInstanceId;
+//		private String type;
+//		private Object event;
+//
+//		public SignalProcessInstanceAction(String processInstanceId, String type, Object event) {
+//			this.processInstanceId = processInstanceId;
+//			this.type = type;
+//			this.event = event;
+//
+//		}
+//
+//		public SignalProcessInstanceAction(MarshallerReaderContext context) throws IOException, ClassNotFoundException {
+//			processInstanceId = context.readUTF();
+//			type = context.readUTF();
+//			if (context.readBoolean()) {
+//				event = context.readObject();
+//			}
+//		}
+//
+//		public void execute(InternalWorkingMemory workingMemory) {
+//			ProcessInstance processInstance = workingMemory.getProcessInstance(processInstanceId);
+//			if (processInstance != null) {
+//				processInstance.signalEvent(type, event);
+//			}
+//		}
+//
+//		public void execute(InternalKnowledgeRuntime kruntime) {
+//			ProcessInstance processInstance = kruntime.getProcessInstance(processInstanceId);
+//			if (processInstance != null) {
+//				processInstance.signalEvent(type, event);
+//			}
+//		}
+//
+//		public void write(MarshallerWriteContext context) throws IOException {
+//			context.writeInt( WorkingMemoryAction.SignalProcessInstanceAction );
+//			context.writeUTF(processInstanceId);
+//			context.writeUTF(type);
+//			context.writeBoolean(event != null);
+//			if (event != null) {
+//				context.writeObject(event);
+//			}
+//		}
+//
+//		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+//			processInstanceId = in.readUTF();
+//			type = in.readUTF();
+//			if (in.readBoolean()) {
+//				event = in.readObject();
+//			}
+//		}
+//
+//		public void writeExternal(ObjectOutput out) throws IOException {
+//			out.writeUTF(processInstanceId);
+//			out.writeUTF(type);
+//			out.writeBoolean(event != null);
+//			if (event != null) {
+//				out.writeObject(event);
+//			}
+//		}
+//
+//        public Action serialize(MarshallerWriteContext context) throws IOException {
+//            // TODO Auto-generated method stub
+//            return null;
+//        }
+//	}
 	
 	public static class SignalAction extends PropagationEntry.AbstractPropagationEntry implements WorkingMemoryAction {
 

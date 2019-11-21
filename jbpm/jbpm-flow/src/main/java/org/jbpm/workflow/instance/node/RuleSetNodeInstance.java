@@ -39,6 +39,7 @@ import org.jbpm.process.core.datatype.DataType;
 import org.jbpm.process.core.impl.DataTransformerRegistry;
 import org.jbpm.process.instance.ContextInstance;
 import org.jbpm.process.instance.ContextInstanceContainer;
+import org.jbpm.process.compat.IdConverter;
 import org.jbpm.process.instance.context.exception.ExceptionScopeInstance;
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
 import org.jbpm.process.instance.impl.ContextInstanceFactory;
@@ -166,7 +167,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                 if (actAsWaitState()) {
                     addRuleSetListener();
                     ((InternalAgenda) kruntime.getAgenda())
-                            .activateRuleFlowGroup(getRuleFlowGroup(), getProcessInstance().getId(), getUniqueId());
+                            .activateRuleFlowGroup(getRuleFlowGroup(), IdConverter.toLongId(getProcessInstance().getId()), getUniqueId());
                 } else {
                     int fireLimit = DEFAULT_FIRE_RULE_LIMIT;
 
@@ -174,7 +175,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                         fireLimit = Integer.parseInt(inputs.get(FIRE_RULE_LIMIT_PARAMETER).toString());
                     }
                     ((InternalAgenda) kruntime.getAgenda())
-                            .activateRuleFlowGroup(getRuleFlowGroup(), getProcessInstance().getId(), getUniqueId());
+                            .activateRuleFlowGroup(getRuleFlowGroup(), IdConverter.toLongId(getProcessInstance().getId()), getUniqueId());
 
                     int fired = ((KieSession) kruntime).fireAllRules(fireLimit);
                     if (fired == fireLimit) {

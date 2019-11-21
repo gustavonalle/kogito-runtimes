@@ -120,7 +120,7 @@ public class BaseHumanTaskLifeCycle implements LifeCycle<Map<String, Object>> {
         if (targetPhase.isTerminating()) {
             logger.debug("Target life cycle phase '{}' is terminiating, completing work item {}", targetPhase.id(), humanTaskWorkItem.getId());
             // since target life cycle phase is terminating completing work item
-            ((org.drools.core.process.instance.WorkItemManager)manager).internalCompleteWorkItem(humanTaskWorkItem);
+            ((org.jbpm.process.instance.workitems.WorkItemManager)manager).internalCompleteWorkItem(humanTaskWorkItem);
         }
         
         return data(humanTaskWorkItem);

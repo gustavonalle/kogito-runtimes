@@ -26,7 +26,6 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.WorkingMemoryAction;
 import org.drools.core.definitions.rule.impl.RuleImpl;
-import org.drools.core.event.ProcessEventSupport;
 import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.marshalling.impl.MarshallerReaderContext;
 import org.drools.core.marshalling.impl.MarshallerWriteContext;
@@ -37,6 +36,7 @@ import org.drools.core.time.impl.ThreadSafeTrackableTimeJobFactoryManager;
 import org.jbpm.process.core.event.EventFilter;
 import org.jbpm.process.core.event.EventTransformer;
 import org.jbpm.process.core.event.EventTypeFilter;
+import org.jbpm.process.core.event.ProcessEventSupport;
 import org.jbpm.process.core.timer.BusinessCalendar;
 import org.jbpm.process.core.timer.DateTimeUtils;
 import org.jbpm.process.core.timer.Timer;
@@ -71,6 +71,7 @@ import org.kie.kogito.uow.UnitOfWorkManager;
 import org.kie.services.time.TimerService;
 import org.kie.services.time.impl.CommandServiceTimerJobFactoryManager;
 import org.kie.services.time.impl.CronExpression;
+import org.kie.services.time.impl.TimerJobFactoryManager;
 import org.kie.services.time.manager.TimerInstance;
 import org.kie.services.time.manager.TimerManager;
 
@@ -86,9 +87,9 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 
 	public ProcessRuntimeImpl(InternalKnowledgeRuntime kruntime) {
 		this.kruntime = kruntime;
-        TimerService timerService = kruntime.getTimerService();
+        TimerService timerService = (TimerService) kruntime.getTimerService();
         if ( !(timerService.getTimerJobFactoryManager() instanceof CommandServiceTimerJobFactoryManager) ) {
-            timerService.setTimerJobFactoryManager( new ThreadSafeTrackableTimeJobFactoryManager() );
+            timerService.setTimerJobFactoryManager((TimerJobFactoryManager) new ThreadSafeTrackableTimeJobFactoryManager());
         }
 
 		((CompositeClassLoader) getRootClassLoader()).addClassLoader( getClass().getClassLoader() );
@@ -96,7 +97,7 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 		initSignalManager();
 		timerManager = new TimerManager(
 		        new TimerManagerRuntimeAdaptor(kruntime),
-                kruntime.getTimerService());
+                (TimerService) kruntime.getTimerService());
 		unitOfWorkManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
         processEventSupport = new ProcessEventSupport(unitOfWorkManager);
         if (isActive()) {
@@ -119,17 +120,19 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
     }
 
 	public ProcessRuntimeImpl(InternalWorkingMemory workingMemory) {
-        TimerService timerService = workingMemory.getTimerService();
+        TimerService timerService = (TimerService) workingMemory.getTimerService();
         if ( !(timerService.getTimerJobFactoryManager() instanceof CommandServiceTimerJobFactoryManager) ) {
-            timerService.setTimerJobFactoryManager( new ThreadSafeTrackableTimeJobFactoryManager() );
+            timerService.setTimerJobFactoryManager((TimerJobFactoryManager) new ThreadSafeTrackableTimeJobFactoryManager());
         }
 		
 		this.kruntime = (InternalKnowledgeRuntime) workingMemory.getKnowledgeRuntime();
 		initProcessInstanceManager();
 		initSignalManager();
-		timerManager = new TimerManager(
-		        new TimerManagerRuntimeAdaptor(kruntime),
-                kruntime.getTimerService());
+        TimerManagerRuntimeAdaptor runtime = new TimerManagerRuntimeAdaptor(kruntime);
+        org.drools.core.time.TimerService timerService1 = kruntime.getTimerService();
+        timerManager = new TimerManager(
+                runtime,
+                (TimerService) timerService1);
 		unitOfWorkManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
         processEventSupport = new ProcessEventSupport(unitOfWorkManager);
         if (isActive()) {
@@ -330,8 +333,8 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
         }
     }
     
-    public ProcessEventSupport getProcessEventSupport() {
-    	return processEventSupport;
+    public org.drools.core.event.ProcessEventSupport getProcessEventSupport() {
+    	throw new UnsupportedOperationException();
     }
 
     public void addEventListener(final ProcessEventListener listener) {
@@ -501,8 +504,13 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 	public void signalEvent(String type, Object event, String processInstanceId) {
 		signalManager.signalEvent(processInstanceId, type, event);
 	}
-	
-	public void setProcessEventSupport(ProcessEventSupport processEventSupport) {
+
+    @Override
+    public void setProcessEventSupport(org.drools.core.event.ProcessEventSupport processEventSupport) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setProcessEventSupport(ProcessEventSupport processEventSupport) {
 		this.processEventSupport = processEventSupport;
 	}
 	

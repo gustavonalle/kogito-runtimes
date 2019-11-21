@@ -23,8 +23,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import org.drools.core.process.instance.WorkItem;
 import org.jbpm.process.instance.impl.AssignmentAction;
+import org.jbpm.process.instance.workitems.WorkItem;
 import org.jbpm.workflow.core.node.Assignment;
 import org.kie.api.runtime.process.ProcessContext;
 import org.w3c.dom.Attr;

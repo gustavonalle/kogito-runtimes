@@ -20,6 +20,7 @@ import org.drools.core.common.InternalAgenda;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.spi.Activation;
 import org.drools.core.util.MVELSafeHelper;
+import org.jbpm.process.compat.IdConverter;
 import org.jbpm.workflow.core.impl.ExtendedNodeImpl;
 import org.jbpm.workflow.core.impl.NodeImpl;
 import org.jbpm.workflow.core.node.DynamicNode;
@@ -40,7 +41,6 @@ import org.kie.api.runtime.rule.Match;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class DynamicNodeInstance extends CompositeContextNodeInstance implements AgendaEventListener {
 
@@ -72,7 +72,7 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance implements
     	String ruleFlowGroup = getRuleFlowGroupName();
     	if (ruleFlowGroup != null && !agenda.getRuleFlowGroup(ruleFlowGroup).isActive()) {
         	agenda.getRuleFlowGroup(ruleFlowGroup).setAutoDeactivate(false);
-        	agenda.activateRuleFlowGroup(ruleFlowGroup, getProcessInstance().getId(), getUniqueId());
+            agenda.activateRuleFlowGroup(ruleFlowGroup, IdConverter.toLongId(getProcessInstance().getId()), getUniqueId());
     	}
 //    	if (getDynamicNode().isAutoComplete() && getNodeInstances(false).isEmpty()) {
 //    		triggerCompleted(NodeImpl.CONNECTION_DEFAULT_TYPE);
@@ -81,7 +81,7 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance implements
         
         String rule = "RuleFlow-AdHocComplete-" + getProcessInstance().getProcessId() + "-" + getDynamicNode().getUniqueId();
         boolean isActive = ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
-            .isRuleActiveInRuleFlowGroup(getRuleFlowGroupName(), rule, getProcessInstance().getId());
+            .isRuleActiveInRuleFlowGroup(getRuleFlowGroupName(), rule, IdConverter.toLongId(getProcessInstance().getId()));
         if (isActive) {
             triggerCompleted();
         } else {

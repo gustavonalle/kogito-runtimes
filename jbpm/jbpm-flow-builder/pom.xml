@@ -26,12 +26,8 @@
       <artifactId>jbpm-flow</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-compiler</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-core</artifactId>
+      <groupId>org.kie.kogito</groupId>
+      <artifactId>kogito-drools</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kie.kogito</groupId>
@@ -57,11 +53,11 @@
     </dependency>
 
     <!--  test -->
-    <dependency>
-      <groupId>org.drools</groupId>
-      <artifactId>drools-core-dynamic</artifactId>
-      <scope>test</scope>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.drools</groupId>-->
+<!--      <artifactId>drools-core-dynamic</artifactId>-->
+<!--      <scope>test</scope>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>

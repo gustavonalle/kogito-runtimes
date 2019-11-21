@@ -19,6 +19,7 @@ package org.jbpm.workflow.instance.node;
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.spi.Activation;
+import org.jbpm.process.compat.IdConverter;
 import org.jbpm.workflow.core.node.MilestoneNode;
 import org.kie.api.event.rule.AfterMatchFiredEvent;
 import org.kie.api.event.rule.AgendaEventListener;
@@ -56,7 +57,7 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance implements Age
         String rule = "RuleFlow-Milestone-" + getProcessInstance().getProcessId()
                 + "-" + getMilestoneNode().getUniqueId();
         boolean isActive = ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
-                .isRuleActiveInRuleFlowGroup("DROOLS_SYSTEM", rule, getProcessInstance().getId());
+                .isRuleActiveInRuleFlowGroup("DROOLS_SYSTEM", rule, IdConverter.toLongId(getProcessInstance().getId()));
         if (isActive) {
             triggerCompleted();
         } else {

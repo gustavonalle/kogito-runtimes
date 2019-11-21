@@ -58,7 +58,6 @@ import org.kie.kogito.process.bpmn2.BpmnVariables;
 import org.kie.kogito.process.impl.CachedWorkItemHandlerConfig;
 import org.kie.kogito.process.impl.DefaultProcessEventListenerConfig;
 import org.kie.kogito.process.impl.StaticProcessConfig;
-import org.kie.kogito.process.impl.marshalling.ProcessInstanceMarshaller;
 import org.kie.kogito.services.uow.CollectingUnitOfWorkFactory;
 import org.kie.kogito.services.uow.DefaultUnitOfWorkManager;
 

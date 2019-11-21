@@ -91,19 +91,19 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
-    <!-- Internal dependencies -->
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>drools-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>drools-core-static</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>drools-model-compiler</artifactId>
-    </dependency>
+<!--    &lt;!&ndash; Internal dependencies &ndash;&gt;-->
+<!--    <dependency>-->
+<!--      <groupId>org.kie.kogito</groupId>-->
+<!--      <artifactId>drools-core</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.kie.kogito</groupId>-->
+<!--      <artifactId>drools-core-static</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.kie.kogito</groupId>-->
+<!--      <artifactId>drools-model-compiler</artifactId>-->
+<!--    </dependency>-->
 
     <dependency>
       <groupId>org.kie.kogito</groupId>

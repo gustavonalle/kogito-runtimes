@@ -44,26 +44,27 @@ public class RuleConfigGenerator {
     private DependencyInjectionAnnotator annotator;
 
     public ObjectCreationExpr newInstance() {
-        if (annotator!= null) {
-            return new ObjectCreationExpr()
-                    .setType(StaticRuleConfig.class.getCanonicalName())
-                    .addArgument(new MethodCallExpr("extract_ruleEventListenerConfig"));
-        } else {
-            return new ObjectCreationExpr()
-                .setType(StaticRuleConfig.class.getCanonicalName())
-                .addArgument(new NameExpr(DEFAULT_RULE_EVENT_LISTENER_CONFIG));
-        }
+        throw new UnsupportedOperationException();
+//        if (annotator!= null) {
+//            return new ObjectCreationExpr()
+//                    .setType(StaticRuleConfig.class.getCanonicalName())
+//                    .addArgument(new MethodCallExpr("extract_ruleEventListenerConfig"));
+//        } else {
+//            return new ObjectCreationExpr()
+//                .setType(StaticRuleConfig.class.getCanonicalName())
+//                .addArgument(new NameExpr(DEFAULT_RULE_EVENT_LISTENER_CONFIG));
+//        }
     }
     
     public List<BodyDeclaration<?>> members() {
         
-        FieldDeclaration defaultRelcFieldDeclaration = new FieldDeclaration()
-                .setStatic(true)
-                .setModifiers(Keyword.PRIVATE)
-                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, RuleEventListenerConfig.class.getCanonicalName()), 
-                                                    DEFAULT_RULE_EVENT_LISTENER_CONFIG,
-                                                    new ObjectCreationExpr(null, new ClassOrInterfaceType(null, DefaultRuleEventListenerConfig.class.getCanonicalName()), NodeList.nodeList())));
-        members.add(defaultRelcFieldDeclaration);
+//        FieldDeclaration defaultRelcFieldDeclaration = new FieldDeclaration()
+//                .setStatic(true)
+//                .setModifiers(Keyword.PRIVATE)
+//                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, RuleEventListenerConfig.class.getCanonicalName()),
+//                                                    DEFAULT_RULE_EVENT_LISTENER_CONFIG,
+//                                                    new ObjectCreationExpr(null, new ClassOrInterfaceType(null, DefaultRuleEventListenerConfig.class.getCanonicalName()), NodeList.nodeList())));
+//        members.add(defaultRelcFieldDeclaration);
         
         if (annotator != null) {
             FieldDeclaration relcFieldDeclaration = new FieldDeclaration()

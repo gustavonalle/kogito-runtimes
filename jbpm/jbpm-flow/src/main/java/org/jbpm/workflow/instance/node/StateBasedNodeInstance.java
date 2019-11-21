@@ -38,6 +38,7 @@ import org.jbpm.process.core.context.variable.VariableScope;
 import org.jbpm.process.core.timer.BusinessCalendar;
 import org.jbpm.process.core.timer.DateTimeUtils;
 import org.jbpm.process.core.timer.Timer;
+import org.jbpm.process.compat.IdConverter;
 import org.jbpm.process.instance.InternalProcessRuntime;
 import org.jbpm.process.instance.ProcessInstance;
 import org.jbpm.process.instance.context.variable.VariableScopeInstance;
@@ -98,7 +99,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl im
             for (String name : getEventBasedNode().getBoundaryEvents()) {
 
                 boolean isActive = ((InternalAgenda) getProcessInstance().getKnowledgeRuntime().getAgenda())
-                        .isRuleActiveInRuleFlowGroup("DROOLS_SYSTEM", name, getProcessInstance().getId());
+                        .isRuleActiveInRuleFlowGroup("DROOLS_SYSTEM", name, IdConverter.toLongId(getProcessInstance().getId()));
                 if (isActive) {
                     getProcessInstance().getKnowledgeRuntime().signalEvent(name, null);
                 } else {

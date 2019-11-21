@@ -167,7 +167,7 @@ public class DynamicUtils {
                                         WorkItemNodeInstance workItemNodeInstance) {
         InternalProcessRuntime rt = (InternalProcessRuntime)
                 ksession.getProcessRuntime();
-        ProcessEventSupport eventSupport = rt.getProcessEventSupport();
+        ProcessEventSupport eventSupport = null; //fixme rt.getProcessEventSupport();
         eventSupport.fireBeforeNodeTriggered(workItemNodeInstance,
                                              ksession);
         ((WorkItemManager) ksession.getWorkItemManager()).internalExecuteWorkItem(workItem);
@@ -261,50 +261,51 @@ public class DynamicUtils {
                                           Map<String, Object> parameters,
                                           ProcessInstance processInstance,
                                           SubProcessNodeInstance subProcessNodeInstance) {
-        Process process = ksession.getKieBase().getProcess(processId);
-        if (process == null) {
-            logger.error("Could not find process {}",
-                         processId);
-            throw new IllegalArgumentException("No process definition found with id: " + processId);
-        } else {
-            ProcessEventSupport eventSupport = ((InternalProcessRuntime) ksession.getProcessRuntime()).getProcessEventSupport();
-            eventSupport.fireBeforeNodeTriggered(subProcessNodeInstance,
-                                                 ksession);
-
-            ProcessInstance subProcessInstance = null;
-            if (((WorkflowProcessInstanceImpl) processInstance).getCorrelationKey() != null) {
-                List<String> businessKeys = new ArrayList<>();
-                businessKeys.add(((WorkflowProcessInstanceImpl) processInstance).getCorrelationKey());
-                businessKeys.add(processId);
-                businessKeys.add(String.valueOf(System.currentTimeMillis()));
-                CorrelationKeyFactory correlationKeyFactory = KieInternalServices.Factory.get().newCorrelationKeyFactory();
-                CorrelationKey subProcessCorrelationKey = correlationKeyFactory.newCorrelationKey(businessKeys);
-                subProcessInstance = (ProcessInstance) ksession.createProcessInstance(processId,
-                                                                                      subProcessCorrelationKey,
-                                                                                      parameters);
-            } else {
-                subProcessInstance = (ProcessInstance) ksession.createProcessInstance(processId,
-                                                                                      parameters);
-            }
-
-            ((ProcessInstanceImpl) subProcessInstance).setMetaData("ParentProcessInstanceId",
-                                                                   processInstance.getId());
-            ((ProcessInstanceImpl) subProcessInstance).setParentProcessInstanceId(processInstance.getId());
-
-            subProcessInstance = (ProcessInstance) ksession.startProcessInstance(subProcessInstance.getId());
-            subProcessNodeInstance.internalSetProcessInstanceId(subProcessInstance.getId());
-
-            eventSupport.fireAfterNodeTriggered(subProcessNodeInstance,
-                                                ksession);
-            if (subProcessInstance.getState() == org.kie.api.runtime.process.ProcessInstance.STATE_COMPLETED) {
-                subProcessNodeInstance.triggerCompleted();
-            } else {
-
-                subProcessNodeInstance.addEventListeners();
-            }
-
-            return subProcessInstance.getId();
-        }
+        throw new UnsupportedOperationException();
+//        Process process = ksession.getKieBase().getProcess(processId);
+//        if (process == null) {
+//            logger.error("Could not find process {}",
+//                         processId);
+//            throw new IllegalArgumentException("No process definition found with id: " + processId);
+//        } else {
+//            ProcessEventSupport eventSupport = null; //fixme ((InternalProcessRuntime) ksession.getProcessRuntime()).getProcessEventSupport();
+//            eventSupport.fireBeforeNodeTriggered(subProcessNodeInstance,
+//                                                 ksession);
+//
+//            ProcessInstance subProcessInstance = null;
+//            if (((WorkflowProcessInstanceImpl) processInstance).getCorrelationKey() != null) {
+//                List<String> businessKeys = new ArrayList<>();
+//                businessKeys.add(((WorkflowProcessInstanceImpl) processInstance).getCorrelationKey());
+//                businessKeys.add(processId);
+//                businessKeys.add(String.valueOf(System.currentTimeMillis()));
+//                CorrelationKeyFactory correlationKeyFactory = KieInternalServices.Factory.get().newCorrelationKeyFactory();
+//                CorrelationKey subProcessCorrelationKey = correlationKeyFactory.newCorrelationKey(businessKeys);
+//                subProcessInstance = (ProcessInstance) ksession.createProcessInstance(processId,
+//                                                                                      subProcessCorrelationKey,
+//                                                                                      parameters);
+//            } else {
+//                subProcessInstance = (ProcessInstance) ksession.createProcessInstance(processId,
+//                                                                                      parameters);
+//            }
+//
+//            ((ProcessInstanceImpl) subProcessInstance).setMetaData("ParentProcessInstanceId",
+//                                                                   processInstance.getId());
+//            ((ProcessInstanceImpl) subProcessInstance).setParentProcessInstanceId(processInstance.getId());
+//
+//            subProcessInstance = (ProcessInstance) ksession.startProcessInstance(subProcessInstance.getId());
+//            subProcessNodeInstance.internalSetProcessInstanceId(subProcessInstance.getId());
+//
+//            eventSupport.fireAfterNodeTriggered(subProcessNodeInstance,
+//                                                ksession);
+//            if (subProcessInstance.getState() == org.kie.api.runtime.process.ProcessInstance.STATE_COMPLETED) {
+//                subProcessNodeInstance.triggerCompleted();
+//            } else {
+//
+//                subProcessNodeInstance.addEventListeners();
+//            }
+//
+//            return subProcessInstance.getId();
+//        }
     }
 
     private DynamicUtils() {

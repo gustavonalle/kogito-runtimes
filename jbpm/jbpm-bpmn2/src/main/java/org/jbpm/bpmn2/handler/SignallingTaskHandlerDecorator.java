@@ -88,7 +88,7 @@ public class SignallingTaskHandlerDecorator extends AbstractExceptionHandlingTas
     public void handleExecuteException(Throwable cause, WorkItem workItem, WorkItemManager manager) {
         if( getAndIncreaseExceptionCount(workItem.getProcessInstanceId()) < exceptionCountLimit ) { 
             workItem.getParameters().put(this.workItemExceptionParameterName, cause);
-            ((org.drools.core.process.instance.WorkItemManager) manager).signalEvent(this.eventType, (org.drools.core.process.instance.WorkItem) workItem, workItem.getProcessInstanceId());
+            ((org.jbpm.process.instance.workitems.WorkItemManager) manager).signalEvent(this.eventType, workItem, workItem.getProcessInstanceId());
         } else { 
             if( cause instanceof RuntimeException ) { 
                 throw (RuntimeException) cause;
@@ -103,7 +103,7 @@ public class SignallingTaskHandlerDecorator extends AbstractExceptionHandlingTas
     public void handleAbortException(Throwable cause, WorkItem workItem, WorkItemManager manager) {
         if( getAndIncreaseExceptionCount(workItem.getProcessInstanceId()) < exceptionCountLimit ) { 
             workItem.getParameters().put(this.workItemExceptionParameterName, cause);
-            ((org.drools.core.process.instance.WorkItemManager) manager).signalEvent(this.eventType, (org.drools.core.process.instance.WorkItem) workItem, workItem.getProcessInstanceId());
+            ((org.jbpm.process.instance.workitems.WorkItemManager) manager).signalEvent(this.eventType, workItem, workItem.getProcessInstanceId());
         }
     }
 

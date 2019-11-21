@@ -56,8 +56,9 @@
 <!--    <module>addons</module>-->
 <!--    <module>kogito-maven-plugin</module>-->
     <module>kogito-codegen</module>
-    <module>archetypes</module>
-    <module>data-index</module>
+    <module>kogito-drools</module>
+<!--    <module>archetypes</module>-->
+<!--    <module>data-index</module>-->
   </modules>
 
   <dependencyManagement>

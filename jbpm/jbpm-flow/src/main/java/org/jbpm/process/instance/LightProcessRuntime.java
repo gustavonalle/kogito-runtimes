@@ -27,7 +27,6 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.WorkingMemoryAction;
 import org.drools.core.definitions.rule.impl.RuleImpl;
-import org.drools.core.event.ProcessEventSupport;
 import org.drools.core.marshalling.impl.MarshallerReaderContext;
 import org.drools.core.marshalling.impl.MarshallerWriteContext;
 import org.drools.core.marshalling.impl.ProtobufMessages.ActionQueue.Action;
@@ -37,6 +36,7 @@ import org.drools.core.time.impl.ThreadSafeTrackableTimeJobFactoryManager;
 import org.jbpm.process.core.event.EventFilter;
 import org.jbpm.process.core.event.EventTransformer;
 import org.jbpm.process.core.event.EventTypeFilter;
+import org.jbpm.process.core.event.ProcessEventSupport;
 import org.jbpm.process.core.timer.BusinessCalendar;
 import org.jbpm.process.core.timer.DateTimeUtils;
 import org.jbpm.process.core.timer.Timer;
@@ -64,6 +64,7 @@ import org.kie.kogito.uow.UnitOfWorkManager;
 import org.kie.services.time.TimerService;
 import org.kie.services.time.impl.CommandServiceTimerJobFactoryManager;
 import org.kie.services.time.impl.CronExpression;
+import org.kie.services.time.impl.TimerJobFactoryManager;
 import org.kie.services.time.manager.TimerInstance;
 import org.kie.services.time.manager.TimerManager;
 import org.kie.services.time.manager.TimerManagerRuntime;
@@ -96,7 +97,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         this.knowledgeRuntime = new DummyKnowledgeRuntime(this);
         TimerService timerService = services.getTimerService();
         if (!(timerService.getTimerJobFactoryManager() instanceof CommandServiceTimerJobFactoryManager)) {
-            timerService.setTimerJobFactoryManager(new ThreadSafeTrackableTimeJobFactoryManager());
+            timerService.setTimerJobFactoryManager((TimerJobFactoryManager) new ThreadSafeTrackableTimeJobFactoryManager());
         }
 
         TimerManagerRuntime timerManagerRuntime =
@@ -300,8 +301,8 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         }
     }
 
-    public ProcessEventSupport getProcessEventSupport() {
-        return processEventSupport;
+    public org.drools.core.event.ProcessEventSupport getProcessEventSupport() {
+        throw new UnsupportedOperationException();
     }
 
     public void addEventListener(final ProcessEventListener listener) {
@@ -472,8 +473,8 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         signalManager.signalEvent(processInstanceId, type, event);
     }
 
-    public void setProcessEventSupport(ProcessEventSupport processEventSupport) {
-        this.processEventSupport = processEventSupport;
+    public void setProcessEventSupport(org.drools.core.event.ProcessEventSupport processEventSupport) {
+        throw new UnsupportedOperationException();
     }
 
     public void dispose() {

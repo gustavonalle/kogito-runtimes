@@ -402,9 +402,11 @@ public class ActivityTest extends JbpmBpmn2TestCase {
                 KieSession ksession = ((RegistryContext) context).lookup( KieSession.class );
                 ProcessInstance processInstance = ksession.getProcessInstance(pId);
                 assertNotNull(processInstance);
-                NodeInstance nodeInstance = ((WorkflowProcessInstance) processInstance)
-                        .getNodeInstance(((org.drools.core.process.instance.WorkItem) workItem).getNodeInstanceId());
+//                NodeInstance nodeInstance = ((WorkflowProcessInstance) processInstance)
+//                        .getNodeInstance(((org.drools.core.process.instance.WorkItem) workItem).getNodeInstanceId());
 
+
+                NodeInstance nodeInstance = null; //fixme
                 assertNotNull(nodeInstance);
                 assertTrue(nodeInstance instanceof WorkItemNodeInstance);
                 String deploymentId = ((WorkItemNodeInstance) nodeInstance).getWorkItem().getDeploymentId();

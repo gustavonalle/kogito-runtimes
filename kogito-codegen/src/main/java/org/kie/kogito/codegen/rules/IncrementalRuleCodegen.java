@@ -41,9 +41,7 @@ import org.drools.compiler.kproject.models.KieModuleModelImpl;
 import org.drools.core.io.impl.FileSystemResource;
 import org.drools.modelcompiler.builder.KieModuleModelMethod;
 import org.drools.modelcompiler.builder.ModelBuilderImpl;
-import org.drools.modelcompiler.builder.ModelSourceClass;
 import org.drools.modelcompiler.builder.PackageSources;
-import org.drools.modelcompiler.builder.ProjectSourceClass;
 import org.kie.api.builder.model.KieBaseModel;
 import org.kie.api.builder.model.KieModuleModel;
 import org.kie.api.builder.model.KieSessionModel;
@@ -174,7 +172,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         KnowledgeBuilderConfigurationImpl configuration =
                 new KnowledgeBuilderConfigurationImpl(contextClassLoader);
 
-        ModelBuilderImpl modelBuilder = new ModelBuilderImpl( configuration, dummyReleaseId, true, hotReloadMode );
+        ModelBuilderImpl modelBuilder = new ModelBuilderImpl( configuration, dummyReleaseId, true );//, hotReloadMode );
 
         CompositeKnowledgeBuilder batch = modelBuilder.batch();
         resources.forEach(f -> batch.add(f, f.getResourceType()));
@@ -200,17 +198,17 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
             addGeneratedFiles( generatedFiles, pkgSources.getRuleSources() );
             addGeneratedFile( generatedFiles, pkgSources.getDomainClassSource() );
 
-            if (pkgSources.getReflectConfigSource() != null) {
-                addGeneratedFile( generatedFiles, pkgSources.getReflectConfigSource(), "../../classes/" );
-            }
+//fixme            if (pkgSources.getReflectConfigSource() != null) {
+//                addGeneratedFile( generatedFiles, pkgSources.getReflectConfigSource(), "../../classes/" );
+//            }
 
             Collection<Class<?>> ruleUnits = pkgSources.getRuleUnits();
             if (!ruleUnits.isEmpty()) {
                 hasRuleUnits = true;
                 for (Class<?> ruleUnit : ruleUnits) {
                     RuleUnitGenerator ruSource = new RuleUnitGenerator(ruleUnit, pkgSources.getRulesFileName())
-                            .withDependencyInjection(annotator)
-                            .withQueries( pkgSources.getQueriesInRuleUnit( ruleUnit ) );
+                            .withDependencyInjection(annotator);
+//                            .fixme withQueries( pkgSources.getQueriesInRuleUnit( ruleUnit ) );
                     moduleGenerator.addRuleUnit(ruSource);
                     unitsMap.put(ruleUnit, ruSource.targetCanonicalName());
                     addUnitConfToKieModule(ruleUnit);
