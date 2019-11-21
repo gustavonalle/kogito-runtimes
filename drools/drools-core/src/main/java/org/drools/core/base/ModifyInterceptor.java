@@ -52,9 +52,9 @@ import static org.drools.core.util.ClassUtils.getter2property;
 import static org.drools.core.util.ClassUtils.setter2property;
 
 public class ModifyInterceptor
-        implements
-        Interceptor,
-        Externalizable {
+    implements
+    Interceptor,
+    Externalizable {
     private static final long serialVersionUID = 510l;
 
     private BitMask modificationMask = AllSetBitMask.get();
@@ -81,7 +81,7 @@ public class ModifyInterceptor
         while ( factory != null && !(factory instanceof DroolsVarFactory)) {
             factory =  factory.getNextFactory();
         }
-
+        
         if ( factory == null ) {
             throw new RuntimeException( "Unable to find DroolsMVELIndexedFactory" );
         }

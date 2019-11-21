@@ -57,11 +57,7 @@ public class CanonicalKieBaseUpdater extends KieBaseUpdater {
         CanonicalKieModule oldKM = ( CanonicalKieModule ) ctx.currentKM;
         CanonicalKieModule newKM = ( CanonicalKieModule ) ctx.newKM;
 
-        // To keep compatible the classes generated from declared types the new kmodule has to be loaded with the classloader of the old one
-        newKM.setIncrementalUpdate( true );
-        newKM.setModuleClassLoader( (( CanonicalKieModule ) ctx.currentKM).getModuleClassLoader() );
         CanonicalKiePackages newPkgs = newKM.getKiePackages( ctx.newKieBaseModel );
-        newKM.setIncrementalUpdate( false );
 
         List<RuleImpl> rulesToBeRemoved;
         List<RuleImpl> rulesToBeAdded;
@@ -153,10 +149,14 @@ public class CanonicalKieBaseUpdater extends KieBaseUpdater {
                     if (kpkg != null && (change.getChangeType() == ChangeType.UPDATED || change.getChangeType() == ChangeType.ADDED)) {
                         switch (change.getType()) {
                             case GLOBAL:
-                                globalsCounter.computeIfAbsent( changedItemName, name -> ctx.kBase.getGlobals().get(name) == null ? new AtomicInteger( 1 ) : new AtomicInteger( 0 ) ).incrementAndGet();
-                                Class<?> globalClass = kpkg.getGlobals().get(changedItemName);
-                                oldKpkg.addGlobal( changedItemName, globalClass );
-                                ctx.kBase.addGlobal( changedItemName, globalClass );
+                                try {
+                                    globalsCounter.computeIfAbsent( changedItemName, name -> ctx.kBase.getGlobals().get(name) == null ? new AtomicInteger( 1 ) : new AtomicInteger( 0 ) ).incrementAndGet();
+                                    Class<?> globalClass = kpkg.getTypeResolver().resolveType( kpkg.getGlobals().get(changedItemName) );
+                                    oldKpkg.addGlobal( changedItemName, globalClass );
+                                    ctx.kBase.addGlobal( changedItemName, globalClass );
+                                } catch (ClassNotFoundException e) {
+                                    throw new RuntimeException( e );
+                                }
                                 break;
                             case RULE:
                                 RuleImpl addedRule = kpkg.getRule( changedItemName );

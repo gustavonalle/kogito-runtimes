@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
 
 package org.drools.compiler.rule.builder.dialect.mvel;
 
@@ -48,78 +48,78 @@ import static org.drools.core.util.StringUtils.findEndOfMethodArgsIndex;
 import static org.drools.core.util.StringUtils.splitStatements;
 
 public class MVELConsequenceBuilder
-        implements
-        ConsequenceBuilder {
+    implements
+    ConsequenceBuilder {
 
     public static final Map<String, Macro> macros = new HashMap<String,Macro>( 10 );
     static {
         macros.put( "insert",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.insert";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.insert";
+                        }
+                    } );
 
         macros.put( "insertLogical",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.insertLogical";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.insertLogical";
+                        }
+                    } );
 
         macros.put( "bolster",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.bolster";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.bolster";
+                        }
+                    } );
 
         macros.put( "modify",
-                new Macro() {
-                    public String doMacro() {
-                        return "@Modify with";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "@Modify with";
+                        }
+                    } );
 
         macros.put( "update",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.update";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.update";
+                        }
+                    } );
 
         macros.put( "retract",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.retract";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.retract";
+                        }
+                    } );
         macros.put( "entryPoints",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.entryPoints";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.entryPoints";
+                        }
+                    } );
         macros.put( "exitPoints",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.exitPoints";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.exitPoints";
+                        }
+                    } );
 
         macros.put( "don",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.don";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.don";
+                        }
+                    } );
 
         macros.put( "shed",
-                new Macro() {
-                    public String doMacro() {
-                        return "drools.shed";
-                    }
-                } );
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.shed";
+                        }
+                    } );
     }
 
     public MVELConsequenceBuilder() {
@@ -133,9 +133,9 @@ public class MVELConsequenceBuilder
 
         try {
             MVELDialect dialect = (MVELDialect) context.getDialect( "mvel" );
-
+            
             final RuleDescr ruleDescr = context.getRuleDescr();
-
+            
             String text = ( RuleImpl.DEFAULT_CONSEQUENCE_NAME.equals(consequenceName) ) ?
                     (String) ruleDescr.getConsequence() :
                     (String) ruleDescr.getNamedConsequences().get( consequenceName );
@@ -143,17 +143,17 @@ public class MVELConsequenceBuilder
             text = processMacros( text );
 
             Map<String, Declaration> decls = context.getDeclarationResolver().getDeclarations(context.getRule());
-
+            
             AnalysisResult analysis = dialect.analyzeBlock( context,
-                    text,
-                    new BoundIdentifiers( DeclarationScopeResolver.getDeclarationClasses(decls),
-                            context,
-                            Collections.EMPTY_MAP,
-                            KnowledgeHelper.class),
-                    null,
-                    "drools",
-                    KnowledgeHelper.class );
-
+                                                            text,
+                                                            new BoundIdentifiers( DeclarationScopeResolver.getDeclarationClasses(decls),
+                                                                                  context,
+                                                                                  Collections.EMPTY_MAP,
+                                                                                  KnowledgeHelper.class),
+                                                            null,
+                                                            "drools",
+                                                            KnowledgeHelper.class );
+            
             if ( analysis == null ) {
                 // something bad happened, issue already logged in errors
                 return;
@@ -162,7 +162,7 @@ public class MVELConsequenceBuilder
             text = rewriteUpdates( context, analysis, text );
 
             final BoundIdentifiers usedIdentifiers = analysis.getBoundIdentifiers();
-
+            
             final Declaration[] declarations =  new Declaration[usedIdentifiers.getDeclrClasses().size()];
             String[] declrStr = new String[declarations.length];
             int j = 0;
@@ -176,30 +176,30 @@ public class MVELConsequenceBuilder
             }
             context.getRule().setRequiredDeclarationsForConsequence(consequenceName, declrStr);
             MVELCompilationUnit unit = dialect.getMVELCompilationUnit( text,
-                    analysis,
-                    declarations,
-                    null,
-                    null,
-                    context,
-                    "drools",
-                    KnowledgeHelper.class,
-                    false,
-                    MVELCompilationUnit.Scope.CONSEQUENCE );
+                                                                       analysis,
+                                                                       declarations,
+                                                                       null,
+                                                                       null,
+                                                                       context,
+                                                                       "drools",
+                                                                       KnowledgeHelper.class,
+                                                                       false,
+                                                                       MVELCompilationUnit.Scope.CONSEQUENCE );
 
             MVELConsequence expr = new MVELConsequence( unit,
-                    dialect.getId(),
-                    consequenceName );
-
+                                                        dialect.getId(),
+                                                        consequenceName );
+            
             if ( RuleImpl.DEFAULT_CONSEQUENCE_NAME.equals( consequenceName ) ) {
                 context.getRule().setConsequence( expr );
             } else {
                 context.getRule().addNamedConsequence(consequenceName, expr);
             }
-
+            
             MVELDialectRuntimeData data = (MVELDialectRuntimeData) context.getPkg().getDialectRuntimeRegistry().getDialectData( "mvel" );
             data.addCompileable( context.getRule(),
-                    expr );
-
+                                 expr );
+            
             expr.compile( data, context.getRule() );
         } catch ( final Exception e ) {
             copyErrorLocation(e, context.getRuleDescr());
@@ -325,11 +325,11 @@ public class MVELConsequenceBuilder
                                 break;
                             } else if( cs[i] == '\n' || cs[i] == '\r' ) {
                                 lastNonWhite = checkAndAddSemiColon( result,
-                                        inString,
-                                        brace,
-                                        sqre,
-                                        crly,
-                                        lastNonWhite );
+                                                                     inString,
+                                                                     brace,
+                                                                     sqre,
+                                                                     crly,
+                                                                     lastNonWhite );
                             }
                         }
                         result.append( cs, start, i-start );
@@ -342,14 +342,16 @@ public class MVELConsequenceBuilder
                 case '#' :
                     // line comment
                     lastNonWhite = checkAndAddSemiColon( result,
-                            inString,
-                            brace,
-                            sqre,
-                            crly,
-                            lastNonWhite );
-                    i = processLineComment( cs,
-                            i,
-                            result);
+                                                         inString,
+                                                         brace,
+                                                         sqre,
+                                                         crly,
+                                                         lastNonWhite );
+                    if (inString) {
+                        result.append( c );
+                    } else {
+                        i = processLineComment( cs, i, result );
+                    }
                     continue;
                 case '(' :
                     brace++;
@@ -376,7 +378,7 @@ public class MVELConsequenceBuilder
             if ( c == '\n' || c == '\r' ) {
                 // line break
                 if ( brace == 0 && sqre == 0 && crly == 0 &&
-                        lastNonWhite != '.' && lookAhead(cs, i+1) != '.' ) {
+                     lastNonWhite != '.' && lookAhead(cs, i+1) != '.' ) {
                     if ( lastNonWhite != ';' ) {
                         result.append( ';' );
                         lastNonWhite = ';';

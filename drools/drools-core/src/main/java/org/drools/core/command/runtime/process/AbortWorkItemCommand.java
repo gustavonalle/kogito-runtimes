@@ -33,21 +33,21 @@ public class AbortWorkItemCommand
     ExecutableCommand<Void> {
 
     @XmlAttribute(name="id", required=true)
-    private String workItemId;
+    private long workItemId;
     
     public AbortWorkItemCommand() {
         
     }
 
-    public AbortWorkItemCommand(String workItemId) {
+    public AbortWorkItemCommand(long workItemId) {
         this.workItemId = workItemId;
     }
 
-    public String getWorkItemId() {
+    public long getWorkItemId() {
         return workItemId;
     }
 
-    public void setWorkItemId(String workItemId) {
+    public void setWorkItemId(long workItemId) {
         this.workItemId = workItemId;
     }
 

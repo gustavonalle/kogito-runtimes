@@ -49,7 +49,7 @@ public class ActivationEventImpl implements MatchEvent, Externalizable {
     public KieRuntime getKieRuntime() {
         return this.kruntime;
     }
-    
+
     public void writeExternal(ObjectOutput out) throws IOException {
         new SerializableActivation( this.activation ).writeExternal( out );
     }

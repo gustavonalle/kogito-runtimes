@@ -483,7 +483,6 @@ public class ReteooBuilder
             bytes = new ByteArrayInputStream( (byte[]) in.readObject() );
             droolsStream = new DroolsObjectInputStream( bytes );
         }
-
         try {
             this.rules = (Map<String, BaseNode[]>) droolsStream.readObject();
             this.queries = (Map<String, BaseNode[]>) droolsStream.readObject();

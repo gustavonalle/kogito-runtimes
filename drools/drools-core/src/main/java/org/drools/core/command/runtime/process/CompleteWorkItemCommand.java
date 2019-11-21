@@ -37,7 +37,7 @@ import org.kie.internal.command.RegistryContext;
 public class CompleteWorkItemCommand implements ExecutableCommand<Void> {
 
     @XmlAttribute(name="id", required = true)
-    private String workItemId;
+    private Long workItemId;
     
     @XmlJavaTypeAdapter(JaxbMapAdapter.class)
     @XmlElement(name="result")
@@ -45,20 +45,20 @@ public class CompleteWorkItemCommand implements ExecutableCommand<Void> {
 
     public CompleteWorkItemCommand() {}
 
-    public CompleteWorkItemCommand(String workItemId) {
+    public CompleteWorkItemCommand(long workItemId) {
         this.workItemId = workItemId;
     }
 
-    public CompleteWorkItemCommand(String workItemId, Map<String, Object> results) {
+    public CompleteWorkItemCommand(long workItemId, Map<String, Object> results) {
         this(workItemId);
         this.results = results;
     }
 
-    public String getWorkItemId() {
+    public long getWorkItemId() {
         return workItemId;
     }
 
-    public void setWorkItemId(String workItemId) {
+    public void setWorkItemId(long workItemId) {
         this.workItemId = workItemId;
     }
 

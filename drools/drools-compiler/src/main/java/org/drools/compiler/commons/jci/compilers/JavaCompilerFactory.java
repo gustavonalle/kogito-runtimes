@@ -97,6 +97,10 @@ public final class JavaCompilerFactory {
     public JavaCompiler loadCompiler( CompilerType compilerType, String lngLevel ) {
         JavaCompiler compiler;
         switch ( compilerType ) {
+            case JANINO : {
+                compiler = createCompiler( "janino" );
+                break;
+            }
             case NATIVE : {
                 compiler = createCompiler( "native" );
                 if (compiler == null) {

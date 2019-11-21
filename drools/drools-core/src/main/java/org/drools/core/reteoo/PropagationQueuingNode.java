@@ -373,9 +373,6 @@ public class PropagationQueuingNode extends ObjectSource
             this.context = context;
         }
 
-        /**
-         * Do not use this constructor. It should be used just by deserialization.
-         */
         public Action() {
         }
 
@@ -445,8 +442,7 @@ public class PropagationQueuingNode extends ObjectSource
                                    workingMemory );
         }
 
-        @Override
-        public void readExternal( ObjectInput in ) throws IOException,
+        public void readExternal(ObjectInput in ) throws IOException,
                                                   ClassNotFoundException {
             super.readExternal( in );
             nodeSink = (ObjectSink) in.readObject();

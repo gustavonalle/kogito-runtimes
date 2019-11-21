@@ -56,19 +56,19 @@ public class KieBaseModelImpl
 
     private List<String>                 packages;
 
-    private EqualityBehaviorOption equalsBehavior = EqualityBehaviorOption.IDENTITY;
+    private EqualityBehaviorOption       equalsBehavior = EqualityBehaviorOption.IDENTITY;
 
-    private EventProcessingOption eventProcessingMode = EventProcessingOption.CLOUD;
+    private EventProcessingOption        eventProcessingMode = EventProcessingOption.CLOUD;
 
-    private DeclarativeAgendaOption declarativeAgenda = DeclarativeAgendaOption.DISABLED;
+    private DeclarativeAgendaOption      declarativeAgenda = DeclarativeAgendaOption.DISABLED;
 
-    private SequentialOption sequential = SequentialOption.NO;
+    private SequentialOption             sequential = SequentialOption.NO;
 
     private SessionsPoolOption sessionsPool = SessionsPoolOption.NO;
 
     private Map<String, KieSessionModel> kSessions = new HashMap<String, KieSessionModel>();
 
-    private KieModuleModel kModule;
+    private KieModuleModel               kModule;
     
     private String                       scope = "javax.enterprise.context.ApplicationScoped";
 
@@ -91,7 +91,7 @@ public class KieBaseModelImpl
         return isDefault;
     }
 
-    public KieBaseModel setDefault( boolean isDefault) {
+    public KieBaseModel setDefault(boolean isDefault) {
         this.isDefault = isDefault;
         return this;
     }

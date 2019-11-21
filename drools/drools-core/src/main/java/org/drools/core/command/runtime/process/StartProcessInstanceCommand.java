@@ -35,7 +35,7 @@ public class StartProcessInstanceCommand implements ExecutableCommand<ProcessIns
     private static final long serialVersionUID = -270933342071833447L;
     
     @XmlAttribute(required = true)
-    private String processInstanceId;
+    private Long processInstanceId;
 
     @XmlAttribute(name="out-identifier")
     private String outIdentifier;
@@ -43,15 +43,15 @@ public class StartProcessInstanceCommand implements ExecutableCommand<ProcessIns
     public StartProcessInstanceCommand() {
     }
 
-    public StartProcessInstanceCommand(String processInstanceId) {
+    public StartProcessInstanceCommand(Long processInstanceId) {
         this.processInstanceId = processInstanceId;
     }
 
-    public String getProcessInstanceId() {
+    public Long getProcessInstanceId() {
         return processInstanceId;
     }
 
-    public void setProcessInstanceId(String processInstanceId) {
+    public void setProcessInstanceId(Long processInstanceId) {
         this.processInstanceId = processInstanceId;
     }
 

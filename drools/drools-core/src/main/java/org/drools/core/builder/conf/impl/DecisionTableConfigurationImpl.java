@@ -43,7 +43,7 @@ public class DecisionTableConfigurationImpl extends ResourceConfigurationImpl im
     private Set<RuleTemplateConfiguration> templates = new HashSet<RuleTemplateConfiguration>();
 
     private boolean trimCell = true;
-    
+
     public DecisionTableConfigurationImpl() {
     }
 

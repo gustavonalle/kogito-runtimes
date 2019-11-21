@@ -170,7 +170,7 @@ public class NotNodeLeftTuple extends BaseLeftTuple {
 
         BetaNode betaNode = ( (BetaNode) getTupleSink() );
         BetaConstraints constraints = betaNode.getRawConstraints();
-        InternalWorkingMemory wm = getFactHandle().getEntryPoint().getInternalWorkingMemory();
+        InternalWorkingMemory wm = getFactHandle().getWorkingMemory();
         BetaMemory bm = (BetaMemory) wm.getNodeMemory( (MemoryFactory) getTupleSink() );
         TupleMemory rtm = bm.getRightTupleMemory();
         FastIterator it = betaNode.getRightIterator( rtm );
@@ -181,9 +181,11 @@ public class NotNodeLeftTuple extends BaseLeftTuple {
         Collection<Object> result = new ArrayList<>();
         for (RightTuple rightTuple = betaNode.getFirstRightTuple(this, rtm, null, it); rightTuple != null; ) {
             RightTuple nextRight = (RightTuple) it.next(rightTuple);
-            InternalFactHandle fh = rightTuple.getFactHandleForEvaluation();
-            if (constraints.isAllowedCachedLeft(contextEntry, fh)) {
-                result.add(fh.getObject());
+            if ( !(rightTuple instanceof SubnetworkTuple) ) {
+                InternalFactHandle fh = rightTuple.getFactHandleForEvaluation();
+                if ( constraints.isAllowedCachedLeft( contextEntry, fh ) ) {
+                    result.add( fh.getObject() );
+                }
             }
             rightTuple = nextRight;
         }

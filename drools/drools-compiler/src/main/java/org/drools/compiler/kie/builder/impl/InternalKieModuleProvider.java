@@ -24,11 +24,6 @@ import org.kie.api.builder.model.KieModuleModel;
 import org.kie.api.internal.utils.ServiceRegistry;
 
 public interface InternalKieModuleProvider {
-
-    default InternalKieModule createClasspathKieModule() {
-        return null;
-    }
-
     InternalKieModule createKieModule( ReleaseId releaseId, KieModuleModel kieProject, File file );
 
     InternalKieModule createKieModule( ReleaseId releaseId, KieModuleModel kieProject, MemoryFileSystem mfs );
@@ -52,10 +47,6 @@ public interface InternalKieModuleProvider {
 
     static InternalKieModule get( ReleaseId releaseId, KieModuleModel kieProject, MemoryFileSystem mfs ) {
         return Factory.get().createKieModule(releaseId, kieProject, mfs);
-    }
-
-    static InternalKieModule getFromClasspath() {
-        return Factory.get().createClasspathKieModule();
     }
 
     class Factory {

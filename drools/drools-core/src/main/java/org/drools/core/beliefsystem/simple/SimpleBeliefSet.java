@@ -35,7 +35,10 @@ public class SimpleBeliefSet extends LinkedList<SimpleMode> implements BeliefSet
         this.beliefSystem = beliefSystem;
         this.fh = fh;
     }
-    
+
+    public SimpleBeliefSet() {
+    }
+
     public BeliefSystem getBeliefSystem() {
         return beliefSystem;
     }
@@ -99,11 +102,5 @@ public class SimpleBeliefSet extends LinkedList<SimpleMode> implements BeliefSet
     @Override
     public boolean isPositive() {
         return ! isEmpty();
-    }
-
-    /**
-     * Do not use this constructor! It is here just for deserialization purposes.
-     */
-    public SimpleBeliefSet() {
     }
 }

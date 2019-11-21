@@ -82,7 +82,7 @@ public class CoercedExpression {
         } else if(shouldCoerceBToMap()) {
             coercedRight = castToClass(toNonPrimitiveType(leftClass));
         } else if (Boolean.class.isAssignableFrom(leftClass) && !Boolean.class.isAssignableFrom(rightClass)) {
-            coercedRight = coerceBoolean(right);
+             coercedRight = coerceBoolean(right);
         } else {
             coercedRight = right;
         }
@@ -182,17 +182,12 @@ public class CoercedExpression {
             return new IntegerLiteralExpr(expr.getValue());
         }
         if (type == long.class) {
-            String value = expr.getValue();
-            return new LongLiteralExpr(isLongLiteral(value) ? expr.getValue() : expr.getValue() + "l");
+            return new LongLiteralExpr(expr.getValue().endsWith("l") ? expr.getValue() : expr.getValue() + "l");
         }
         if (type == double.class) {
             return new DoubleLiteralExpr(expr.getValue().endsWith("d") ? expr.getValue() : expr.getValue() + "d");
         }
         throw new CoercedExpressionException(new InvalidExpressionErrorResult("Unknown literal: " + expr));
-    }
-
-    private boolean isLongLiteral(String value) {
-        return value.endsWith("l") || value.endsWith("L");
     }
 
     private boolean canBeNarrowed(Class<?> leftType, Class<?> rightType) {

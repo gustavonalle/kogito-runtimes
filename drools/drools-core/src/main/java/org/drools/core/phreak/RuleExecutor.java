@@ -389,9 +389,9 @@ public class RuleExecutor {
                         handle.decreaseActivationsCount();
                         // handles "expire" only in stream mode.
                         if ( handle.expirePartition() && handle.isExpired() &&
-                                handle.getFirstRightTuple() == null && handle.getActivationsCount() <= 0 ) {
+                             handle.getFirstRightTuple() == null && handle.getActivationsCount() <= 0 ) {
                             // and if no more activations, retract the handle
-                            handle.getEntryPoint().delete( handle );
+                            handle.getEntryPoint( wm ).delete( handle );
                         }
                     }
                 }

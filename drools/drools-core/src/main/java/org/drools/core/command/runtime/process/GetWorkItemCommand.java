@@ -34,7 +34,7 @@ import org.kie.internal.command.RegistryContext;
 public class GetWorkItemCommand implements ExecutableCommand<WorkItem> {
 
     @XmlAttribute(required = true)
-    private String workItemId;
+    private long workItemId;
 
     @XmlAttribute(name="out-identifier")
     private String outIdentifier;
@@ -42,15 +42,15 @@ public class GetWorkItemCommand implements ExecutableCommand<WorkItem> {
     public GetWorkItemCommand() {
     }
 
-    public GetWorkItemCommand(String workItemId) {
+    public GetWorkItemCommand(long workItemId) {
         this.workItemId = workItemId;
     }
         
-    public String getWorkItemId() {
+    public long getWorkItemId() {
         return workItemId;
     }
 
-    public void setWorkItemId(String workItemId) {
+    public void setWorkItemId(long workItemId) {
         this.workItemId = workItemId;
     }
 

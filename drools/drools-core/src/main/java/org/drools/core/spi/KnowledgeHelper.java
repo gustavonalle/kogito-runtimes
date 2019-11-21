@@ -165,5 +165,23 @@ public interface KnowledgeHelper
 
     ClassLoader getProjectClassLoader();
 
-    void run(String ruleUnitName);
+    default void run(String ruleUnitName) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void run(Object ruleUnit) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void run(Class<?> ruleUnitClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void guard(Object ruleUnit) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void guard(Class<?> ruleUnitClass) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -10071,18 +10071,13 @@ public final class ProtobufMessages {
           com.google.protobuf.MessageOrBuilder {
 
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
         boolean hasProcessInstanceId();
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
-        java.lang.String getProcessInstanceId();
-        /**
-         * <code>optional string process_instance_id = 1;</code>
-         */
-        com.google.protobuf.ByteString
-            getProcessInstanceIdBytes();
+        long getProcessInstanceId();
 
         /**
          * <code>optional string node_instance_id = 2;</code>
@@ -10111,7 +10106,7 @@ public final class ProtobufMessages {
           super(builder);
         }
         private NodeInstance() {
-          processInstanceId_ = "";
+          processInstanceId_ = 0L;
           nodeInstanceId_ = "";
         }
 
@@ -10139,10 +10134,9 @@ public final class ProtobufMessages {
                 case 0:
                   done = true;
                   break;
-                case 10: {
-                  com.google.protobuf.ByteString bs = input.readBytes();
+                case 8: {
                   bitField0_ |= 0x00000001;
-                  processInstanceId_ = bs;
+                  processInstanceId_ = input.readInt64();
                   break;
                 }
                 case 18: {
@@ -10185,45 +10179,18 @@ public final class ProtobufMessages {
 
         private int bitField0_;
         public static final int PROCESS_INSTANCE_ID_FIELD_NUMBER = 1;
-        private volatile java.lang.Object processInstanceId_;
+        private long processInstanceId_;
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
         public boolean hasProcessInstanceId() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
-        public java.lang.String getProcessInstanceId() {
-          java.lang.Object ref = processInstanceId_;
-          if (ref instanceof java.lang.String) {
-            return (java.lang.String) ref;
-          } else {
-            com.google.protobuf.ByteString bs = 
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            if (bs.isValidUtf8()) {
-              processInstanceId_ = s;
-            }
-            return s;
-          }
-        }
-        /**
-         * <code>optional string process_instance_id = 1;</code>
-         */
-        public com.google.protobuf.ByteString
-            getProcessInstanceIdBytes() {
-          java.lang.Object ref = processInstanceId_;
-          if (ref instanceof java.lang.String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            processInstanceId_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
+        public long getProcessInstanceId() {
+          return processInstanceId_;
         }
 
         public static final int NODE_INSTANCE_ID_FIELD_NUMBER = 2;
@@ -10283,7 +10250,7 @@ public final class ProtobufMessages {
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                             throws java.io.IOException {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, processInstanceId_);
+            output.writeInt64(1, processInstanceId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nodeInstanceId_);
@@ -10298,7 +10265,8 @@ public final class ProtobufMessages {
 
           size = 0;
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, processInstanceId_);
+            size += com.google.protobuf.CodedOutputStream
+              .computeInt64Size(1, processInstanceId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nodeInstanceId_);
@@ -10321,8 +10289,8 @@ public final class ProtobufMessages {
           boolean result = true;
           result = result && (hasProcessInstanceId() == other.hasProcessInstanceId());
           if (hasProcessInstanceId()) {
-            result = result && getProcessInstanceId()
-                .equals(other.getProcessInstanceId());
+            result = result && (getProcessInstanceId()
+                == other.getProcessInstanceId());
           }
           result = result && (hasNodeInstanceId() == other.hasNodeInstanceId());
           if (hasNodeInstanceId()) {
@@ -10342,7 +10310,8 @@ public final class ProtobufMessages {
           hash = (19 * hash) + getDescriptor().hashCode();
           if (hasProcessInstanceId()) {
             hash = (37 * hash) + PROCESS_INSTANCE_ID_FIELD_NUMBER;
-            hash = (53 * hash) + getProcessInstanceId().hashCode();
+            hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+                getProcessInstanceId());
           }
           if (hasNodeInstanceId()) {
             hash = (37 * hash) + NODE_INSTANCE_ID_FIELD_NUMBER;
@@ -10481,7 +10450,7 @@ public final class ProtobufMessages {
           @java.lang.Override
           public Builder clear() {
             super.clear();
-            processInstanceId_ = "";
+            processInstanceId_ = 0L;
             bitField0_ = (bitField0_ & ~0x00000001);
             nodeInstanceId_ = "";
             bitField0_ = (bitField0_ & ~0x00000002);
@@ -10571,9 +10540,7 @@ public final class ProtobufMessages {
           public Builder mergeFrom(org.drools.core.marshalling.impl.ProtobufMessages.Agenda.AgendaGroup.NodeInstance other) {
             if (other == org.drools.core.marshalling.impl.ProtobufMessages.Agenda.AgendaGroup.NodeInstance.getDefaultInstance()) return this;
             if (other.hasProcessInstanceId()) {
-              bitField0_ |= 0x00000001;
-              processInstanceId_ = other.processInstanceId_;
-              onChanged();
+              setProcessInstanceId(other.getProcessInstanceId());
             }
             if (other.hasNodeInstanceId()) {
               bitField0_ |= 0x00000002;
@@ -10610,78 +10577,34 @@ public final class ProtobufMessages {
           }
           private int bitField0_;
 
-          private java.lang.Object processInstanceId_ = "";
+          private long processInstanceId_ ;
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
           public boolean hasProcessInstanceId() {
             return ((bitField0_ & 0x00000001) == 0x00000001);
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
-          public java.lang.String getProcessInstanceId() {
-            java.lang.Object ref = processInstanceId_;
-            if (!(ref instanceof java.lang.String)) {
-              com.google.protobuf.ByteString bs =
-                  (com.google.protobuf.ByteString) ref;
-              java.lang.String s = bs.toStringUtf8();
-              if (bs.isValidUtf8()) {
-                processInstanceId_ = s;
-              }
-              return s;
-            } else {
-              return (java.lang.String) ref;
-            }
+          public long getProcessInstanceId() {
+            return processInstanceId_;
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
-          public com.google.protobuf.ByteString
-              getProcessInstanceIdBytes() {
-            java.lang.Object ref = processInstanceId_;
-            if (ref instanceof String) {
-              com.google.protobuf.ByteString b = 
-                  com.google.protobuf.ByteString.copyFromUtf8(
-                      (java.lang.String) ref);
-              processInstanceId_ = b;
-              return b;
-            } else {
-              return (com.google.protobuf.ByteString) ref;
-            }
-          }
-          /**
-           * <code>optional string process_instance_id = 1;</code>
-           */
-          public Builder setProcessInstanceId(
-              java.lang.String value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          public Builder setProcessInstanceId(long value) {
+            bitField0_ |= 0x00000001;
             processInstanceId_ = value;
             onChanged();
             return this;
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
           public Builder clearProcessInstanceId() {
             bitField0_ = (bitField0_ & ~0x00000001);
-            processInstanceId_ = getDefaultInstance().getProcessInstanceId();
-            onChanged();
-            return this;
-          }
-          /**
-           * <code>optional string process_instance_id = 1;</code>
-           */
-          public Builder setProcessInstanceIdBytes(
-              com.google.protobuf.ByteString value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-            processInstanceId_ = value;
+            processInstanceId_ = 0L;
             onChanged();
             return this;
           }
@@ -13134,18 +13057,13 @@ public final class ProtobufMessages {
           com.google.protobuf.MessageOrBuilder {
 
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
         boolean hasProcessInstanceId();
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
-        java.lang.String getProcessInstanceId();
-        /**
-         * <code>optional string process_instance_id = 1;</code>
-         */
-        com.google.protobuf.ByteString
-            getProcessInstanceIdBytes();
+        long getProcessInstanceId();
 
         /**
          * <code>optional string node_instance_id = 2;</code>
@@ -13174,7 +13092,7 @@ public final class ProtobufMessages {
           super(builder);
         }
         private NodeInstance() {
-          processInstanceId_ = "";
+          processInstanceId_ = 0L;
           nodeInstanceId_ = "";
         }
 
@@ -13202,10 +13120,9 @@ public final class ProtobufMessages {
                 case 0:
                   done = true;
                   break;
-                case 10: {
-                  com.google.protobuf.ByteString bs = input.readBytes();
+                case 8: {
                   bitField0_ |= 0x00000001;
-                  processInstanceId_ = bs;
+                  processInstanceId_ = input.readInt64();
                   break;
                 }
                 case 18: {
@@ -13248,45 +13165,18 @@ public final class ProtobufMessages {
 
         private int bitField0_;
         public static final int PROCESS_INSTANCE_ID_FIELD_NUMBER = 1;
-        private volatile java.lang.Object processInstanceId_;
+        private long processInstanceId_;
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
         public boolean hasProcessInstanceId() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional string process_instance_id = 1;</code>
+         * <code>optional int64 process_instance_id = 1;</code>
          */
-        public java.lang.String getProcessInstanceId() {
-          java.lang.Object ref = processInstanceId_;
-          if (ref instanceof java.lang.String) {
-            return (java.lang.String) ref;
-          } else {
-            com.google.protobuf.ByteString bs = 
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            if (bs.isValidUtf8()) {
-              processInstanceId_ = s;
-            }
-            return s;
-          }
-        }
-        /**
-         * <code>optional string process_instance_id = 1;</code>
-         */
-        public com.google.protobuf.ByteString
-            getProcessInstanceIdBytes() {
-          java.lang.Object ref = processInstanceId_;
-          if (ref instanceof java.lang.String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            processInstanceId_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
+        public long getProcessInstanceId() {
+          return processInstanceId_;
         }
 
         public static final int NODE_INSTANCE_ID_FIELD_NUMBER = 2;
@@ -13346,7 +13236,7 @@ public final class ProtobufMessages {
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                             throws java.io.IOException {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, processInstanceId_);
+            output.writeInt64(1, processInstanceId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nodeInstanceId_);
@@ -13361,7 +13251,8 @@ public final class ProtobufMessages {
 
           size = 0;
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, processInstanceId_);
+            size += com.google.protobuf.CodedOutputStream
+              .computeInt64Size(1, processInstanceId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nodeInstanceId_);
@@ -13384,8 +13275,8 @@ public final class ProtobufMessages {
           boolean result = true;
           result = result && (hasProcessInstanceId() == other.hasProcessInstanceId());
           if (hasProcessInstanceId()) {
-            result = result && getProcessInstanceId()
-                .equals(other.getProcessInstanceId());
+            result = result && (getProcessInstanceId()
+                == other.getProcessInstanceId());
           }
           result = result && (hasNodeInstanceId() == other.hasNodeInstanceId());
           if (hasNodeInstanceId()) {
@@ -13405,7 +13296,8 @@ public final class ProtobufMessages {
           hash = (19 * hash) + getDescriptor().hashCode();
           if (hasProcessInstanceId()) {
             hash = (37 * hash) + PROCESS_INSTANCE_ID_FIELD_NUMBER;
-            hash = (53 * hash) + getProcessInstanceId().hashCode();
+            hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+                getProcessInstanceId());
           }
           if (hasNodeInstanceId()) {
             hash = (37 * hash) + NODE_INSTANCE_ID_FIELD_NUMBER;
@@ -13544,7 +13436,7 @@ public final class ProtobufMessages {
           @java.lang.Override
           public Builder clear() {
             super.clear();
-            processInstanceId_ = "";
+            processInstanceId_ = 0L;
             bitField0_ = (bitField0_ & ~0x00000001);
             nodeInstanceId_ = "";
             bitField0_ = (bitField0_ & ~0x00000002);
@@ -13634,9 +13526,7 @@ public final class ProtobufMessages {
           public Builder mergeFrom(org.drools.core.marshalling.impl.ProtobufMessages.Agenda.RuleFlowGroup.NodeInstance other) {
             if (other == org.drools.core.marshalling.impl.ProtobufMessages.Agenda.RuleFlowGroup.NodeInstance.getDefaultInstance()) return this;
             if (other.hasProcessInstanceId()) {
-              bitField0_ |= 0x00000001;
-              processInstanceId_ = other.processInstanceId_;
-              onChanged();
+              setProcessInstanceId(other.getProcessInstanceId());
             }
             if (other.hasNodeInstanceId()) {
               bitField0_ |= 0x00000002;
@@ -13673,78 +13563,34 @@ public final class ProtobufMessages {
           }
           private int bitField0_;
 
-          private java.lang.Object processInstanceId_ = "";
+          private long processInstanceId_ ;
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
           public boolean hasProcessInstanceId() {
             return ((bitField0_ & 0x00000001) == 0x00000001);
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
-          public java.lang.String getProcessInstanceId() {
-            java.lang.Object ref = processInstanceId_;
-            if (!(ref instanceof java.lang.String)) {
-              com.google.protobuf.ByteString bs =
-                  (com.google.protobuf.ByteString) ref;
-              java.lang.String s = bs.toStringUtf8();
-              if (bs.isValidUtf8()) {
-                processInstanceId_ = s;
-              }
-              return s;
-            } else {
-              return (java.lang.String) ref;
-            }
+          public long getProcessInstanceId() {
+            return processInstanceId_;
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
-          public com.google.protobuf.ByteString
-              getProcessInstanceIdBytes() {
-            java.lang.Object ref = processInstanceId_;
-            if (ref instanceof String) {
-              com.google.protobuf.ByteString b = 
-                  com.google.protobuf.ByteString.copyFromUtf8(
-                      (java.lang.String) ref);
-              processInstanceId_ = b;
-              return b;
-            } else {
-              return (com.google.protobuf.ByteString) ref;
-            }
-          }
-          /**
-           * <code>optional string process_instance_id = 1;</code>
-           */
-          public Builder setProcessInstanceId(
-              java.lang.String value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+          public Builder setProcessInstanceId(long value) {
+            bitField0_ |= 0x00000001;
             processInstanceId_ = value;
             onChanged();
             return this;
           }
           /**
-           * <code>optional string process_instance_id = 1;</code>
+           * <code>optional int64 process_instance_id = 1;</code>
            */
           public Builder clearProcessInstanceId() {
             bitField0_ = (bitField0_ & ~0x00000001);
-            processInstanceId_ = getDefaultInstance().getProcessInstanceId();
-            onChanged();
-            return this;
-          }
-          /**
-           * <code>optional string process_instance_id = 1;</code>
-           */
-          public Builder setProcessInstanceIdBytes(
-              com.google.protobuf.ByteString value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-            processInstanceId_ = value;
+            processInstanceId_ = 0L;
             onChanged();
             return this;
           }
@@ -57679,7 +57525,7 @@ public final class ProtobufMessages {
       ".org.drools.core.marshalling.Agenda.Agen" +
       "daGroup.NodeInstance\022\034\n\024has_rule_flow_li" +
       "ster\030\010 \001(\010\032E\n\014NodeInstance\022\033\n\023process_in" +
-      "stance_id\030\001 \001(\t\022\030\n\020node_instance_id\030\002 \001(" +
+      "stance_id\030\001 \001(\003\022\030\n\020node_instance_id\030\002 \001(" +
       "\t\032 \n\nFocusStack\022\022\n\ngroup_name\030\001 \003(\t\032\242\002\n\r" +
       "RuleFlowGroup\022\014\n\004name\030\001 \001(\t\022\021\n\tis_active" +
       "\030\002 \001(\010\022\032\n\022is_auto_deactivate\030\003 \001(\010\0226\n\005ma" +
@@ -57687,7 +57533,7 @@ public final class ProtobufMessages {
       "Activation\022U\n\rnode_instance\030\005 \003(\0132>.org." +
       "drools.core.marshalling.Agenda.RuleFlowG" +
       "roup.NodeInstance\032E\n\014NodeInstance\022\033\n\023pro" +
-      "cess_instance_id\030\001 \001(\t\022\030\n\020node_instance_" +
+      "cess_instance_id\030\001 \001(\003\022\030\n\020node_instance_" +
       "id\030\002 \001(\t\"\350\014\n\nNodeMemory\022\017\n\007node_id\030\001 \001(\005" +
       "\022C\n\tnode_type\030\002 \001(\01620.org.drools.core.ma" +
       "rshalling.NodeMemory.NodeType\022P\n\naccumul" +

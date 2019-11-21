@@ -177,11 +177,13 @@ public class SingleDrlxParseSuccess extends AbstractDrlxParseSuccess {
     }
 
     public String getUnificationVariable() {
-        return left.getUnificationVariable().isPresent() ? left.getUnificationVariable().get() : right.getUnificationVariable().get();
+        return left.getUnificationVariable().orElseGet(
+                () -> right.getUnificationVariable().orElseThrow(() -> new IllegalStateException("Right unification variable is not present!")));
     }
 
     public String getUnificationName() {
-        return left.getUnificationName().isPresent() ? left.getUnificationName().get() : right.getUnificationName().get();
+        return left.getUnificationName().orElseGet(
+                () -> right.getUnificationName().orElseThrow(() -> new IllegalStateException("Right unification name is not present!")));
     }
 
     public Class<?> getUnificationVariableType() {

@@ -23,6 +23,7 @@ import org.drools.core.rule.Declaration;
 import org.drools.core.spi.Tuple;
 import org.drools.core.time.Trigger;
 import org.kie.api.runtime.Calendars;
+import org.kie.services.time.impl.CronExpression;
 
 import java.io.Externalizable;
 import java.io.IOException;

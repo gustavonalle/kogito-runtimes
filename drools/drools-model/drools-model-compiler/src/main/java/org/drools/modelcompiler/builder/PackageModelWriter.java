@@ -30,11 +30,11 @@ public class PackageModelWriter {
     private final RuleWriter ruleWriter;
     private final DomainClassesMetadata domainClassesMetadata;
 
-    public PackageModelWriter(PackageModel packageModel, boolean oneClassPerRule) {
+    public PackageModelWriter(PackageModel packageModel) {
         this.packageModel = packageModel;
         this.declaredTypes = toDeclaredTypeWriters(packageModel);
         this.accumulateClasses = toAccumulateClassWriters(packageModel);
-        this.ruleWriter = new RuleWriter(packageModel.getRulesFileName(), packageModel.getRulesSource(oneClassPerRule), packageModel);
+        this.ruleWriter = new RuleWriter(packageModel.getRulesFileName(), packageModel.getRulesSource(), packageModel);
         this.domainClassesMetadata = new DomainClassesMetadata(packageModel);
     }
 
@@ -67,8 +67,8 @@ public class PackageModelWriter {
         private final String name, source;
 
         DomainClassesMetadata(PackageModel packageModel) {
-            this(packageModel.getPathName() + "/" + DOMAIN_CLASSESS_METADATA_FILE_NAME + packageModel.getPackageUUID() + ".java",
-                 packageModel.getDomainClassesMetadataSource());
+            this(packageModel.getName() + "/" + DOMAIN_CLASSESS_METADATA_FILE_NAME + packageModel.getPackageUUID() + ".java",
+                    packageModel.getDomainClassesMetadataSource());
         }
 
         DomainClassesMetadata(String name, String source) {

@@ -45,7 +45,7 @@ public class PartitionedDefaultAgenda extends DefaultAgenda {
         ObjectTypeNode.retractLeftTuples( factHandle, ectx, workingMemory, partition );
         ObjectTypeNode.retractRightTuples( factHandle, ectx, workingMemory, partition );
         if ( isMasterPartition() && factHandle.isPendingRemoveFromStore() ) {
-            String epId = factHandle.getEntryPoint().getEntryPointId();
+            String epId = factHandle.getEntryPointName();
             ( (InternalWorkingMemoryEntryPoint) workingMemory.getEntryPoint( epId ) ).removeFromObjectStore( factHandle );
         }
     }

@@ -69,8 +69,7 @@ public class SerializablePlaceholderResolverStrategy
         return PersisterHelper.intToByteArray( index );
     }
 
-    public Object unmarshal(String dataType,
-                            Context context,
+    public Object unmarshal(Context context,
                             ObjectInputStream is,
                             byte[] object, 
                             ClassLoader classloader) throws IOException, ClassNotFoundException {
@@ -86,7 +85,7 @@ public class SerializablePlaceholderResolverStrategy
         // this data map is used when marshalling out objects in order
         // to preserve graph references without cloning objects all over
         // the place.
-        public List<Object> data = new ArrayList<Object>();
+        public List<Object> data = new ArrayList<>();
 
         @SuppressWarnings("unchecked")
         public void read(ObjectInputStream ois) throws IOException,

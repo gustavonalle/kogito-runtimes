@@ -46,7 +46,7 @@ public class SetProcessInstanceVariablesCommand implements ExecutableCommand<Voi
     private static final long serialVersionUID = 7802415761845739379L;
 
     @XmlAttribute(required = true)
-    private String processInstanceId;
+    private Long processInstanceId;
 
     @XmlJavaTypeAdapter(JaxbMapAdapter.class)
     @XmlElement(name = "variables")
@@ -55,19 +55,19 @@ public class SetProcessInstanceVariablesCommand implements ExecutableCommand<Voi
     public SetProcessInstanceVariablesCommand() {
     }
 
-    public SetProcessInstanceVariablesCommand(String processInstanceId,
+    public SetProcessInstanceVariablesCommand(long processInstanceId,
                                               Map<String, Object> variables) {
         this.processInstanceId = processInstanceId;
         this.variables = variables;
     }
 
     @Override
-    public String getProcessInstanceId() {
+    public Long getProcessInstanceId() {
         return processInstanceId;
     }
 
     @Override
-    public void setProcessInstanceId(String processInstanceId) {
+    public void setProcessInstanceId(Long processInstanceId) {
         this.processInstanceId = processInstanceId;
     }
 

@@ -38,6 +38,9 @@ public class JTMSBeliefSetImpl<M extends JTMSMode<M>> extends LinkedList<M> impl
         this.rootHandle = rootHandle;
     }
 
+    public JTMSBeliefSetImpl() {
+    }
+
     @Override
     public void add(M node ) {
         JTMSMode mode = node;
@@ -167,11 +170,5 @@ public class JTMSBeliefSetImpl<M extends JTMSMode<M>> extends LinkedList<M> impl
     
     public WorkingMemoryAction getWorkingMemoryAction() {
         return this.wmAction;
-    }
-
-    /**
-     * This should be used just by deserialization. Please avoid using this empty constructor in your code.
-     */
-    public JTMSBeliefSetImpl() {
     }
 }

@@ -64,10 +64,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
                                         final WorkingMemory workingMemory,
                                         final MatchCancelledCause cause) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        MatchCancelledEvent event = new ActivationCancelledEventImpl(activation, getKRuntime(workingMemory), cause);
 
+        MatchCancelledEvent event = new ActivationCancelledEventImpl(activation, getKRuntime(workingMemory), cause);
         if (iter.hasNext()) {
-            
+
             do{
                 iter.next().matchCancelled(event);
             }  while (iter.hasNext());
@@ -75,28 +75,27 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
     }
 
     public BeforeMatchFiredEvent fireBeforeActivationFired(final Activation activation,
-                                          final WorkingMemory workingMemory) {
+                                                           final WorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        BeforeMatchFiredEvent event = new BeforeActivationFiredEventImpl(activation, getKRuntime(workingMemory));
 
+        BeforeMatchFiredEvent event = new BeforeActivationFiredEventImpl(activation, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-            
+
             do{
                 iter.next().beforeMatchFired(event);
             }  while (iter.hasNext());
         }
-        
+
         return event;
     }
 
     public void fireAfterActivationFired(final Activation activation,
-                                         final InternalWorkingMemory workingMemory, 
-                                         BeforeMatchFiredEvent beforeMatchFiredEvent) {
+                                         final InternalWorkingMemory workingMemory, BeforeMatchFiredEvent beforeMatchFiredEvent) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        AfterMatchFiredEvent event = new AfterActivationFiredEventImpl(activation, getKRuntime(workingMemory), beforeMatchFiredEvent);
 
+        AfterMatchFiredEvent event = new AfterActivationFiredEventImpl(activation, getKRuntime(workingMemory), beforeMatchFiredEvent);
         if (iter.hasNext()) {
-            
+
             do{
                 iter.next().afterMatchFired(event);
             }  while (iter.hasNext());
@@ -106,10 +105,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
     public void fireAgendaGroupPopped(final AgendaGroup agendaGroup,
                                       final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        AgendaGroupPoppedEventImpl event = new AgendaGroupPoppedEventImpl(agendaGroup, getKRuntime(workingMemory));
 
+        AgendaGroupPoppedEventImpl event = new AgendaGroupPoppedEventImpl(agendaGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-            
+
             do{
                 iter.next().agendaGroupPopped(event);
             }  while (iter.hasNext());
@@ -119,10 +118,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
     public void fireAgendaGroupPushed(final AgendaGroup agendaGroup,
                                       final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        AgendaGroupPushedEventImpl event = new AgendaGroupPushedEventImpl(agendaGroup, getKRuntime(workingMemory));
 
+        AgendaGroupPushedEventImpl event = new AgendaGroupPushedEventImpl(agendaGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-            
+
             do{
                 iter.next().agendaGroupPushed(event);
             }  while (iter.hasNext());
@@ -133,10 +132,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
             final RuleFlowGroup ruleFlowGroup,
             final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        RuleFlowGroupActivatedEventImpl event = new RuleFlowGroupActivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
 
+        RuleFlowGroupActivatedEventImpl event = new RuleFlowGroupActivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-            
+
             do {
                 iter.next().beforeRuleFlowGroupActivated(event);
             } while (iter.hasNext());
@@ -147,10 +146,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
             final RuleFlowGroup ruleFlowGroup,
             final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        RuleFlowGroupActivatedEventImpl event = new RuleFlowGroupActivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
 
+        RuleFlowGroupActivatedEventImpl event = new RuleFlowGroupActivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-           
+
             do {
                 iter.next().afterRuleFlowGroupActivated(event);
             } while (iter.hasNext());
@@ -161,10 +160,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
             final RuleFlowGroup ruleFlowGroup,
             final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        RuleFlowGroupDeactivatedEventImpl event = new RuleFlowGroupDeactivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
 
+        RuleFlowGroupDeactivatedEventImpl event = new RuleFlowGroupDeactivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-            
+
             do {
                 iter.next().beforeRuleFlowGroupDeactivated(event);
             } while (iter.hasNext());
@@ -175,10 +174,10 @@ public class AgendaEventSupport extends AbstractEventSupport<AgendaEventListener
             final RuleFlowGroup ruleFlowGroup,
             final InternalWorkingMemory workingMemory) {
         Iterator<AgendaEventListener> iter = getEventListenersIterator();
-        RuleFlowGroupDeactivatedEventImpl event = new RuleFlowGroupDeactivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
 
+        RuleFlowGroupDeactivatedEventImpl event = new RuleFlowGroupDeactivatedEventImpl(ruleFlowGroup, getKRuntime(workingMemory));
         if (iter.hasNext()) {
-             
+
             do {
                 iter.next().afterRuleFlowGroupDeactivated(event);
             } while (iter.hasNext());

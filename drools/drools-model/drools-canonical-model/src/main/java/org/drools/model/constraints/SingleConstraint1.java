@@ -41,11 +41,6 @@ public class SingleConstraint1<A> extends AbstractSingleConstraint {
     }
 
     @Override
-    public Predicate1 getPredicate1() {
-        return predicate;
-    }
-
-    @Override
     public boolean isEqualTo( ModelComponent o ) {
         if ( this == o ) return true;
         if ( o == null || getClass() != o.getClass() ) return false;

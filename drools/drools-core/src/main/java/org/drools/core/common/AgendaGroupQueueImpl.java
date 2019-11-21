@@ -55,7 +55,7 @@ public class AgendaGroupQueueImpl
 
     private InternalWorkingMemory workingMemory;
     private boolean               autoDeactivate = true;
-    private Map<String, String>     nodeInstances  = new ConcurrentHashMap<String, String>();
+    private Map<Long, String>     nodeInstances  = new ConcurrentHashMap<Long, String>();
 
     private volatile              boolean hasRuleFlowLister;
 
@@ -75,7 +75,7 @@ public class AgendaGroupQueueImpl
     }
 
     protected BinaryHeapQueue initPriorityQueue( InternalKnowledgeBase kBase ) {
-        return new BinaryHeapQueue(PhreakConflictResolver.INSTANCE);
+        return new BinaryHeapQueue(new PhreakConflictResolver());
     }
 
     @Override
@@ -201,13 +201,13 @@ public class AgendaGroupQueueImpl
         this.autoDeactivate = autoDeactivate;
     }
 
-    public void addNodeInstance(String processInstanceId,
+    public void addNodeInstance(Long processInstanceId,
                                 String nodeInstanceId) {
         nodeInstances.put( processInstanceId,
                            nodeInstanceId );
     }
 
-    public void removeNodeInstance(String processInstanceId,
+    public void removeNodeInstance(Long processInstanceId,
                                    String nodeInstanceId) {
         nodeInstances.put( processInstanceId,
                            nodeInstanceId );
@@ -234,7 +234,7 @@ public class AgendaGroupQueueImpl
     }
 
     @Override
-    public Map<String, String> getNodeInstances() {
+    public Map<Long, String> getNodeInstances() {
         return nodeInstances;
     }
 

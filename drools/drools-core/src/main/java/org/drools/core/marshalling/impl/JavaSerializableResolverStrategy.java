@@ -62,8 +62,7 @@ public class JavaSerializableResolverStrategy
         }
     }
 
-    public Object unmarshal(String dataType, 
-                            Context context,
+    public Object unmarshal(Context context,
                             ObjectInputStream is,
                             byte[] object,
                             ClassLoader classloader) {

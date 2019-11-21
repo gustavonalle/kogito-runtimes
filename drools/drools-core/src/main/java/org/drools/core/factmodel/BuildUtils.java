@@ -41,10 +41,10 @@ public final class BuildUtils {
 
         for ( String intf : interfaces ) {
             String temp = getTypeDescriptor( intf );
-            if (temp != null) {
-                sb.append( temp.replace( ";", "<TK;>;" ) );
+            if (temp == null) {
+                throw new RuntimeException("Cannot resolve internal type from interface " + intf + "!");
             } else {
-                throw new IllegalArgumentException("Cannot get type descriptor for interface " + intf + "!");
+                sb.append( temp.replace( ";", "<TK;>;" ) );
             }
         }
         return sb.toString();

@@ -88,7 +88,7 @@ public class LeftTupleIterator
             }
             return null;
         }
-        if ( source instanceof JoinNode || source instanceof NotNode || source instanceof FromNode ||source instanceof AccumulateNode ) {
+        if ( source instanceof JoinNode || source instanceof NotNode || source instanceof FromNode || source instanceof AccumulateNode ) {
             BetaMemory memory;
             FastIterator localIt;
             if ( source instanceof FromNode ) {
@@ -320,11 +320,10 @@ public class LeftTupleIterator
                             return childLeftTuple;
                         }
                     }
-
-                    leftTuple = getNextLeftTuple(source.getLeftTupleSource(),
-                                                 (LeftTupleSink) source,
-                                                 leftTuple,
-                                                 wm);
+                    leftTuple = getNextLeftTuple( source.getLeftTupleSource(),
+                                                  (LeftTupleSink) source,
+                                                  leftTuple,
+                                                  wm );
                 }
             }
         }
