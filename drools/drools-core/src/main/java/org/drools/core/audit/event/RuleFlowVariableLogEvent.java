@@ -21,7 +21,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 public class RuleFlowVariableLogEvent extends RuleFlowLogEvent {
-    
+
     private String variableId;
     private String variableInstanceId;
     private String objectToString;
@@ -34,14 +34,14 @@ public class RuleFlowVariableLogEvent extends RuleFlowLogEvent {
                                     final String variableInstanceId,
                                     final String processId,
                                     final String processName,
-                                    final long processInstanceId,
+                                    final String processInstanceId,
                                     final String objectToString) {
         super( type, processId, processName, processInstanceId );
         this.variableId = variableId;
         this.variableInstanceId = variableInstanceId;
         this.objectToString = objectToString;
     }
-    
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         variableId = (String) in.readObject();

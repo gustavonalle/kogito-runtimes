@@ -62,7 +62,7 @@ public interface InternalAgendaGroup extends AgendaGroup {
 
     Activation[] getActivations();
 
-    Map<Long, String> getNodeInstances();
+    Map<String, String> getNodeInstances();
 
     void visited();
 

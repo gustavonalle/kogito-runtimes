@@ -979,7 +979,7 @@ public class DefaultAgenda
     }
 
     private boolean checkProcessInstance(Activation activation,
-                                         long processInstanceId) {
+                                         Object processInstanceId) {
         final Map<String, Declaration> declarations = activation.getSubRule().getOuterDeclarations();
         for ( Declaration declaration : declarations.values() ) {
             if ( "processInstance".equals( declaration.getIdentifier() )
@@ -987,7 +987,7 @@ public class DefaultAgenda
                 Object value = declaration.getValue( workingMemory,
                                                      activation.getTuple().get( declaration ).getObject() );
                 if ( value instanceof ProcessInstance ) {
-                    return ((ProcessInstance) value).getId() == processInstanceId;
+                    return ((ProcessInstance) value).getId().equals(processInstanceId);
                 }
             }
         }

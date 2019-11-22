@@ -21,14 +21,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 public class RuleFlowNodeLogEvent extends RuleFlowLogEvent {
-    
+
     private String nodeId;
     private String nodeName;
     private String nodeInstanceId;
 
     /**
      * Create a new ruleflow node log event.
-     * 
+     *
      * @param type The type of event.  This can only be RULEFLOW_NODE_START or RULEFLOW_NODE_END.
      * @param processId The id of the process
      * @param processName The name of the process
@@ -39,13 +39,13 @@ public class RuleFlowNodeLogEvent extends RuleFlowLogEvent {
                                 final String nodeInstanceId,
                                 final String processId,
                                 final String processName,
-                                final long processInstanceId) {
+                                final String processInstanceId) {
         super( type, processId, processName, processInstanceId );
         this.nodeId = nodeId;
         this.nodeName = nodeName;
         this.nodeInstanceId = nodeInstanceId;
     }
-    
+
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         nodeId = (String) in.readObject();
@@ -63,15 +63,15 @@ public class RuleFlowNodeLogEvent extends RuleFlowLogEvent {
     public String getNodeId() {
         return nodeId;
     }
-    
+
     public String getNodeName() {
         return nodeName;
     }
-    
+
     public String getNodeInstanceId() {
         return nodeInstanceId;
     }
-    
+
     public String toString() {
         String msg = null;
         switch ( this.getType() ) {

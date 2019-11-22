@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.drools.core.WorkItemHandlerNotFoundException;
 import org.drools.core.common.InternalKnowledgeRuntime;
@@ -34,13 +34,13 @@ import org.drools.core.process.instance.WorkItemManager;
 import org.kie.api.runtime.process.ProcessInstance;
 import org.kie.api.runtime.process.WorkItemHandler;
 import org.kie.internal.runtime.Closeable;
+import org.kie.kogito.process.workitem.Policy;
 
 public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
 
     private static final long serialVersionUID = 510l;
 
-    private AtomicLong workItemCounter = new AtomicLong(0);
-    private Map<Long, WorkItem> workItems = new ConcurrentHashMap<>();
+    private Map<String, WorkItem> workItems = new ConcurrentHashMap<>();
     private InternalKnowledgeRuntime kruntime;
     private Map<String, WorkItemHandler> workItemHandlers = new HashMap<>();
 
@@ -56,38 +56,32 @@ public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
 
     @SuppressWarnings("unchecked")
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        workItemCounter.set(in.readLong());
-        workItems = (Map<Long, WorkItem>) in.readObject();
+        workItems = (Map<String, WorkItem>) in.readObject();
         kruntime = (InternalKnowledgeRuntime) in.readObject();
         workItemHandlers = (Map<String, WorkItemHandler>) in.readObject();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeLong(workItemCounter.get());
         out.writeObject(workItems);
         out.writeObject(kruntime);
         out.writeObject(workItemHandlers);
     }
 
     public void internalExecuteWorkItem(WorkItem workItem) {
-        ((WorkItemImpl) workItem).setId(workItemCounter.incrementAndGet());
+        ((WorkItemImpl) workItem).setId(UUID.randomUUID().toString());
         internalAddWorkItem(workItem);
         WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
         if (handler != null) {
             handler.executeWorkItem(workItem, this);
         } else throw new WorkItemHandlerNotFoundException( "Could not find work item handler for " + workItem.getName(),
-                                                    workItem.getName() );
+                                                           workItem.getName() );
     }
 
     public void internalAddWorkItem(WorkItem workItem) {
         workItems.put(workItem.getId(), workItem);
-        // fix to reset workItemCounter after deserialization
-        if (workItem.getId() > workItemCounter.get()) {
-            workItemCounter.set(workItem.getId());
-        }
     }
 
-    public void internalAbortWorkItem(long id) {
+    public void internalAbortWorkItem(String id) {
         WorkItemImpl workItem = (WorkItemImpl) workItems.get(id);
         // work item may have been aborted
         if (workItem != null) {
@@ -97,50 +91,50 @@ public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
             } else {
                 workItems.remove( workItem.getId() );
                 throw new WorkItemHandlerNotFoundException( "Could not find work item handler for " + workItem.getName(),
-                                                                 workItem.getName() );
+                                                            workItem.getName() );
             }
             workItems.remove(workItem.getId());
         }
     }
 
     public WorkItemHandler getWorkItemHandler(String name) {
-    	return this.workItemHandlers.get(name);
+        return this.workItemHandlers.get(name);
     }
 
-    public void retryWorkItem(long workItemId) {
-    	WorkItem workItem = workItems.get(workItemId);
-    	retryWorkItem(workItem);
-    }
-
-    public void retryWorkItemWithParams(long workItemId,Map<String,Object> map) {
+    public void retryWorkItem(String workItemId) {
         WorkItem workItem = workItems.get(workItemId);
-        
+        retryWorkItem(workItem);
+    }
+
+    public void retryWorkItemWithParams(String workItemId,Map<String,Object> map) {
+        WorkItem workItem = workItems.get(workItemId);
+
         if ( workItem != null ) {
             workItem.setParameters( map );
-            
+
             retryWorkItem( workItem );
         }
     }
-    
+
     private void retryWorkItem(WorkItem workItem) {
         if (workItem != null) {
             WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
             if (handler != null) {
                 handler.executeWorkItem(workItem, this);
             } else throw new WorkItemHandlerNotFoundException( "Could not find work item handler for " + workItem.getName(),
-                                                        workItem.getName() );
+                                                               workItem.getName() );
         }
     }
-    
+
     public Set<WorkItem> getWorkItems() {
         return new HashSet<>(workItems.values());
     }
 
-    public WorkItem getWorkItem(long id) {
+    public WorkItem getWorkItem(String id) {
         return workItems.get(id);
     }
 
-    public void completeWorkItem(long id, Map<String, Object> results) {
+    public void completeWorkItem(String id, Map<String, Object> results, Policy<?>... policies) {
         WorkItem workItem = workItems.get(id);
         // work item may have been aborted
         if (workItem != null) {
@@ -155,7 +149,7 @@ public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
         }
     }
 
-    public void abortWorkItem(long id) {
+    public void abortWorkItem(String id, Policy<?>... policies) {
         WorkItemImpl workItem = (WorkItemImpl) workItems.get(id);
         // work item may have been aborted
         if (workItem != null) {
@@ -176,12 +170,12 @@ public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
     public void clear() {
         this.workItems.clear();
     }
-    
-    public void signalEvent(String type, Object event) { 
+
+    public void signalEvent(String type, Object event) {
         this.kruntime.signalEvent(type, event);
-    } 
-    
-    public void signalEvent(String type, Object event, long processInstanceId) { 
+    }
+
+    public void signalEvent(String type, Object event, String processInstanceId) {
         this.kruntime.signalEvent(type, event, processInstanceId);
     }
 
@@ -195,14 +189,19 @@ public class DefaultWorkItemManager implements WorkItemManager, Externalizable {
             }
         }
     }
-    
+
     @Override
-    public void retryWorkItem( Long workItemID, Map<String, Object> params ) {
-       if(params==null || params.isEmpty()){
-           retryWorkItem(workItemID);
-       }else{
-           this.retryWorkItemWithParams( workItemID, params );
-       }
-        
+    public void retryWorkItem( String workItemID, Map<String, Object> params ) {
+        if(params==null || params.isEmpty()){
+            retryWorkItem(workItemID);
+        }else{
+            this.retryWorkItemWithParams( workItemID, params );
+        }
+
+    }
+
+    @Override
+    public void internalCompleteWorkItem(WorkItem workItem) {
+
     }
 }

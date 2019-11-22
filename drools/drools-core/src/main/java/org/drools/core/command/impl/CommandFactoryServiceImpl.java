@@ -231,18 +231,18 @@ public class CommandFactoryServiceImpl implements ExtendedKieCommands {
         return new SignalEventCommand( type, event );
     }
 
-    public Command newSignalEvent(long processInstanceId,
+    public Command newSignalEvent(String processInstanceId,
                                String type,
                                Object event) {
         return new SignalEventCommand( processInstanceId, type, event );
     }
 
-    public Command newCompleteWorkItem(long workItemId,
+    public Command newCompleteWorkItem(String workItemId,
                                        Map<String, Object> results) {
         return new CompleteWorkItemCommand(workItemId, results);
     }
 
-    public Command newAbortWorkItem(long workItemId) {
+    public Command newAbortWorkItem(String workItemId) {
         return new AbortWorkItemCommand( workItemId);
     }
 
@@ -363,7 +363,7 @@ public class CommandFactoryServiceImpl implements ExtendedKieCommands {
         return new AdvanceSessionTimeCommand( outIdentifier, amount, unit );
     }
 
-    @Override
+//    @Override
     public Command newApplyPmmlModel(PMMLRequestData request) {
     	return new ApplyPmmlModelCommand(request);
     }

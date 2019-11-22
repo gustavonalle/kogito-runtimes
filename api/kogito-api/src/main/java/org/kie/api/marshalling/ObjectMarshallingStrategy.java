@@ -29,7 +29,7 @@ public interface ObjectMarshallingStrategy {
     default public String getName( ) {
         return getClass().getName();
     }
-    
+
     public boolean accept(Object object);
 
     public void write(ObjectOutputStream os,
@@ -60,8 +60,7 @@ public interface ObjectMarshallingStrategy {
      *
      * @return the unmarshalled Object
      */
-    public Object unmarshal( String dataType, 
-                             Context context,
+    public Object unmarshal( Context context,
                              ObjectInputStream is,
                              byte[] object,
                              ClassLoader classloader ) throws IOException, ClassNotFoundException;
@@ -70,10 +69,6 @@ public interface ObjectMarshallingStrategy {
      * Creates a new marshalling context
      */
     public Context createContext();
-    
-    default String getType(Class<?> clazz) {
-        return clazz.getCanonicalName();
-    }
 
     public static interface Context {
         /**

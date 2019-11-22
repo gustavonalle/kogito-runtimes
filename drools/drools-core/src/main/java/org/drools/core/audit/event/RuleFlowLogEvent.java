@@ -29,11 +29,11 @@ public class RuleFlowLogEvent extends LogEvent {
 
     private String processId;
     private String processName;
-    private long processInstanceId;
+    private String processInstanceId;
 
     /**
      * Create a new ruleflow log event.
-     * 
+     *
      * @param type The type of event.  This can only be RULEFLOW_CREATED,
      *        RULEFLOW_COMPLETED, RULEFLOW_NODE_START or RULEFLOW_NODE_END.
      * @param processId The id of the process
@@ -42,7 +42,7 @@ public class RuleFlowLogEvent extends LogEvent {
     public RuleFlowLogEvent(final int type,
                             final String processId,
                             final String processName,
-                            final long processInstanceId) {
+                            final String processInstanceId) {
         super( type );
         this.processId = processId;
         this.processName = processName;
@@ -53,14 +53,14 @@ public class RuleFlowLogEvent extends LogEvent {
         super.readExternal(in);
         processId    = (String)in.readObject();
         processName    = (String)in.readObject();
-        processInstanceId = in.readLong();
+        processInstanceId = in.readUTF();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(processId);
         out.writeObject(processName);
-        out.writeLong(processInstanceId);
+        out.writeUTF(processInstanceId);
     }
 
     public String getProcessId() {
@@ -70,8 +70,8 @@ public class RuleFlowLogEvent extends LogEvent {
     public String getProcessName() {
         return this.processName;
     }
-    
-    public long getProcessInstanceId() {
+
+    public String getProcessInstanceId() {
         return this.processInstanceId;
     }
 

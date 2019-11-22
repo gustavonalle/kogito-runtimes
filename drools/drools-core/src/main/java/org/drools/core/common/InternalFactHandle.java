@@ -25,8 +25,10 @@ import org.drools.core.factmodel.traits.TraitTypeEnum;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.rule.EntryPointId;
+import org.drools.core.ruleunit.impl.ListDataStore;
 import org.drools.core.spi.Tuple;
 import org.kie.api.runtime.rule.FactHandle;
+import org.kie.kogito.rules.DataHandle;
 
 public interface InternalFactHandle
     extends
@@ -132,6 +134,12 @@ public interface InternalFactHandle
     LinkedTuples detachLinkedTuplesForPartition(int i);
 
     LinkedTuples getLinkedTuples();
+
+    DataHandle getDataHandle();
+
+    <T> void setDataStore(ListDataStore<T> tListDataStore);
+
+    void setDataHandle(DataHandle dh);
 
     interface LinkedTuples extends Serializable {
         LinkedTuples clone();
@@ -429,6 +437,21 @@ public interface InternalFactHandle
         @Override
         public LinkedTuples getLinkedTuples() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public DataHandle getDataHandle() {
+            return null;
+        }
+
+        @Override
+        public <T> void setDataStore(ListDataStore<T> tListDataStore) {
+
+        }
+
+        @Override
+        public void setDataHandle(DataHandle dh) {
+
         }
     }
 }

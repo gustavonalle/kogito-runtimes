@@ -81,7 +81,6 @@ import org.drools.core.time.JobContext;
 import org.drools.core.time.SelfRemovalJobContext;
 import org.drools.core.time.Trigger;
 import org.drools.core.time.impl.CompositeMaxDurationTrigger;
-import org.drools.core.time.impl.CronTrigger;
 import org.drools.core.time.impl.IntervalTrigger;
 import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.time.impl.PseudoClockScheduler;
@@ -92,6 +91,7 @@ import org.drools.core.util.ObjectHashMap;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
 import org.kie.api.runtime.rule.EntryPoint;
+import org.kie.services.time.impl.CronTrigger;
 
 /**
  * An output marshaller that uses ProtoBuf as the marshalling framework
@@ -793,7 +793,7 @@ public class ProtobufOutputMarshaller {
 
     public static ProtobufMessages.Trigger writeTrigger(Trigger trigger,
                                                         MarshallerWriteContext outCtx) {
-        if ( trigger instanceof CronTrigger ) {
+        if ( trigger instanceof CronTrigger) {
             CronTrigger cronTrigger = (CronTrigger) trigger;
             ProtobufMessages.Trigger.CronTrigger.Builder _cron = ProtobufMessages.Trigger.CronTrigger.newBuilder()
                     .setStartTime( cronTrigger.getStartTime().getTime() )
