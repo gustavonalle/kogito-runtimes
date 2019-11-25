@@ -80,8 +80,8 @@ import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.Match;
 
 /**
- * An input marshaller that uses protobuf. 
- * 
+ * An input marshaller that uses protobuf.
+ *
  */
 public class ProtobufInputMarshaller {
     // NOTE: all variables prefixed with _ (underscore) are protobuf structs
@@ -98,7 +98,7 @@ public class ProtobufInputMarshaller {
 
     /**
      * Stream the data into an existing session
-     * 
+     *
      * @param session
      * @param context
      * @return
@@ -224,7 +224,7 @@ public class ProtobufInputMarshaller {
         context.wm = session;
 
         // need to read node memories before reading the fact handles
-        // because this data is required during fact propagation 
+        // because this data is required during fact propagation
         readNodeMemories( context,
                           _session.getRuleData() );
 
@@ -270,7 +270,7 @@ public class ProtobufInputMarshaller {
                 // This actually does ALL timers, due to backwards compatability issues
                 // It will read in old JBPM binaries, but always write to the new binary format.
                 context.parameterObject = _session.getProcessData();
-                processMarshaller.readProcessTimers( context );
+                //fixme API CHANGE processMarshaller.readProcessTimers( context );
             }
         } else {
             if ( _session.hasProcessData() ) {
@@ -308,7 +308,7 @@ public class ProtobufInputMarshaller {
                 case QUERY_ELEMENT : {
                     Map<TupleKey, QueryElementContext> map = new HashMap<TupleKey, QueryElementContext>();
                     for ( ProtobufMessages.NodeMemory.QueryElementNodeMemory.QueryContext _ctx : _node.getQueryElement().getContextList() ) {
-                        // we have to use a "cloned" query element context as we need to write on it during deserialization process and the 
+                        // we have to use a "cloned" query element context as we need to write on it during deserialization process and the
                         // protobuf one is read-only
                         map.put( PersisterHelper.createTupleKey( _ctx.getTuple() ), new QueryElementContext( _ctx ) );
                     }
@@ -372,26 +372,26 @@ public class ProtobufInputMarshaller {
             group.setActivatedForRecency( _agendaGroup.getActivatedForRecency() );
 
             for ( org.drools.core.marshalling.impl.ProtobufMessages.Agenda.AgendaGroup.NodeInstance _nodeInstance : _agendaGroup.getNodeInstanceList() ) {
-                group.addNodeInstance( _nodeInstance.getProcessInstanceId(),
-                                       _nodeInstance.getNodeInstanceId() );
+                group.addNodeInstance(String.valueOf(_nodeInstance.getProcessInstanceId()),//fixme API CHANGE
+                                      _nodeInstance.getNodeInstanceId());
             }
             agenda.getAgendaGroupsMap().put( group.getName(),
                                              group );
         }
-        
+
         for ( String _groupName : _agenda.getFocusStack().getGroupNameList() ) {
             agenda.addAgendaGroupOnStack( agenda.getAgendaGroup( _groupName ) );
         }
-        
+
         for ( ProtobufMessages.Agenda.RuleFlowGroup _ruleFlowGroup : _agenda.getRuleFlowGroupList() ) {
             AgendaGroupQueueImpl group = (AgendaGroupQueueImpl) agenda.getAgendaGroup( _ruleFlowGroup.getName(), context.kBase );
             group.setActive( _ruleFlowGroup.getIsActive() );
             group.setAutoDeactivate( _ruleFlowGroup.getIsAutoDeactivate() );
-            
+
 
             for ( org.drools.core.marshalling.impl.ProtobufMessages.Agenda.RuleFlowGroup.NodeInstance _nodeInstance : _ruleFlowGroup.getNodeInstanceList() ) {
-                group.addNodeInstance( _nodeInstance.getProcessInstanceId(),
-                                       _nodeInstance.getNodeInstanceId() );
+                group.addNodeInstance(String.valueOf(_nodeInstance.getProcessInstanceId()), //fixme API CHANGE
+                                      _nodeInstance.getNodeInstanceId());
             }
             agenda.getAgendaGroupsMap().put( group.getName(),
                                              group );
@@ -400,7 +400,7 @@ public class ProtobufInputMarshaller {
             }
         }
 
-        
+
 
         readActivations( context,
                          _agenda.getMatchList(),
@@ -425,7 +425,7 @@ public class ProtobufInputMarshaller {
         InternalWorkingMemory wm = context.wm;
 
         EntryPoint entryPoint = ((StatefulKnowledgeSessionImpl)context.wm).getEntryPointMap().get(_ep.getEntryPointId());
-        
+
         // load the handles
         for ( ProtobufMessages.FactHandle _handle : _ep.getHandleList() ) {
             InternalFactHandle handle = readFactHandle( context,
@@ -436,7 +436,7 @@ public class ProtobufInputMarshaller {
                                  handle );
 
             if ( !_handle.getIsJustified() ) {
-                // BeliefSystem handles the Object type 
+                // BeliefSystem handles the Object type
                 if ( handle.getObject() != null ) {
                     objectStore.addHandle( handle,
                                            handle.getObject() );
@@ -488,7 +488,8 @@ public class ProtobufInputMarshaller {
         ObjectMarshallingStrategy strategy = null;
         if ( _handle.hasStrategyIndex() ) {
             strategy = context.usedStrategies.get( _handle.getStrategyIndex() );
-            object = strategy.unmarshal( context.strategyContexts.get( strategy ),
+            object = strategy.unmarshal( null,
+                                         context.strategyContexts.get( strategy ),
                                          context,
                                          _handle.getObject().toByteArray(),
                                          (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -547,7 +548,7 @@ public class ProtobufInputMarshaller {
                                                   List<PropagationContext> pctxs) throws IOException,
                                                                                      ClassNotFoundException {
         TruthMaintenanceSystem tms = ((NamedEntryPoint) wmep).getTruthMaintenanceSystem();
-        
+
         boolean wasOTCSerialized = _ep.getOtcCount() > 0; // if 0, then the OTC was not serialized (older versions of drools)
         Set<String> tmsEnabled = new HashSet<String>();
         for( ObjectTypeConfiguration _otc : _ep.getOtcList() ) {
@@ -604,7 +605,7 @@ public class ProtobufInputMarshaller {
         if( _key.hasBeliefSet() ) {
             ProtobufMessages.BeliefSet _beliefSet = _key.getBeliefSet();
             InternalFactHandle handle = (InternalFactHandle) context.handles.get( _key.getHandleId() );
-            // phreak might serialize empty belief sets, so he have to handle it during deserialization 
+            // phreak might serialize empty belief sets, so he have to handle it during deserialization
             if( _beliefSet.getLogicalDependencyCount() > 0 ) {
                 for ( ProtobufMessages.LogicalDependency _logicalDependency : _beliefSet.getLogicalDependencyList() ) {
                     ProtobufMessages.Activation _activation = _logicalDependency.getActivation();
@@ -617,7 +618,8 @@ public class ProtobufInputMarshaller {
                     ObjectMarshallingStrategy strategy = null;
                     if ( _logicalDependency.hasObjectStrategyIndex() ) {
                         strategy = context.usedStrategies.get( _logicalDependency.getObjectStrategyIndex() );
-                        object = strategy.unmarshal( context.strategyContexts.get( strategy ),
+                        object = strategy.unmarshal( null,
+                                                     context.strategyContexts.get( strategy ),
                                                      context,
                                                      _logicalDependency.getObject().toByteArray(),
                                                      (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -626,7 +628,8 @@ public class ProtobufInputMarshaller {
                     Object value = null;
                     if ( _logicalDependency.hasValueStrategyIndex() ) {
                         strategy = context.usedStrategies.get( _logicalDependency.getValueStrategyIndex() );
-                        value = strategy.unmarshal( context.strategyContexts.get( strategy ),
+                        value = strategy.unmarshal( null,
+                                                    context.strategyContexts.get( strategy ),
                                                     context,
                                                     _logicalDependency.getValue().toByteArray(),
                                                     (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -663,7 +666,8 @@ public class ProtobufInputMarshaller {
                     ObjectMarshallingStrategy strategy = context.usedStrategies.get( _object.getStrategyIndex() );
 
                     try {
-                        objects[i++] = strategy.unmarshal( context.strategyContexts.get( strategy ),
+                        objects[i++] = strategy.unmarshal( null,
+                                                           context.strategyContexts.get( strategy ),
                                                            context,
                                                            _object.getObject().toByteArray(),
                                                            (context.kBase == null) ? null : context.kBase.getRootClassLoader() );
@@ -828,7 +832,7 @@ public class ProtobufInputMarshaller {
         @Override
         public boolean accept(Match match) {
             Tuple tuple = ((Activation)match).getTuple();
-            ActivationKey key = PersisterHelper.createActivationKey( match.getRule().getPackageName(), 
+            ActivationKey key = PersisterHelper.createActivationKey( match.getRule().getPackageName(),
                                                                      match.getRule().getName(),
                                                                      tuple );
             // add the tuple to the cache for correlation

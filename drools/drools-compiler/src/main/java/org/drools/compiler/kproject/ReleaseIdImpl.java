@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -11,82 +11,204 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package org.drools.compiler.kproject;
 
-import java.io.InputStream;
-import java.util.Collection;
-
-import org.appformer.maven.support.PomModel;
-import org.kie.api.builder.ReleaseId;
-
 import static java.util.stream.Collectors.toList;
 
-public class ReleaseIdImpl extends org.appformer.maven.support.AFReleaseIdImpl implements ReleaseId {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.util.Collection;
+import java.util.Properties;
 
-    private static final String PROJECT_VERSION_MAVEN_PROPERTY = "${project.version}";
-    private static final String PARENT_VERSION_MAVEN_PROPERTY = "${project.parent.version}";
+import org.drools.core.util.StringUtils;
+import org.kie.api.builder.ReleaseId;
+
+public class ReleaseIdImpl implements ReleaseId, Serializable {
+
+    private static final long serialVersionUID = 5013193443139283921L;
+    private String groupId;
+    private String artifactId;
+    private String version;
+    private String type;
+
+    private String snapshotVersion;
 
     public ReleaseIdImpl() {
     }
 
     public ReleaseIdImpl(String releaseId) {
-        super(releaseId);
+        String[] split = releaseId.split(":");
+        this.groupId = split[0];
+        this.artifactId = split[1];
+        this.version = split[2];
     }
 
     public ReleaseIdImpl(String groupId, String artifactId, String version) {
-        super(groupId, artifactId, version);
+        this(groupId,
+             artifactId,
+             version,
+             "jar");
     }
 
     public ReleaseIdImpl(String groupId, String artifactId, String version, String type) {
-        super(groupId, artifactId, version, type);
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+        this.type = type;
     }
 
-    public static ReleaseId adapt(org.appformer.maven.support.AFReleaseId r) {
-        return adapt(r, null);
-    }
-
-    public static ReleaseId adapt(org.appformer.maven.support.AFReleaseId r, PomModel pomModel) {
+    public static ReleaseId adapt(ReleaseId r ) {
         if (r instanceof ReleaseId) {
             return ( ReleaseId ) r;
         }
-
-        final ReleaseIdImpl newReleaseIdImpl = new ReleaseIdImpl(r.getGroupId(),
-                                                                 r.getArtifactId(),
-                                                                 resolveVersion(r.getVersion(), pomModel),
-                                                                 ((org.appformer.maven.support.AFReleaseIdImpl) r).getType());
+        final ReleaseIdImpl newReleaseIdImpl = new ReleaseIdImpl(r.getGroupId(), r.getArtifactId(), r.getVersion(), ((ReleaseIdImpl) r).getType());
         if (r.isSnapshot()) {
             newReleaseIdImpl.setSnapshotVersion(r.getVersion());
         }
         return newReleaseIdImpl;
     }
 
-    public static Collection<ReleaseId> adaptAll( Collection<org.appformer.maven.support.AFReleaseId> rs, PomModel pomModel ) {
-        return rs.stream().map(releaseId -> ReleaseIdImpl.adapt(releaseId, pomModel)).collect(toList());
+    public static Collection<ReleaseId> adaptAll( Collection<ReleaseId> rs ) {
+        return rs.stream().map(ReleaseIdImpl::adapt).collect(toList());
     }
 
     public static ReleaseId fromPropertiesString( String path ) {
-        return adapt( org.appformer.maven.support.AFReleaseIdImpl.fromPropertiesString(path) );
+        Properties props = new Properties();
+        try {
+            props.load(new StringReader( path) );
+            return getReleaseIdFromProperties(props, path);
+        } catch (IOException e) {
+            throw new RuntimeException("pom.properties was malformed\n" + path, e);
+        }
     }
 
     public static ReleaseId fromPropertiesStream( InputStream stream, String path ) {
-        return adapt( org.appformer.maven.support.AFReleaseIdImpl.fromPropertiesStream(stream, path) );
+        Properties props = new Properties();
+        try {
+            props.load(stream);
+            return getReleaseIdFromProperties(props, path);
+        } catch (IOException e) {
+            throw new RuntimeException("pom.properties was malformed\n" + path, e);
+        }
     }
 
-    public static String resolveVersion(String versionString, PomModel projectPomModel) {
-        if (projectPomModel != null) {
-            if (PROJECT_VERSION_MAVEN_PROPERTY.equals(versionString)) {
-                return projectPomModel.getReleaseId().getVersion();
-            } else if (PARENT_VERSION_MAVEN_PROPERTY.equals(versionString)
-                    && (projectPomModel.getParentReleaseId() != null)) {
-                return projectPomModel.getParentReleaseId().getVersion();
-            } else {
-                return versionString;
-            }
-        } else {
-            return versionString;
+    private static ReleaseId getReleaseIdFromProperties( Properties props, String path ) {
+        String groupId = props.getProperty("groupId");
+        String artifactId = props.getProperty("artifactId");
+        String version = props.getProperty("version");
+        if (StringUtils.isEmpty(groupId) || StringUtils.isEmpty(artifactId) || StringUtils.isEmpty(version)) {
+            throw new RuntimeException("pom.properties exists but ReleaseId content is malformed\n" + path);
         }
+        return new ReleaseIdImpl( groupId, artifactId, version);
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return type == null || type.equals("jar") ?
+                groupId + ":" + artifactId + ":" + version :
+                groupId + ":" + artifactId + ":" + type + ":" + version;
+    }
+
+    public String toExternalForm() {
+        return toString();
+    }
+
+    public String getPomXmlPath() {
+        return getPomXmlPath(this);
+    }
+
+    public String getPomPropertiesPath() {
+        return getPomPropertiesPath(this);
+    }
+
+    public static String getPomXmlPath(ReleaseId releaseId) {
+        return "META-INF/maven/" + releaseId.getGroupId() + "/" + releaseId.getArtifactId() + "/pom.xml";
+    }
+
+    public static String getPomPropertiesPath(ReleaseId releaseId) {
+        return "META-INF/maven/" + releaseId.getGroupId() + "/" + releaseId.getArtifactId() + "/pom.properties";
+    }
+
+
+    public String getCompilationCachePathPrefix() {
+        //return "META-INF/maven/" + groupId + "/" + artifactId + "/";
+        return "META-INF/";
+    }
+
+    public boolean isSnapshot() {
+        return version.endsWith("-SNAPSHOT");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ReleaseIdImpl)) {
+            return false;
+        }
+
+        ReleaseIdImpl that = (ReleaseIdImpl) o;
+        return equalsIgnoreNull(artifactId,
+                                that.artifactId) && equalsIgnoreNull(groupId,
+                                                                     that.groupId) &&
+                equalsIgnoreNull(version,
+                                 that.version) && equalsIgnoreNull(type,
+                                                                   that.type);
+    }
+
+    private boolean equalsIgnoreNull(Object o1,
+                                     Object o2) {
+        return o1 != null ? o1.equals(o2) : o2 == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = groupId != null ? groupId.hashCode() : 0;
+        result = 29 * result + (artifactId != null ? artifactId.hashCode() : 0);
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 37 * result + (type != null ? type.hashCode() : 0);
+        return result;
+    }
+
+    public String getSnapshotVersion() {
+        return snapshotVersion;
+    }
+
+    public void setSnapshotVersion(String snapshotVersion) {
+        this.snapshotVersion = snapshotVersion;
     }
 
 }

@@ -26,17 +26,17 @@ import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyAcceptor;
 
 public class SerializablePlaceholderResolverStrategy
-    implements
-    ObjectMarshallingStrategy {
+        implements
+        ObjectMarshallingStrategy {
 
     private int index;
-    
+
     private ObjectMarshallingStrategyAcceptor acceptor;
-    
+
     public SerializablePlaceholderResolverStrategy(ObjectMarshallingStrategyAcceptor acceptor) {
         this.acceptor = acceptor;
     }
-    
+
     public int getIndex() {
         return this.index;
     }
@@ -46,7 +46,7 @@ public class SerializablePlaceholderResolverStrategy
     }
 
     public Object read(ObjectInputStream os) throws IOException,
-                                                       ClassNotFoundException {
+            ClassNotFoundException {
         return  os.readObject();
     }
 
@@ -62,34 +62,35 @@ public class SerializablePlaceholderResolverStrategy
     public byte[] marshal(Context context,
                           ObjectOutputStream os,
                           Object object) throws IOException {
-        
+
         SerializablePlaceholderStrategyContext ctx = (SerializablePlaceholderStrategyContext)context;
         int index = ctx.data.size();
         ctx.data.add( object );
         return PersisterHelper.intToByteArray( index );
     }
 
-    public Object unmarshal(Context context,
+    public Object unmarshal(String dataType,
+                            Context context,
                             ObjectInputStream is,
-                            byte[] object, 
+                            byte[] object,
                             ClassLoader classloader) throws IOException, ClassNotFoundException {
         SerializablePlaceholderStrategyContext ctx = (SerializablePlaceholderStrategyContext)context;
         return ctx.data.get( PersisterHelper.byteArrayToInt( object ) );
     }
-    
+
     public Context createContext() {
         return new SerializablePlaceholderStrategyContext();
     }
-    
+
     protected static class SerializablePlaceholderStrategyContext implements Context {
         // this data map is used when marshalling out objects in order
         // to preserve graph references without cloning objects all over
         // the place.
-        public List<Object> data = new ArrayList<>();
+        public List<Object> data = new ArrayList<Object>();
 
         @SuppressWarnings("unchecked")
         public void read(ObjectInputStream ois) throws IOException,
-                                               ClassNotFoundException {
+                ClassNotFoundException {
             this.data = (List<Object>) ois.readObject();
         }
 

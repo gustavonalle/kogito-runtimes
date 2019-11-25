@@ -35,14 +35,24 @@ import org.drools.modelcompiler.CanonicalKieModule;
 import org.kie.api.builder.Message;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.jci.CompilationProblem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.groupingBy;
 
 import static org.drools.modelcompiler.builder.JavaParserCompiler.getCompiler;
 
-;
-
 public class CanonicalModelKieProject extends KieModuleKieProject {
+
+    Logger logger = LoggerFactory.getLogger(CanonicalModelKieProject.class);
+
+    public static final String PROJECT_RUNTIME_CLASS = "org.drools.project.model.ProjectRuntime";
+    public static final String PROJECT_RUNTIME_RESOURCE_CLASS = PROJECT_RUNTIME_CLASS.replace('.', '/') + ".class";
+    protected static final String PROJECT_RUNTIME_SOURCE = PROJECT_RUNTIME_CLASS.replace('.', '/') + ".java";
+
+    public static final String PROJECT_MODEL_CLASS = "org.drools.project.model.ProjectModel";
+    public static final String PROJECT_MODEL_RESOURCE_CLASS = PROJECT_MODEL_CLASS.replace('.', '/') + ".class";
+    protected static final String PROJECT_MODEL_SOURCE = PROJECT_MODEL_CLASS.replace('.', '/') + ".java";
 
     private final boolean isPattern;
 
@@ -66,6 +76,10 @@ public class CanonicalModelKieProject extends KieModuleKieProject {
         ModelBuilderImpl modelBuilder = new ModelBuilderImpl(getBuilderConfiguration( kBaseModel, kModule ), kModule.getReleaseId(), isPattern);
         modelBuilders.add(modelBuilder);
         return modelBuilder;
+    }
+
+    protected boolean isOneClassPerRule() {
+        return false;
     }
 
     @Override

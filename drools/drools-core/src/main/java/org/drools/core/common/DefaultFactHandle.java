@@ -34,10 +34,12 @@ import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.rule.EntryPointId;
+import org.drools.core.ruleunit.InternalDataStore;
 import org.drools.core.spi.Tuple;
 import org.drools.core.util.AbstractBaseLinkedListNode;
 import org.drools.core.util.StringUtils;
 import org.kie.api.runtime.rule.FactHandle;
+import org.kie.kogito.rules.DataHandle;
 
 /**
  * Implementation of <code>FactHandle</code>.
@@ -45,8 +47,8 @@ import org.kie.api.runtime.rule.FactHandle;
 @XmlRootElement(name = "fact-handle")
 @XmlAccessorType(XmlAccessType.NONE)
 public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHandle>
-                              implements
-                              InternalFactHandle {
+        implements
+        InternalFactHandle {
 
     // ----------------------------------------------------------------------
     // Instance members
@@ -149,11 +151,11 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
     }
 
     public DefaultFactHandle(long id,
-            String wmEntryPointId,
-            int identityHashCode,
-            int objectHashCode,
-            long recency,
-            Object object) {
+                             String wmEntryPointId,
+                             int identityHashCode,
+                             int objectHashCode,
+                             long recency,
+                             Object object) {
         this.id = id;
         this.entryPointId = new EntryPointId( wmEntryPointId );
         this.recency = recency;
@@ -240,23 +242,23 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
 
     /**
      * format_version:id:identity:hashcode:recency
-     * 
+     *
      * @see FactHandle
      */
     public final String toExternalForm() {
         return getFormatVersion() + ":" + this.id +
-               ":" +
-               getIdentityHashCode() +
-               ":" +
-               getObjectHashCode() +
-               ":" +
-               getRecency() +
-               ":" +
+                ":" +
+                getIdentityHashCode() +
+                ":" +
+                getObjectHashCode() +
+                ":" +
+                getRecency() +
+                ":" +
                 ( ( this.entryPointId != null ) ? this.entryPointId.getEntryPointId() : "null" ) +
-               ":" +
-               this.traitType.name() +
-               ":" +
-               this.objectClassName;
+                ":" +
+                this.traitType.name() +
+                ":" +
+                this.objectClassName;
     }
 
     protected String getFormatVersion() {
@@ -372,8 +374,8 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
 
     private void setLinkedTuples( InternalKnowledgeBase kbase ) {
         linkedTuples = kbase != null && kbase.getConfiguration().isMultithreadEvaluation() ?
-                       new CompositeLinkedTuples() :
-                       new SingleLinkedTuples();
+                new CompositeLinkedTuples() :
+                new SingleLinkedTuples();
     }
 
     public void addFirstLeftTuple( LeftTuple leftTuple ) {
@@ -418,9 +420,10 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         clone.linkedTuples = this.linkedTuples.clone();
 
         clone.objectHashCode = this.objectHashCode;
+        clone.identityHashCode = System.identityHashCode( clone.object );
         clone.disconnected = this.disconnected;
+        clone.traitType = this.traitType;
         clone.negated = this.negated;
-        clone.wmEntryPoint = this.wmEntryPoint;
         return clone;
     }
 
@@ -456,7 +459,7 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         handle.objectHashCode = Integer.parseInt( elements[3] );
         handle.recency = Long.parseLong( elements[4] );
         handle.entryPointId = StringUtils.isEmpty( elements[5] ) || "null".equals( elements[5].trim() ) ?
-                            null :
+                                      null :
                             new EntryPointId( elements[5].trim() );
         handle.disconnected = true;
         handle.traitType = elements.length > 6 ? TraitTypeEnum.valueOf( elements[6] ) : TraitTypeEnum.NON_TRAIT;
@@ -509,11 +512,6 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
             clone.firstRightTuple = this.firstRightTuple;
             clone.lastRightTuple = this.lastRightTuple;
             return clone;
-        }
-
-        @Override
-        public LinkedTuples newInstance() {
-            return new SingleLinkedTuples();
         }
 
         public void addFirstLeftTuple( LeftTuple leftTuple ) {
@@ -776,11 +774,6 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         }
 
         @Override
-        public LinkedTuples newInstance() {
-            return new CompositeLinkedTuples();
-        }
-
-        @Override
         public LinkedTuples clone() {
             CompositeLinkedTuples clone = new CompositeLinkedTuples();
             for (int i = 0; i < partitionedTuples.length; i++) {
@@ -866,10 +859,10 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         @Override
         public RightTuple findFirstRightTuple( Predicate<RightTuple> rightTuplePredicate ) {
             return Stream.of( partitionedTuples )
-                         .map( t -> t.findFirstRightTuple( rightTuplePredicate ) )
-                         .filter( Objects::nonNull )
-                         .findFirst()
-                         .orElse( null );
+                    .map( t -> t.findFirstRightTuple( rightTuplePredicate ) )
+                    .filter( Objects::nonNull )
+                    .findFirst()
+                    .orElse( null );
         }
 
         @Override
@@ -886,10 +879,10 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         @Override
         public LeftTuple findFirstLeftTuple( Predicate<LeftTuple> lefttTuplePredicate ) {
             return Stream.of( partitionedTuples )
-                         .map( t -> t.findFirstLeftTuple( lefttTuplePredicate ) )
-                         .filter( Objects::nonNull )
-                         .findFirst()
-                         .orElse( null );
+                    .map( t -> t.findFirstLeftTuple( lefttTuplePredicate ) )
+                    .filter( Objects::nonNull )
+                    .findFirst()
+                    .orElse( null );
         }
 
         @Override

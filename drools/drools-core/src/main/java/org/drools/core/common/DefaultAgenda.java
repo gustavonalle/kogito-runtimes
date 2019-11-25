@@ -378,7 +378,7 @@ public class DefaultAgenda
     }
 
     @Override
-    public boolean isRuleActiveInRuleFlowGroup(String ruleflowGroupName, String ruleName, long processInstanceId) {
+    public boolean isRuleActiveInRuleFlowGroup(String ruleflowGroupName, String ruleName, String processInstanceId) {
         return isRuleInstanceAgendaItem(ruleflowGroupName, ruleName, processInstanceId);
     }
 
@@ -617,18 +617,18 @@ public class DefaultAgenda
     @Override
     public void activateRuleFlowGroup(final String name) {
         InternalRuleFlowGroup group =  (InternalRuleFlowGroup) getRuleFlowGroup( name );
-        activateRuleFlowGroup( group, -1, null );
+        activateRuleFlowGroup( group, null, null );
     }
 
     @Override
     public void activateRuleFlowGroup(final String name,
-                                      long processInstanceId,
+                                      String processInstanceId,
                                       String nodeInstanceId) {
         InternalRuleFlowGroup ruleFlowGroup = (InternalRuleFlowGroup) getRuleFlowGroup( name );
         activateRuleFlowGroup( ruleFlowGroup, processInstanceId, nodeInstanceId );
     }
 
-    public void activateRuleFlowGroup(final InternalRuleFlowGroup group, long processInstanceId, String nodeInstanceId) {
+    public void activateRuleFlowGroup(final InternalRuleFlowGroup group, String processInstanceId, String nodeInstanceId) {
         this.workingMemory.getAgendaEventSupport().fireBeforeRuleFlowGroupActivated( group, this.workingMemory );
         group.setActive( true );
         group.hasRuleFlowListener(true);
@@ -949,7 +949,7 @@ public class DefaultAgenda
     @Override
     public boolean isRuleInstanceAgendaItem(String ruleflowGroupName,
                                             String ruleName,
-                                            long processInstanceId) {
+                                            String processInstanceId) {
         propagationList.flush();
         RuleFlowGroup systemRuleFlowGroup = this.getRuleFlowGroup( ruleflowGroupName );
 

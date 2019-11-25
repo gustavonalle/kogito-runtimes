@@ -352,7 +352,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void activateRuleFlowGroup( String name, long processInstanceId, String nodeInstanceId ) {
+    public void activateRuleFlowGroup( String name, String processInstanceId, String nodeInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.activateRuleFlowGroup -> TODO" );
     }
 
@@ -447,7 +447,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public boolean isRuleInstanceAgendaItem( String ruleflowGroupName, String ruleName, long processInstanceId ) {
+    public boolean isRuleInstanceAgendaItem( String ruleflowGroupName, String ruleName, String processInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.isRuleInstanceAgendaItem -> TODO" );
     }
 
@@ -578,7 +578,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public boolean isRuleActiveInRuleFlowGroup( String ruleflowGroupName, String ruleName, long processInstanceId ) {
+    public boolean isRuleActiveInRuleFlowGroup( String ruleflowGroupName, String ruleName, String processInstanceId ) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.isRuleActiveInRuleFlowGroup -> TODO" );
     }
 

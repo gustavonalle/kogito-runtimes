@@ -217,6 +217,10 @@ public class KieServicesImpl implements InternalKieServices {
         return file.isDirectory() ? new KieBuilderImpl(file) : newKieBuilder(new KieFileSystemImpl(readFromJar(file)));
     }
     
+    public KieBuilder newKieBuilder(File file, ClassLoader classLoader) {
+        return file.isDirectory() ? new KieBuilderImpl(file, classLoader) : newKieBuilder(new KieFileSystemImpl(readFromJar(file)), classLoader);
+    }
+
     public KieBuilder newKieBuilder(KieFileSystem kieFileSystem) {
         return new KieBuilderImpl(kieFileSystem);
     }    

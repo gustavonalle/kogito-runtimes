@@ -16,7 +16,6 @@
 
 package org.drools.core.common;
 
-import java.io.Serializable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -25,14 +24,15 @@ import org.drools.core.factmodel.traits.TraitTypeEnum;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.rule.EntryPointId;
+import org.drools.core.ruleunit.InternalDataStore;
 import org.drools.core.ruleunit.impl.ListDataStore;
 import org.drools.core.spi.Tuple;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.kogito.rules.DataHandle;
 
 public interface InternalFactHandle
-    extends
-    FactHandle, Cloneable, Serializable {
+        extends
+        FactHandle, Cloneable {
     long getId();
 
     long getRecency();
@@ -50,20 +50,20 @@ public interface InternalFactHandle
     void setRecency(long recency);
 
     void invalidate();
-    
+
     boolean isValid();
-    
+
     int getIdentityHashCode();
 
     int getObjectHashCode();
-    
+
     boolean isDisconnected();
-    
+
     /**
      * Returns true if this FactHandle represents
      * and Event or false if this FactHandle represents
      * a regular Fact
-     * 
+     *
      * @return
      */
     boolean isEvent();
@@ -75,7 +75,7 @@ public interface InternalFactHandle
     boolean isTraiting();
 
     TraitTypeEnum getTraitType();
-    
+
     RightTuple getFirstRightTuple();
 
     LeftTuple getFirstLeftTuple();
@@ -91,9 +91,9 @@ public interface InternalFactHandle
     WorkingMemoryEntryPoint getEntryPoint(InternalWorkingMemory wm);
 
     InternalFactHandle clone();
-    
+
     String toExternalForm();
-    
+
     void disconnect();
 
     void addFirstLeftTuple(LeftTuple leftTuple);
@@ -135,15 +135,8 @@ public interface InternalFactHandle
 
     LinkedTuples getLinkedTuples();
 
-    DataHandle getDataHandle();
-
-    <T> void setDataStore(ListDataStore<T> tListDataStore);
-
-    void setDataHandle(DataHandle dh);
-
-    interface LinkedTuples extends Serializable {
+    interface LinkedTuples {
         LinkedTuples clone();
-        LinkedTuples newInstance();
 
         void addFirstLeftTuple( LeftTuple leftTuple );
         void addLastLeftTuple( LeftTuple leftTuple );
@@ -183,13 +176,15 @@ public interface InternalFactHandle
         }
     }
 
-    default InternalFactHandle getParentHandle() {
+    default InternalDataStore<?> getDataStore() {
         return null;
     }
+    default void setDataStore( InternalDataStore<?> dataStore ) { }
 
-    default void setParentHandle( InternalFactHandle parentHandle ) {
-        throw new UnsupportedOperationException();
+    default DataHandle getDataHandle() {
+        return null;
     }
+    default void setDataHandle( DataHandle dataHandle ) { }
 
     static InternalFactHandle dummyFactHandleOf(Object object) {
         return new DummyFactHandle( object );
@@ -312,7 +307,6 @@ public interface InternalFactHandle
         public WorkingMemoryEntryPoint getEntryPoint( InternalWorkingMemory wm ) {
             throw new UnsupportedOperationException();
         }
-
 
         @Override
         public InternalFactHandle clone() {
@@ -444,10 +438,10 @@ public interface InternalFactHandle
             return null;
         }
 
-        @Override
-        public <T> void setDataStore(ListDataStore<T> tListDataStore) {
-
-        }
+//        @Override
+//        public <T> void setDataStore(ListDataStore<T> tListDataStore) {
+//
+//        }
 
         @Override
         public void setDataHandle(DataHandle dh) {

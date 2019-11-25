@@ -26,7 +26,7 @@ import org.drools.compiler.compiler.BPMN2ProcessFactory;
 import org.drools.compiler.compiler.CMMNCaseFactory;
 import org.drools.compiler.lang.descr.CompositePackageDescr;
 import org.drools.compiler.lang.descr.PackageDescr;
-import org.drools.core.builder.conf.impl.JaxbConfigurationImpl;
+//import org.drools.core.builder.conf.impl.JaxbConfigurationImpl;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
@@ -289,10 +289,10 @@ public class CompositeKnowledgeBuilderImpl implements CompositeKnowledgeBuilder 
 
 
         ResourceBuilder XSD_RESOURCE_BUILDER = ( kBuilder, resourceDescr ) -> {
-            if (resourceDescr.configuration instanceof JaxbConfigurationImpl) {
-                // if the xsd file doesn't have a jaxb configuration it doesn't belong to the kprojact and then can be skipped
-                kBuilder.addPackageFromXSD( resourceDescr.resource, (JaxbConfigurationImpl) resourceDescr.configuration );
-            }
+//   fixme api change         if (resourceDescr.configuration instanceof JaxbConfigurationImpl) {
+//                // if the xsd file doesn't have a jaxb configuration it doesn't belong to the kprojact and then can be skipped
+//                kBuilder.addPackageFromXSD( resourceDescr.resource, (JaxbConfigurationImpl) resourceDescr.configuration );
+//            }
         };
 
         ResourceBuilder SCD_RESOURCE_BUILDER = ( kBuilder, resourceDescr ) -> kBuilder.addPackageFromScoreCard(resourceDescr.resource, resourceDescr.configuration);

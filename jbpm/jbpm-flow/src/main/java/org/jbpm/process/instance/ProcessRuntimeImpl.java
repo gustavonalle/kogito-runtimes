@@ -33,6 +33,8 @@ import org.drools.core.marshalling.impl.MarshallerWriteContext;
 import org.drools.core.marshalling.impl.ProtobufMessages.ActionQueue.Action;
 import org.drools.core.phreak.PropagationEntry;
 import org.drools.core.time.TimeUtils;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.impl.CommandServiceTimerJobFactoryManager;
 import org.drools.core.time.impl.ThreadSafeTrackableTimeJobFactoryManager;
 import org.jbpm.process.core.event.EventFilter;
 import org.jbpm.process.core.event.EventTransformer;
@@ -73,8 +75,6 @@ import org.kie.kogito.services.uow.DefaultUnitOfWorkManager;
 import org.kie.kogito.signal.SignalManager;
 import org.kie.kogito.uow.UnitOfWorkManager;
 import org.kie.services.jobs.impl.InMemoryJobService;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.impl.CommandServiceTimerJobFactoryManager;
 
 public class ProcessRuntimeImpl implements InternalProcessRuntime {
 	

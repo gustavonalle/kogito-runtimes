@@ -29,6 +29,8 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.drools.core.RuleBaseConfiguration;
+import org.drools.core.addon.ClassTypeResolver;
+import org.drools.core.addon.TypeResolver;
 import org.drools.core.base.ClassFieldAccessorCache;
 import org.drools.core.base.ClassObjectType;
 import org.drools.core.base.DroolsQuery;
@@ -140,11 +142,13 @@ import static java.util.stream.Collectors.toList;
 import static org.drools.compiler.rule.builder.RuleBuilder.buildTimer;
 import static org.drools.core.rule.GroupElement.AND;
 import static org.drools.core.rule.Pattern.getReadAcessor;
+import static org.drools.model.DSL.entryPoint;
 import static org.drools.model.FlowDSL.declarationOf;
-import static org.drools.model.FlowDSL.entryPoint;
+import static org.drools.model.bitmask.BitMaskUtil.calculatePatternMask;
 import static org.drools.model.functions.FunctionUtils.toFunctionN;
 import static org.drools.model.impl.NamesGenerator.generateName;
 import static org.drools.modelcompiler.facttemplate.FactFactory.prototypeToFactTemplate;
+import static org.drools.modelcompiler.util.EvaluationUtil.adaptBitMask;
 import static org.drools.modelcompiler.util.MvelUtil.createMvelObjectExpression;
 import static org.drools.modelcompiler.util.TypeDeclarationUtil.createTypeDeclaration;
 
@@ -213,7 +217,9 @@ public class KiePackagesBuilder {
     private KnowledgePackageImpl createKiePackage(String name) {
         KnowledgePackageImpl kpkg = new KnowledgePackageImpl( name );
         kpkg.setClassFieldAccessorCache(new ClassFieldAccessorCache( getClassLoader() ) );
-        kpkg.setClassLoader( getClassLoader() );
+        TypeResolver typeResolver = new ClassTypeResolver(new HashSet<>(kpkg.getImports().keySet() ), getClassLoader(), name );
+        typeResolver.addImport( name + ".*" );
+        kpkg.setTypeResolver(typeResolver);
         return kpkg;
     }
 
@@ -223,7 +229,6 @@ public class KiePackagesBuilder {
         ruleImpl.setPackage( rule.getPackage() );
         if (rule.getUnit() != null) {
             ruleImpl.setRuleUnitClassName( rule.getUnit() );
-            pkg.getRuleUnitDescriptionLoader().getDescription(ruleImpl );
         }
         RuleContext ctx = new RuleContext( this, pkg, ruleImpl );
         populateLHS( ctx, pkg, rule.getView() );
@@ -643,6 +648,13 @@ public class KiePackagesBuilder {
 
         addConstraintsToPattern( ctx, pattern, modelPattern.getConstraint() );
         addFieldsToPatternWatchlist( pattern, modelPattern.getWatchedProps() );
+
+        if (pattern.getListenedProperties() != null && modelPattern.getPatternClassMetadata() != null) {
+            String[] listenedProperties = pattern.getListenedProperties().toArray( new String[pattern.getListenedProperties().size()] );
+            pattern.setPositiveWatchMask( adaptBitMask( calculatePatternMask( modelPattern.getPatternClassMetadata(), true, listenedProperties ) ) );
+            pattern.setNegativeWatchMask( adaptBitMask( calculatePatternMask( modelPattern.getPatternClassMetadata(), false, listenedProperties ) ) );
+        }
+
         return pattern;
     }
 
@@ -801,7 +813,7 @@ public class KiePackagesBuilder {
                     pattern.setSource(fromSource);
                 } else if ( decl.getSource() instanceof UnitData ) {
                     UnitData unitData = (UnitData ) decl.getSource();
-                    pattern.setSource( new EntryPointId( ctx.getRule().getRuleUnitClassName() + "." + unitData.getName() ) );
+                    pattern.setSource( new EntryPointId( unitData.getName() ) );
                 } else {
                     throw new UnsupportedOperationException( "Unknown source: " + decl.getSource() );
                 }

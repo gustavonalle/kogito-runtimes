@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kie.internal.ruleunit.RuleUnitDescription;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;

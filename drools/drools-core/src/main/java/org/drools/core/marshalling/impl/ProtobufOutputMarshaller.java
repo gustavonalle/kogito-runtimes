@@ -199,7 +199,7 @@ public class ProtobufOutputMarshaller {
 
                 // this now just assigns the writer, it will not write out any timer information
                 context.parameterObject = _pdata;
-                processMarshaller.writeProcessTimers( context );
+//                FIXME API CHANGE processMarshaller.writeProcessTimers( context );
 
                 _session.setProcessData( _pdata.build() );
             }
@@ -304,10 +304,10 @@ public class ProtobufOutputMarshaller {
                     .setHasRuleFlowLister( group.isRuleFlowListener() )
                     .setActivatedForRecency( group.getActivatedForRecency() );
 
-            Map<Long, String> nodeInstances = group.getNodeInstances();
-            for ( Map.Entry<Long, String> entry : nodeInstances.entrySet() ) {
+            Map<String, String> nodeInstances = group.getNodeInstances();
+            for ( Map.Entry<String, String> entry : nodeInstances.entrySet() ) {
                 org.drools.core.marshalling.impl.ProtobufMessages.Agenda.AgendaGroup.NodeInstance.Builder _nib = ProtobufMessages.Agenda.AgendaGroup.NodeInstance.newBuilder();
-                _nib.setProcessInstanceId( entry.getKey() );
+                _nib.setProcessInstanceId( Long.parseLong(entry.getKey()) ); // fixme API change
                 _nib.setNodeInstanceId( entry.getValue() );
                 _agb.addNodeInstance( _nib.build() );
             }

@@ -108,9 +108,9 @@ import org.drools.compiler.rule.builder.RuleBuildContext;
 import org.drools.compiler.rule.builder.RuleBuilder;
 import org.drools.compiler.rule.builder.RuleConditionBuilder;
 import org.drools.compiler.rule.builder.dialect.DialectError;
-import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
+//import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
 import org.drools.core.base.ClassFieldAccessorCache;
-import org.drools.core.builder.conf.impl.JaxbConfigurationImpl;
+//import org.drools.core.builder.conf.impl.JaxbConfigurationImpl;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.impl.KnowledgePackageImpl;
 import org.drools.core.definitions.rule.impl.RuleImpl;
@@ -741,8 +741,8 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
                 addPackageFromInputStream(resource);
             } else if (ResourceType.CHANGE_SET.equals(type)) {
                 addPackageFromChangeSet(resource);
-            } else if (ResourceType.XSD.equals(type)) {
-                addPackageFromXSD(resource, (JaxbConfigurationImpl) configuration);
+//   fixme api         } else if (ResourceType.XSD.equals(type)) {
+//                addPackageFromXSD(resource, (JaxbConfigurationImpl) configuration);
             } else if (ResourceType.SCARD.equals(type)) {
                 addPackageFromScoreCard(resource, configuration);
             } else if (ResourceType.TDRL.equals(type)) {
@@ -782,18 +782,18 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         assemblers.addResources(this, resources, type);
     }
 
-    void addPackageFromXSD(Resource resource,
-                           JaxbConfigurationImpl configuration) throws IOException {
-        if (configuration != null) {
-            String[] classes = DroolsJaxbHelperProviderImpl.addXsdModel(resource,
-                                                                        this,
-                                                                        configuration.getXjcOpts(),
-                                                                        configuration.getSystemId());
-            for (String cls : classes) {
-                configuration.getClasses().add(cls);
-            }
-        }
-    }
+//   fixme api change void addPackageFromXSD(Resource resource,
+//                           JaxbConfigurationImpl configuration) throws IOException {
+//        if (configuration != null) {
+//            String[] classes = DroolsJaxbHelperProviderImpl.addXsdModel(resource,
+//                                                                        this,
+//                                                                        configuration.getXjcOpts(),
+//                                                                        configuration.getSystemId());
+//            for (String cls : classes) {
+//                configuration.getClasses().add(cls);
+//            }
+//        }
+//    }
 
     void addPackageFromChangeSet(Resource resource) throws SAXException,
             IOException {
@@ -1521,11 +1521,11 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder,
         try {
             // merge globals
             if (newPkg.getGlobals() != null && !newPkg.getGlobals().isEmpty()) {
-                Map<String, String> pkgGlobals = pkg.getGlobals();
+                Map<String, Class<?>> pkgGlobals = pkg.getGlobals();
                 // Add globals
-                for (final Map.Entry<String, String> entry : newPkg.getGlobals().entrySet()) {
+                for (final Map.Entry<String, Class<?>> entry : newPkg.getGlobals().entrySet()) {
                     final String identifier = entry.getKey();
-                    final String type = entry.getValue();
+                    final String type = entry.getValue().getCanonicalName();
                     lastType = type;
                     if (pkgGlobals.containsKey(identifier) && !pkgGlobals.get(identifier).equals(type)) {
                         throw new RuntimeException(pkg.getName() + " cannot be integrated");

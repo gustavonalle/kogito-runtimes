@@ -28,10 +28,8 @@ import java.util.function.Supplier;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.appformer.maven.support.AFReleaseId;
-import org.appformer.maven.support.AFReleaseIdImpl;
-import org.appformer.maven.support.DependencyFilter;
-import org.appformer.maven.support.PomModel;
+import org.drools.compiler.addon.DependencyFilter;
+import org.drools.compiler.addon.PomModel;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.commons.jci.compilers.CompilationResult;
 import org.drools.compiler.commons.jci.compilers.EclipseJavaCompiler;
@@ -40,6 +38,7 @@ import org.drools.compiler.commons.jci.compilers.JavaCompilerFactory;
 import org.drools.compiler.commons.jci.readers.DiskResourceReader;
 import org.drools.compiler.commons.jci.readers.ResourceReader;
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
+import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.compiler.kproject.models.KieModuleModelImpl;
 import org.drools.compiler.rule.builder.dialect.java.JavaDialectConfiguration;
 import org.drools.core.builder.conf.impl.ResourceConfigurationImpl;
@@ -95,7 +94,7 @@ public class KieBuilderImpl
     private InternalKieModule kModule;
 
     private byte[] pomXml;
-    private AFReleaseId releaseId;
+    private ReleaseId releaseId;
 
     private byte[] kModuleModelXml;
     private KieModuleModel kModuleModel;
@@ -104,12 +103,19 @@ public class KieBuilderImpl
 
     private KieBuilderSetImpl kieBuilderSet;
 
-    private ClassLoader classLoader;
+    private final ClassLoader classLoader;
 
     private PomModel pomModel;
 
-    
+    private boolean enforceResourceLocation = true;
+
     public KieBuilderImpl( File file ) {
+        this( file, null );
+    }
+
+    public KieBuilderImpl( File file,
+                           ClassLoader classLoader ) {
+        this.classLoader = classLoader;
         this.srcMfs = new DiskResourceReader( file );
     }
 
@@ -134,7 +140,7 @@ public class KieBuilderImpl
     @Override
     public KieBuilder setDependencies( Resource... resources ) {
         KieRepositoryImpl kr = (KieRepositoryImpl) KieServices.Factory.get().getRepository();
-        List<KieModule> list = new ArrayList<>();
+        List<KieModule> list = new ArrayList<KieModule>();
         for ( Resource res : resources ) {
             InternalKieModule depKieMod = (InternalKieModule) kr.getKieModule( res );
             list.add( depKieMod );
@@ -166,8 +172,8 @@ public class KieBuilderImpl
 
             // add all the pom dependencies to this builder ... not sure this is a good idea (?)
             KieRepositoryImpl repository = (KieRepositoryImpl) ks.getRepository();
-            for ( AFReleaseId dep : actualPomModel.getDependencies( DependencyFilter.COMPILE_FILTER ) ) {
-                KieModule depModule = repository.getKieModule( adapt( dep, actualPomModel ), actualPomModel );
+            for ( ReleaseId dep : pomModel.getDependencies( DependencyFilter.COMPILE_FILTER ) ) {
+                KieModule depModule = repository.getKieModule( adapt( dep ), pomModel );
                 if ( depModule != null ) {
                     addKieDependency( depModule );
                 }
@@ -194,6 +200,10 @@ public class KieBuilderImpl
 
     @Override
     public KieBuilder buildAll( Class<? extends ProjectType> projectClass ) {
+        return buildAll( projectClass, o -> true );
+    }
+
+    public KieBuilder buildAll( Class<? extends ProjectType> projectClass, Predicate<String> classFilter ) {
         try {
             BiFunction<InternalKieModule, ClassLoader, KieModuleKieProject> kprojectSupplier =
                     (BiFunction<InternalKieModule, ClassLoader, KieModuleKieProject>) projectClass.getField( "SUPPLIER" ).get( null );
@@ -206,6 +216,10 @@ public class KieBuilderImpl
     @Override
     public KieBuilder buildAll( Predicate<String> classFilter ) {
         return buildAll( KieModuleKieProject::new, classFilter );
+    }
+
+    private KieBuilder buildAll(BiFunction<InternalKieModule, ClassLoader, KieModuleKieProject> kprojectSupplier) {
+        return buildAll( kprojectSupplier, o -> true );
     }
 
     public KieBuilder buildAll( BiFunction<InternalKieModule, ClassLoader, KieModuleKieProject> kprojectSupplier, Predicate<String> classFilter ) {
@@ -254,9 +268,9 @@ public class KieBuilderImpl
         new KieMetaInfoBuilder( kModule ).writeKieModuleMetaInfo( trgMfs );
     }
 
-    public static String getCompilationCachePath( AFReleaseId releaseId,
+    public static String getCompilationCachePath( ReleaseId releaseId,
                                                   String kbaseName ) {
-        return ( (AFReleaseIdImpl) releaseId ).getCompilationCachePathPrefix() + kbaseName.replace( '.', '/' ) + "/kbase.cache";
+        return ( (ReleaseIdImpl) releaseId ).getCompilationCachePathPrefix() + kbaseName.replace( '.', '/' ) + "/kbase.cache";
     }
 
     public static void buildKieModule( InternalKieModule kModule,
@@ -440,7 +454,11 @@ public class KieBuilderImpl
     }
 
     public static boolean isPackageInKieBase( KieBaseModel kieBaseModel, String pkgName ) {
-        for ( String candidatePkg : kieBaseModel.getPackages() ) {
+        return isPackageInKieBase( kieBaseModel.getName(), kieBaseModel.getPackages(), pkgName );
+    }
+
+    public static boolean isPackageInKieBase( String kieBaseName, List<String> kieBasePackages, String pkgName ) {
+        for ( String candidatePkg : kieBasePackages ) {
             boolean isNegative = candidatePkg.startsWith( "!" );
             if ( isNegative ) {
                 candidatePkg = candidatePkg.substring( 1 );
@@ -454,8 +472,8 @@ public class KieBuilderImpl
                 if ( relativePkgNameForFile.equals( pkgNameNoWildcard ) || relativePkgNameForFile.startsWith( pkgNameNoWildcard + "." ) ) {
                     return !isNegative;
                 }
-                if ( relativePkgNameForFile.startsWith( kieBaseModel.getName() + "." ) ) {
-                    relativePkgNameForFile = relativePkgNameForFile.substring( kieBaseModel.getName().length() + 1 );
+                if ( relativePkgNameForFile.startsWith( kieBaseName + "." ) ) {
+                    relativePkgNameForFile = relativePkgNameForFile.substring( kieBaseName.length() + 1 );
                     if ( relativePkgNameForFile.equals( pkgNameNoWildcard ) || relativePkgNameForFile.startsWith( pkgNameNoWildcard + "." ) ) {
                         return !isNegative;
                     }
@@ -578,7 +596,7 @@ public class KieBuilderImpl
     }
 
     public static void validatePomModel( PomModel pomModel ) {
-        AFReleaseId pomReleaseId = pomModel.getReleaseId();
+        ReleaseId pomReleaseId = pomModel.getReleaseId();
         if ( StringUtils.isEmpty( pomReleaseId.getGroupId() ) || StringUtils.isEmpty( pomReleaseId.getArtifactId() ) || StringUtils.isEmpty( pomReleaseId.getVersion() ) ) {
             throw new RuntimeException( "Maven pom.properties exists but ReleaseId content is malformed" );
         }
@@ -597,7 +615,7 @@ public class KieBuilderImpl
         addMetaInfBuilder();
 
         if ( pomXml != null ) {
-            AFReleaseIdImpl g = (AFReleaseIdImpl) releaseId;
+            ReleaseIdImpl g = (ReleaseIdImpl) releaseId;
             trgMfs.write( g.getPomXmlPath(),
                           pomXml,
                           true );
@@ -614,7 +632,7 @@ public class KieBuilderImpl
         }
     }
 
-    public static String generatePomXml( AFReleaseId releaseId ) {
+    public static String generatePomXml( ReleaseId releaseId ) {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append( "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" );
         sBuilder.append( "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\"> \n" );
@@ -640,7 +658,7 @@ public class KieBuilderImpl
         return sBuilder.toString();
     }
 
-    public static String generatePomProperties( AFReleaseId releaseId ) {
+    public static String generatePomProperties( ReleaseId releaseId ) {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append( "groupId=" );
         sBuilder.append( releaseId.getGroupId() );
@@ -779,13 +797,8 @@ public class KieBuilderImpl
 
     @Override
     public KieBuilderSet createFileSet( String... files ) {
-        return createFileSet( Level.ERROR, files );
-    }
-
-    @Override
-    public KieBuilderSet createFileSet( Message.Level minimalLevel, String... files ) {
-        if ( kieBuilderSet == null || kieBuilderSet.getMinimalLevel() != minimalLevel ) {
-            kieBuilderSet = new KieBuilderSetImpl( this, minimalLevel );
+        if ( kieBuilderSet == null ) {
+            kieBuilderSet = new KieBuilderSetImpl( this );
         }
         return kieBuilderSet.setFiles( files );
     }
@@ -793,5 +806,9 @@ public class KieBuilderImpl
     @Override
     public IncrementalResults incrementalBuild() {
         return new KieBuilderSetImpl( this ).build();
+    }
+
+    public void setEnforceResourceLocation(boolean enforceResourceLocation) {
+        this.enforceResourceLocation = enforceResourceLocation;
     }
 }

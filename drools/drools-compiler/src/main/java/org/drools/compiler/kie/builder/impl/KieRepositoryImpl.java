@@ -28,7 +28,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.appformer.maven.support.PomModel;
+import org.drools.compiler.addon.PomModel;
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
 import org.drools.compiler.kproject.ReleaseIdImpl;
 import org.drools.compiler.kproject.models.KieModuleModelImpl;

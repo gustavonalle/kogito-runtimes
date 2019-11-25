@@ -9,6 +9,7 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.common.WorkingMemoryAction;
 import org.drools.core.impl.EnvironmentImpl;
 import org.drools.core.runtime.process.InternalProcessRuntime;
+import org.drools.core.time.TimerService;
 import org.jbpm.workflow.instance.impl.CodegenNodeInstanceFactoryRegistry;
 import org.kie.api.KieBase;
 import org.kie.api.event.process.ProcessEventListener;
@@ -30,7 +31,6 @@ import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.ViewChangedEventListener;
 import org.kie.api.time.SessionClock;
 import org.kie.kogito.jobs.JobsService;
-import org.kie.services.time.TimerService;
 
 /**
  * A severely limited implementation of the WorkingMemory interface.

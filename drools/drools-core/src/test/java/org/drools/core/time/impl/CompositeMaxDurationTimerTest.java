@@ -17,8 +17,8 @@ package org.drools.core.time.impl;
 
 import java.util.Date;
 
+import org.drools.core.time.Trigger;
 import org.junit.jupiter.api.Test;
-import org.kie.services.time.Trigger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -32,7 +32,7 @@ public class CompositeMaxDurationTimerTest {
         timer.addDurationTimer( new DurationTimer( 50 ) );
         timer.addDurationTimer( new DurationTimer( 70 ) );
         Date timestamp = new Date();
-        Trigger trigger = timer.createTrigger( timestamp.getTime(), null, null, null, null, null, null );
+        Trigger trigger = timer.createTrigger(timestamp.getTime(), null, null, null, null, null, null );
         
         assertEquals( new Date( timestamp.getTime() + 70 ), trigger.hasNextFireTime() );
         assertNull( trigger.nextFireTime() );

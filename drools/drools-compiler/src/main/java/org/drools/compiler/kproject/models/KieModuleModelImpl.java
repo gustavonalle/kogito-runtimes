@@ -131,6 +131,14 @@ public class KieModuleModelImpl implements KieModuleModel {
         kBases.put(newName, kieBase);
     }
 
+    Map<String, String> getConfProps() {
+        return confProps;
+    }
+
+    void setConfProps( Map<String, String> confProps ) {
+        this.confProps = confProps;
+    }
+
     /* (non-Javadoc)
      * @see org.kie.kModule.KieProject#toString()
      */

@@ -56,9 +56,9 @@ public interface InternalAgendaGroup extends AgendaGroup {
     
     long getClearedForRecency();
 
-    void addNodeInstance(Long processInstanceId, String nodeInstanceId);
+    void addNodeInstance(String processInstanceId, String nodeInstanceId);
 
-    void removeNodeInstance(Long processInstanceId, String nodeInstanceId);
+    void removeNodeInstance(String processInstanceId, String nodeInstanceId);
 
     Activation[] getActivations();
 

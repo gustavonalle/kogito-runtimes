@@ -17,7 +17,6 @@
 package org.drools.core.time;
 
 import org.junit.jupiter.api.Test;
-import org.kie.services.time.Interval;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

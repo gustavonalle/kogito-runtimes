@@ -37,6 +37,8 @@ import org.drools.core.spi.Activation;
 import org.drools.core.spi.AsyncExceptionHandler;
 import org.drools.core.spi.FactHandleFactory;
 import org.drools.core.spi.GlobalResolver;
+import org.drools.core.time.TimerService;
+import org.drools.core.time.impl.JDKTimerService;
 import org.drools.core.util.bitmask.BitMask;
 import org.kie.api.KieBase;
 import org.kie.api.event.kiebase.KieBaseEventListener;
@@ -59,8 +61,6 @@ import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.ViewChangedEventListener;
 import org.kie.api.time.SessionClock;
 import org.kie.kogito.jobs.JobsService;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.impl.JDKTimerService;
 
 /**
  * A severely limited implementation of the WorkingMemory interface.

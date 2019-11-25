@@ -31,13 +31,13 @@ import org.drools.core.ClockType;
 import org.drools.core.SessionConfiguration;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.phreak.PropagationEntry;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+import org.drools.core.time.JobHandle;
+import org.drools.core.time.TimerService;
 import org.drools.core.time.TimerServiceFactory;
+import org.drools.core.time.Trigger;
 import org.junit.jupiter.api.Test;
-import org.kie.services.time.Job;
-import org.kie.services.time.JobContext;
-import org.kie.services.time.JobHandle;
-import org.kie.services.time.TimerService;
-import org.kie.services.time.Trigger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -47,8 +47,8 @@ public class JDKTimerServiceTest {
     public void testSingleExecutionJob() throws Exception {
         SessionConfiguration config = SessionConfiguration.newInstance();
         config.setClockType(ClockType.REALTIME_CLOCK);
-        TimerService timeService = TimerServiceFactory.getTimerService( config );
-        Trigger trigger = new DelayedTrigger( 100 );
+        TimerService timeService = TimerServiceFactory.getTimerService(config );
+        Trigger trigger = new DelayedTrigger(100 );
         HelloWorldJobContext ctx = new HelloWorldJobContext( "hello world", timeService);
         timeService.scheduleJob( new HelloWorldJob(), ctx,  trigger);
         Thread.sleep( 500 );

@@ -26,14 +26,14 @@ import org.drools.core.rule.GroupElement.Type;
 import org.drools.core.rule.Pattern;
 import org.drools.core.rule.constraint.EvaluatorConstraint;
 import org.drools.core.test.model.StockTick;
+import org.drools.core.time.Interval;
 import org.drools.core.time.TemporalDependencyMatrix;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kie.services.time.Interval;
 
+import static org.drools.core.time.Interval.MAX;
+import static org.drools.core.time.Interval.MIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.kie.services.time.Interval.MAX;
-import static org.kie.services.time.Interval.MIN;
 
 public class BuildUtilsTest {
     
@@ -51,7 +51,7 @@ public class BuildUtilsTest {
     public void testCalculateTemporalDistance() {
         // input is here just for "documentation" purposes
         Interval[][] input = new Interval[][] {
-                                                { new Interval(0,0), new Interval(-2,2), new Interval(-3, 4), new Interval(MIN, MAX), new Interval(MIN, MAX) },
+                                                { new Interval(0, 0), new Interval(-2, 2), new Interval(-3, 4), new Interval(MIN, MAX), new Interval(MIN, MAX) },
                                                 { new Interval(-2,2), new Interval(0,0), new Interval(MIN, MAX), new Interval(1,2), new Interval(MIN, MAX) },
                                                 { new Interval(-4,3), new Interval(MIN,MAX), new Interval(0, 0), new Interval(2, 3), new Interval(MIN, MAX) },
                                                 { new Interval(MIN,MAX), new Interval(-2,-1), new Interval(-3, -2), new Interval(0, 0), new Interval(1, 10) },

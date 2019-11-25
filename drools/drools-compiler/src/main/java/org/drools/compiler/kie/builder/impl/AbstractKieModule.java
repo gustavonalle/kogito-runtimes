@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.protobuf.ExtensionRegistry;
-import org.appformer.maven.support.DependencyFilter;
-import org.appformer.maven.support.PomModel;
+import org.drools.compiler.addon.DependencyFilter;
+import org.drools.compiler.addon.PomModel;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.kie.builder.impl.KieModuleCache.CompDataEntry;
@@ -124,7 +124,7 @@ public abstract class AbstractKieModule
         }
         Collection<ReleaseId> deps = null;
         if( pomModel != null ) {
-            deps = adaptAll( pomModel.getDependencies(filter), pomModel );
+            deps = adaptAll( pomModel.getDependencies(filter) );
         }
         return deps == null ? Collections.<ReleaseId> emptyList() : deps;
     }
@@ -366,18 +366,6 @@ public abstract class AbstractKieModule
     }
 
     public PomModel getPomModel() {
-        if (pomModel == null) {
-            try {
-                byte[] pomXml = getPomXml();
-                if( pomXml != null ) {
-                    PomModel tempPomModel = PomModel.Parser.parse("pom.xml", new ByteArrayInputStream(pomXml));
-                    validatePomModel(tempPomModel); // throws an exception if invalid
-                    pomModel = tempPomModel;
-                }
-            } catch( Exception e ) {
-                // nothing to do as it was not possible to retrieve pom.xml
-            }
-        }
         return pomModel;
     }
 
@@ -385,19 +373,12 @@ public abstract class AbstractKieModule
         this.pomModel = pomModel;
     }
 
-    private void validatePomModel(PomModel pomModel) {
-        org.appformer.maven.support.AFReleaseId pomReleaseId = pomModel.getReleaseId();
-        if (StringUtils.isEmpty(pomReleaseId.getGroupId()) || StringUtils.isEmpty(pomReleaseId.getArtifactId()) || StringUtils.isEmpty(pomReleaseId.getVersion())) {
-            throw new RuntimeException("Maven pom.properties exists but ReleaseId content is malformed");
-        }
-    }
-
     private byte[] getPomXml() {
         return getBytes(((ReleaseIdImpl)releaseId).getPomXmlPath());
     }
 
     public InputStream getPomAsStream() {
-        byte[] pom = getBytes(((ReleaseIdImpl)releaseId).getPomXmlPath());
+        byte[] pom = getPomXml();
         return pom != null ? new ByteArrayInputStream(pom) : null;
     }
 

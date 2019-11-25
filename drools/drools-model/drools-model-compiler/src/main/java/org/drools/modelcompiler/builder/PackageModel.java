@@ -242,7 +242,7 @@ public class PackageModel {
                 .stream()
                 .collect(Collectors.toMap( Entry::getKey, e -> {
                     try {
-                        return pkg.getTypeResolver().resolveType(e.getValue());
+                        return pkg.getTypeResolver().resolveType(e.getValue().getCanonicalName());
                     } catch (ClassNotFoundException e1) {
                         throw new UnsupportedOperationException("Class not found", e1);
                     }

@@ -224,7 +224,7 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
             return activationsCount;
         }
     }
-    
+
     public void setActivationsCount(long activationsCount) {
         if ( linkedFactHandle != null ) {
             linkedFactHandle.setActivationsCount( activationsCount );
@@ -267,13 +267,13 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
 
     public EventFactHandle clone() {
         EventFactHandle clone = new EventFactHandle( getId(),
-                                                      getIdentityHashCode(),
-                                                      getObject(),
-                                                      getRecency(),
-                                                      getStartTimestamp(),
-                                                      getDuration(),
-                                                      getEntryPointId(),
-                                                      getTraitType() );
+                                                     getIdentityHashCode(),
+                                                     getObject(),
+                                                     getRecency(),
+                                                     getStartTimestamp(),
+                                                     getDuration(),
+                                                     getEntryPointId(),
+                                                     getTraitType() );
         clone.setActivationsCount( getActivationsCount() );
         clone.setOtnCount( getOtnCount() );
         clone.setExpired( isExpired() );
@@ -286,18 +286,18 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
 
     private EventFactHandle cloneWithoutTuples() {
         EventFactHandle clone = new EventFactHandle( getId(),
-                getIdentityHashCode(),
-                getObject(),
-                getRecency(),
-                getStartTimestamp(),
-                getDuration(),
-                getEntryPointId(),
-                getTraitType() );
+                                                     getIdentityHashCode(),
+                                                     getObject(),
+                                                     getRecency(),
+                                                     getStartTimestamp(),
+                                                     getDuration(),
+                                                     getEntryPointId(),
+                                                     getTraitType() );
         clone.setActivationsCount( getActivationsCount() );
         clone.setOtnCount( getOtnCount() );
         clone.setExpired( isExpired() );
         clone.setEqualityKey( getEqualityKey() );
-        clone.linkedTuples = this.linkedTuples.newInstance();
+//   fixme API CHANGE    clone.linkedTuples = this.linkedTuples.newInstance();
         clone.setObjectHashCode(getObjectHashCode());
         clone.wmEntryPoint = this.wmEntryPoint;
         return clone;
