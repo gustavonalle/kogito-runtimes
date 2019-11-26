@@ -394,7 +394,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
     }
 
-    protected void bindRuleBase( InternalKnowledgeBase kBase, InternalAgenda agenda, boolean initInitFactHandle ) {
+    public void bindRuleBase( InternalWorkingMemory workingMemory, InternalKnowledgeBase kBase, InternalAgenda agenda, boolean initInitFactHandle ) {
         this.kBase = kBase;
 
         this.nodeMemories = new ConcurrentNodeMemories(kBase, DEFAULT_RULE_UNIT);
@@ -407,7 +407,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         } else {
             this.agenda = agenda;
         }
-        this.agenda.setWorkingMemory(this);
+        this.agenda.setWorkingMemory(workingMemory);
 
         RuleBaseConfiguration conf = kBase.getConfiguration();
         this.sequential = conf.isSequential();
