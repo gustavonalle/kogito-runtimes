@@ -297,7 +297,7 @@ public class EventFactHandle extends DefaultFactHandle implements Comparable<Eve
         clone.setOtnCount( getOtnCount() );
         clone.setExpired( isExpired() );
         clone.setEqualityKey( getEqualityKey() );
-//   fixme API CHANGE    clone.linkedTuples = this.linkedTuples.newInstance();
+        clone.linkedTuples = this.linkedTuples.newInstance();
         clone.setObjectHashCode(getObjectHashCode());
         clone.wmEntryPoint = this.wmEntryPoint;
         return clone;

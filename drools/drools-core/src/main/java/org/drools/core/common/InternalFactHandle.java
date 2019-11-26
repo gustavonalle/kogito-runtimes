@@ -174,6 +174,8 @@ public interface InternalFactHandle
         default RightTuple getFirstRightTuple(RuleBasePartitionId partitionId) {
             return getFirstRightTuple( partitionId.getParallelEvaluationSlot() );
         }
+
+        LinkedTuples newInstance();
     }
 
     default InternalDataStore<?> getDataStore() {
