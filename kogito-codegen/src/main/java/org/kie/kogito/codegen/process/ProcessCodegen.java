@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import org.drools.core.io.impl.FileSystemResource;
+import org.drools.core.ruleunit.GeneratedRuleUnitDescription;
 import org.drools.core.util.StringUtils;
 import org.drools.core.xml.SemanticModules;
 import org.jbpm.bpmn2.xml.BPMNDISemanticModule;
@@ -57,6 +58,7 @@ import org.kie.kogito.codegen.di.DependencyInjectionAnnotator;
 import org.kie.kogito.codegen.process.config.ProcessConfigGenerator;
 import org.xml.sax.SAXException;
 
+import static java.util.function.Function.identity;
 import static org.kie.kogito.codegen.ApplicationGenerator.log;
 
 /**
@@ -73,6 +75,7 @@ public class ProcessCodegen extends AbstractGenerator {
     }
 
     private ClassLoader contextClassLoader;
+    private List<GeneratedRuleUnitDescription> generatedRuleUnitDescriptions;
 
     public static ProcessCodegen ofPath(Path path) throws IOException {
         Path srcPath = Paths.get(path.toString());
@@ -364,6 +367,11 @@ public class ProcessCodegen extends AbstractGenerator {
             }
         }
 
+        this.generatedRuleUnitDescriptions = processIdToMetadata.values().stream()
+                .map(ProcessMetaData::getRuleUnitDescriptions)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
         return generatedFiles;
     }
 
@@ -381,6 +389,10 @@ public class ProcessCodegen extends AbstractGenerator {
 
     public List<GeneratedFile> getGeneratedFiles() {
         return generatedFiles;
+    }
+
+    public List<GeneratedRuleUnitDescription> getGeneratedRuleUnitDescriptions() {
+        return generatedRuleUnitDescriptions;
     }
 
     @Override

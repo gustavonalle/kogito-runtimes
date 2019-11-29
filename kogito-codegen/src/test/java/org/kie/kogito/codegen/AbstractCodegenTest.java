@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.drools.compiler.commons.jci.compilers.CompilationResult;
@@ -70,18 +71,26 @@ public class AbstractCodegenTest {
                         .withRuleUnits(hasRuleUnit)
                         .withDependencyInjection(null);
 
-        if (!rulesResources.isEmpty()) {
-            appGen.withGenerator(IncrementalRuleCodegen.ofFiles(rulesResources
-                                                                   .stream()
-                                                                   .map(resource -> new File("src/test/resources", resource))
-                                                                   .collect(Collectors.toList())));
+        Optional<ProcessCodegen> gen = Optional.empty();
+        if (!processResources.isEmpty()) {
+            ProcessCodegen pgen = ProcessCodegen.ofFiles(
+                    processResources
+                            .stream()
+                            .map(resource -> new File("src/test/resources", resource))
+                            .collect(Collectors.toList()));
+            gen = Optional.of(pgen);
+
+            appGen.withGenerator(pgen);
         }
 
-        if (!processResources.isEmpty()) {
-            appGen.withGenerator(ProcessCodegen.ofFiles(processResources
-                                                                        .stream()
-                                                                        .map(resource -> new File("src/test/resources", resource))
-                                                                        .collect(Collectors.toList())));
+        if (!rulesResources.isEmpty()) {
+            appGen.withGenerator(
+                    IncrementalRuleCodegen.ofFiles(
+                            rulesResources
+                               .stream()
+                               .map(resource -> new File("src/test/resources", resource))
+                               .collect(Collectors.toList())))
+                    .withGeneratedRuleUnitDescriptionProvider(gen.get()::getGeneratedRuleUnitDescriptions);
         }
 
         Collection<GeneratedFile> generatedFiles = appGen.generate();

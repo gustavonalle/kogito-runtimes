@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.drools.core.addon.TypeResolver;
 import org.kie.kogito.rules.DataSource;
@@ -30,16 +31,24 @@ import org.kie.kogito.rules.RuleUnitData;
 
 public class GeneratedRuleUnitDescription extends AbstractRuleUnitDescription {
 
-    private final TypeResolver typeResolver;
+    private final Function<String, Class<?>> typeResolver;
     private final String name;
     private final String packageName;
     private final String simpleName;
 
-    public GeneratedRuleUnitDescription(String name, TypeResolver typeResolver) {
+    public GeneratedRuleUnitDescription(String name, Function<String, Class<?>> typeResolver) {
         this.typeResolver = typeResolver;
         this.name = name;
         this.simpleName = name.substring(name.lastIndexOf('.') + 1);
         this.packageName = name.substring(0, name.lastIndexOf('.'));
+    }
+
+    public GeneratedRuleUnitDescription(String name, TypeResolver typeResolver) {
+        this(name, fqcn -> uncheckedLoadClass(typeResolver, fqcn));
+    }
+
+    public GeneratedRuleUnitDescription(String name, ClassLoader contextClassLoader) {
+        this(name, fqcn -> uncheckedLoadClass(contextClassLoader, fqcn));
     }
 
     @Override
@@ -63,15 +72,15 @@ public class GeneratedRuleUnitDescription extends AbstractRuleUnitDescription {
     }
 
     public void putSimpleVar(String name, String varTypeFQCN) {
-        Class<?> varType = uncheckedLoadClass(varTypeFQCN);
+        Class<?> varType = typeResolver.apply(varTypeFQCN);
         putSimpleVar(name, varType);
     }
 
     public void putDatasourceVar(String name, String datasourceTypeFQCN, String datasourceParameterTypeFQCN) {
         putDatasourceVar(
                 name,
-                uncheckedLoadClass(datasourceTypeFQCN),
-                uncheckedLoadClass(datasourceParameterTypeFQCN));
+                typeResolver.apply(datasourceTypeFQCN),
+                typeResolver.apply(datasourceParameterTypeFQCN));
     }
 
     public void putSimpleVar(String name, Class<?> varType) {
@@ -82,9 +91,16 @@ public class GeneratedRuleUnitDescription extends AbstractRuleUnitDescription {
         putRuleUnitVariable(new RuleUnitVariable(name, datasourceType, datasourceParameterType));
     }
 
-    private Class<?> uncheckedLoadClass(String fqcn) {
+    private static Class<?> uncheckedLoadClass(TypeResolver typeResolver, String fqcn) {
         try {
             return typeResolver.resolveType(fqcn);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+    private static Class<?> uncheckedLoadClass(ClassLoader classLoader, String fqcn) {
+        try {
+            return classLoader.loadClass(fqcn);
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
         }

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -47,6 +48,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
+import org.drools.core.ruleunit.GeneratedRuleUnitDescription;
 import org.drools.core.util.StringUtils;
 import org.jbpm.process.core.context.variable.Variable;
 import org.jbpm.process.core.context.variable.VariableScope;
@@ -125,6 +127,16 @@ public class RuleSetNodeVisitor extends AbstractVisitor {
         visitMetaData(ruleSetNode.getMetaData(), body, "ruleSetNode" + node.getId());
 
         addFactoryMethodWithArgs(body, "ruleSetNode" + node.getId(), "done");
+
+        if (ruleType.isRuleUnit()) {
+            if (ruleSetNode.getInMappings().isEmpty()) {
+                GeneratedRuleUnitDescription generatedRuleUnitDescription = new GeneratedRuleUnitDescription(ruleType.getName(), contextClassLoader);
+                for (Variable v : variableScope.getVariables()) {
+                    generatedRuleUnitDescription.putDatasourceVar(v.getName(), DataStore.class.getCanonicalName(), v.getType().getStringType());
+                }
+                metadata.getRuleUnitDescriptions().add(generatedRuleUnitDescription);
+            }
+        }
 
     }
 
@@ -226,20 +238,32 @@ public class RuleSetNodeVisitor extends AbstractVisitor {
         BlockStmt actionBody = new BlockStmt();
         actionBody.addStatement(assignExpr);
 
-        for (Map.Entry<String, String> e : node.getInMappings().entrySet()) {
-            Variable v = variableScope.findVariable(extractVariableFromExpression(e.getValue()));
-            if (v != null) {
-                actionBody.addStatement(makeAssignment(v));
-                actionBody.addStatement(
-                        injectData(isCollectionType(v),
-                                   new MethodCallExpr(new NameExpr("model"), "get" + StringUtils.capitalize(v.getName())),
-                                   "add",
-                                   new NameExpr(v.getName())));
+        Set<Entry<String, String>> entries = node.getInMappings().entrySet();
+        if (entries.isEmpty()) {
+            // no explicit i/o mappings, use process variables instead
+            for (Variable variable : variableScope.getVariables()) {
+                injectDataFromVariable(actionBody, variable);
+            }
+        } else {
+            for (Map.Entry<String, String> e : entries) {
+                Variable v = variableScope.findVariable(extractVariableFromExpression(e.getValue()));
+                if (v != null) {
+                    injectDataFromVariable(actionBody, v);
+                }
             }
         }
 
         actionBody.addStatement(new ReturnStmt(new NameExpr("model")));
         return actionBody;
+    }
+
+    private void injectDataFromVariable(BlockStmt actionBody, Variable v) {
+        actionBody.addStatement(makeAssignment(v));
+        actionBody.addStatement(
+                injectData(isCollectionType(v),
+                           new MethodCallExpr(new NameExpr("model"), "get" + StringUtils.capitalize(v.getName())),
+                           "add",
+                           new NameExpr(v.getName())));
     }
 
     private BlockStmt bind(VariableScope variableScope, RuleSetNode node, Class<?> unitClass) {

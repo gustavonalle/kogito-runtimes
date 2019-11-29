@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -133,6 +134,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
             ResourceType.DTABLE
     };
     private final Collection<Resource> resources;
+    private Supplier<? extends Collection<GeneratedRuleUnitDescription>> generatedRuleUnitDescriptions = Collections::emptyList;
     private RuleUnitContainerGenerator moduleGenerator;
 
     private boolean dependencyInjection;
@@ -182,20 +184,7 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
 
         ModelBuilderImpl modelBuilder = new ModelBuilderImpl( configuration, dummyReleaseId, true, hotReloadMode );
 
-        PackageRegistry pkg = modelBuilder.getOrCreatePackageRegistry(new PackageDescr("ruletask"));
-        GeneratedRuleUnitDescription simpleRuleUnitDescription =
-                new GeneratedRuleUnitDescription("ruletask.Example", pkg.getTypeResolver());
-        simpleRuleUnitDescription.putDatasourceVar(
-                "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
-        simpleRuleUnitDescription.putDatasourceVar(
-                "manyPersons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
-        simpleRuleUnitDescription.putDatasourceVar(
-                "singlePerson", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
-        simpleRuleUnitDescription.putDatasourceVar(
-                "singleString", DataStore.class.getCanonicalName(), "java.lang.String");
-
-        pkg.getPackage().getRuleUnitDescriptionLoader().registerRuleUnitDescription(simpleRuleUnitDescription);
-
+        registerGeneratedRuleUnits(modelBuilder);
 
         CompositeKnowledgeBuilder batch = modelBuilder.batch();
         resources.forEach(f -> batch.add(f, f.getResourceType()));
@@ -305,6 +294,31 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         return generatedFiles;
     }
 
+    private void registerGeneratedRuleUnits(ModelBuilderImpl modelBuilder) {
+        for (GeneratedRuleUnitDescription d : generatedRuleUnitDescriptions.get()) {
+            modelBuilder.getOrCreatePackageRegistry(new PackageDescr(d.getPackageName()))
+                    .getPackage()
+                    .getRuleUnitDescriptionLoader()
+                    .registerRuleUnitDescription(d);
+        }
+//        GeneratedRuleUnitDescription simpleRuleUnitDescription =
+//                new GeneratedRuleUnitDescription("ruletask.Example", pkg.getTypeResolver());
+//        simpleRuleUnitDescription.putDatasourceVar(
+//                "persons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+//        simpleRuleUnitDescription.putDatasourceVar(
+//                "manyPersons", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+//        simpleRuleUnitDescription.putDatasourceVar(
+//                "singlePerson", DataStore.class.getCanonicalName(), "org.kie.kogito.codegen.data.Person");
+//        simpleRuleUnitDescription.putDatasourceVar(
+//                "singleString", DataStore.class.getCanonicalName(), "java.lang.String");
+//
+//        pkg.getPackage().getRuleUnitDescriptionLoader().registerRuleUnitDescription(simpleRuleUnitDescription);
+
+
+
+
+    }
+
     private void addUnitConfToKieModule( RuleUnitDescription ruleUnit ) {
         KieBaseModel unitKieBaseModel = kieModuleModel.newKieBaseModel( ruleUnit2KieBaseName(ruleUnit.getRuleUnitName()) );
         unitKieBaseModel.setEventProcessingMode(org.kie.api.conf.EventProcessingOption.CLOUD);
@@ -372,5 +386,11 @@ public class IncrementalRuleCodegen extends AbstractGenerator {
         this.hotReloadMode = true;
         return this;
     }
+
+    public IncrementalRuleCodegen withGeneratedRuleUnitDescriptionProvider(Supplier<? extends Collection<GeneratedRuleUnitDescription>> generatedRuleUnitDescriptions) {
+        this.generatedRuleUnitDescriptions = generatedRuleUnitDescriptions;
+        return this;
+    }
+
 
 }
