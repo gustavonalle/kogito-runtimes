@@ -49,6 +49,32 @@
         </plugin>
       </plugins>
     </pluginManagement>
-  </build>
+
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-compile</id>
+              <configuration>
+                <compilerArgument>-proc:none</compilerArgument>
+                <includes>
+                  <include>org/kie/kogito/rules/units/annotations/AnnotationProcessor</include>
+                  <!--include dependencies required for AnnotationProcessor -->
+                </includes>
+              </configuration>
+            </execution>
+            <execution>
+              <id>compile-project</id>
+              <phase>compile</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
 
 </project>

@@ -1,4 +1,4 @@
-package org.kie.kogito.codegen.rules.annotations;
+package org.kie.kogito.rules.units.annotations;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -21,9 +21,7 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-import org.kie.kogito.rules.units.When;
-
-@SupportedAnnotationTypes("org.kie.kogito.rules.units.When")
+@SupportedAnnotationTypes("org.kie.kogito.rules.units.annotations.When")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -64,13 +62,15 @@ public class AnnotationProcessor extends AbstractProcessor {
         try {
             FileObject codeRuleUnits =
                     filer.createResource(
-                            StandardLocation.CLASS_OUTPUT, "", "CodeRuleUnits");
+                            StandardLocation.CLASS_OUTPUT, "", "code-rule-units");
+            logger.printMessage(Diagnostic.Kind.NOTE, codeRuleUnits.getName());
 
             Writer writer = codeRuleUnits.openWriter();
             for (String className : classes) {
                 writer.append(className);
                 writer.append("\n");
             }
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
