@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.drools.compiler.compiler.xml.XmlDumper;
+import org.drools.core.util.StringUtils;
 import org.drools.core.xml.ExtensibleXmlParser;
 import org.jbpm.process.core.impl.DataTransformerRegistry;
 import org.jbpm.workflow.core.Node;
@@ -63,7 +64,7 @@ public class BusinessRuleTaskHandler extends AbstractNodeHandler {
         ruleSetNode.setLanguage(language);
 
 		String ruleFlowGroup = element.getAttribute("ruleFlowGroup");
-        if (ruleFlowGroup == null) {
+        if (StringUtils.isEmpty(ruleFlowGroup)) {
             String namespace = (String) ruleSetNode.removeParameter(NAMESPACE_PROP);
             String model = (String) ruleSetNode.removeParameter(MODEL_PROP);
             String decision = (String) ruleSetNode.removeParameter(DECISION_PROP);
